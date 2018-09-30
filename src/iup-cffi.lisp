@@ -6,6 +6,7 @@
 (in-package #:iup-cffi)
 
 (define-foreign-library iup
+  (:unix "libiup.so")
   (t (:default "iup")))
 
 (use-foreign-library iup)
