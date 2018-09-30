@@ -1,9 +1,9 @@
-(defsystem #:@name@-test
+(defsystem #:iup-test
   :components
   ((:module "test"
     :serial t
     :components ((:file "tests"))))
-  :depends-on (#:fiveam #:@name@)
+  :depends-on (#:fiveam #:iup)
   :perform (test-op (o s)
 		    (symbol-call "FIVEAM" "RUN!"
-				 (find-symbol* "@NAME@-TEST-SUITE" "@NAME@-TESTS"))))
+				 (find-symbol* "IUP-TEST-SUITE" "IUP-TESTS"))))

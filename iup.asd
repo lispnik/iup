@@ -10,11 +10,8 @@
   :components
   ((:module "src"
     :serial t
-    :components ((:file "package")
-		 (:file "iup-cffi")
+    :components ((:file "iup-cffi")
 		 (:file "iup"))))
   :in-order-to ((test-op (test-op #:iup-test)))
   :depends-on (#:alexandria
-	       #:cffi
-	       #:cl-syntax
-	       #:cl-syntax-annot))
+	       #:cffi))

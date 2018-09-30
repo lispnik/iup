@@ -1,6 +1,7 @@
 (defpackage #:iup-cffi
   (:use #:common-lisp
-	#:cffi))
+	#:cffi
+	#:alexandria))
 
 (in-package #:iup-cffi)
 
@@ -9,19 +10,25 @@
 
 (use-foreign-library iup)
 
-;;; FIXME implement returv value enums for this
+(defconstant %iup-error 1)
+(defconstant %iup-noerror 0)
+(defconstant %iup-opened -1)
+(defconstant %iup-invalid -1)
+(defconstant %iup-invalid-id -10)
 
 (defcfun (%iup-open "IupOpen") :int
   (argv :pointer)
   (argc :pointer))
 
-(defcfun (%iup-close "IupClose") :int) 
+(defcfun (%iup-close "IupClose") :void)
 
 (defcfun (%iup-message "IupMessage") :void
   (title :string)
   (message :string))
 
 (defcfun (%iup-version "IupVersion") :string)
+
+(defcfun (%iup-version-number "IupVersionNumber") :int)
 
 (defctype ihandle :pointer)
 
@@ -49,11 +56,7 @@
 (defcfun (%iup-dialog "IupDialog") ihandle
   (child ihandle))
 
-(defcfun (%%iup-vbox-v "IupVBoxv") ihandle
+(defcfun (%iup-vbox-v "IupVBoxv") ihandle
   (children :pointer))
 
-(defun %iup-vbox (&rest children)
-  (let ((array (foreign-alloc 'ihandle :initial-contents children :null-terminated-p t)))
-    (unwind-protect
-	 (%%iup-vbox-v array)
-      (foreign-free array))))
+(defcfun (%iup-main-loop "IupMainLoop") :int)
