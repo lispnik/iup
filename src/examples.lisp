@@ -18,3 +18,8 @@
 	   (%iup-main-loop)))
     (%iup-close)))
 
+(unwind-protect
+     (progn
+       (%iup-open (cffi:null-pointer) (cffi:null-pointer))
+       (%iup-image-lib-open))
+  (%iup-close))

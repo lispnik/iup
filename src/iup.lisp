@@ -3,6 +3,7 @@
 	#:cffi)
   (:export #:open
 	   #:close
+	   #:image-lib-open
 	   #:version
 	   #:version-number
 	   #:vbox
@@ -20,6 +21,7 @@
       (error 'iup-error))))
 
 (setf (fdefinition 'close) #'iup-cffi::%iup-close)
+
 (setf (fdefinition 'version) #'iup-cffi::%iup-version)
 (setf (fdefinition 'version-number) #'iup-cffi::%iup-version-number)
 
