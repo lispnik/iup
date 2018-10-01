@@ -1,51 +1,38 @@
 (defpackage #:iup
   (:use #:common-lisp
 	#:cffi)
-  (:export #:iup-open
-	   #:iup-close
-	   #:iup-version
-	   #:iup-version-number
-	   #:iup-vbox
-	   #:iup-label))
+  (:export #:open
+	   #:close
+	   #:version
+	   #:version-number
+	   #:vbox
+	   #:label)
+  (:shadow #:open
+	   #:close))
 
 (in-package #:iup)
 
 (define-condition iup-error () ())
 
-(defun iup-open ()
+(defun open ()
   (let ((ret (iup-cffi::%iup-open (cffi:null-pointer) (cffi:null-pointer))))
     (when (= ret iup-cffi::%iup-error)
       (error 'iup-error))))
 
-(setf (fdefinition 'iup-close) #'iup-cffi::%iup-close)
-(setf (fdefinition 'iup-version) #'iup-cffi::%iup-version)
-(setf (fdefinition 'iup-version-number) #'iup-cffi::%iup-version-number)
+(setf (fdefinition 'close) #'iup-cffi::%iup-close)
+(setf (fdefinition 'version) #'iup-cffi::%iup-version)
+(setf (fdefinition 'version-number) #'iup-cffi::%iup-version-number)
 
-(defun iup-vbox (&rest children)
+(defun vbox (&rest children)
   (let ((array (foreign-alloc 'ihandle :initial-contents children :null-terminated-p t)))
     (unwind-protect
 	 (iup-cffi::%iup-vbox-v array)
       (foreign-free array))))
 
+(defun iup-label (&rest attributes &key &allow-other-keys)
+  (iup-cffi::%iup-label (cffi:null-pointer))
 
-(defmacro defiup-control (name attributes)
-  )
-
-(defiup-control label
-    `(defun ,(intern ))
-    ((:name active
-      :to-converter yes-no-converter
-      :from-converter yes-no-converter
-      :default nil)))
-
-()
-
-(defun iup-label (&rest attributes &key )
-  (list attributes
-	active
-	alignment
-	title
-	active-set-p))
+)
 
 ;;; some controls have attributes that can be set at creation only e.g. IupDial
 ;;; some attributes are write only
@@ -59,7 +46,3 @@
 
 ;;; callbacks are varied
 
-
-(defclass control () ())
-(defclass label (control)
-  )

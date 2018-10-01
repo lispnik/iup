@@ -34,7 +34,7 @@
 (defctype ihandle :pointer)
 
 (defcfun (%iup-label "IupLabel") ihandle
-  (text :string))
+  (title :string))
 
 (defcfun (%iup-set-str-attribute "IupSetStrAttribute") :void
   (handle ihandle)
@@ -59,5 +59,9 @@
 
 (defcfun (%iup-vbox-v "IupVBoxv") ihandle
   (children :pointer))
+
+(defcfun (%iup-button "IupButton") ihandle
+  (title :string)
+  (action :pointer))
 
 (defcfun (%iup-main-loop "IupMainLoop") :int)
