@@ -107,41 +107,11 @@
   (name :string)
   (value :string))
 
-;; void      IupSetStrf        (Ihandle* ih, const char* name, const char* format, ...);
-;; void      IupSetInt         (Ihandle* ih, const char* name, int value);
-;; void      IupSetFloat       (Ihandle* ih, const char* name, float value);
-;; void      IupSetDouble      (Ihandle* ih, const char* name, double value);
-;; void      IupSetRGB         (Ihandle* ih, const char* name, unsigned char r, unsigned char g, unsigned char b);
-
-;; char*     IupGetAttribute(Ihandle* ih, const char* name);
-;; int       IupGetInt      (Ihandle* ih, const char* name);
-;; int       IupGetInt2     (Ihandle* ih, const char* name);
-;; int       IupGetIntInt   (Ihandle* ih, const char* name, int *i1, int *i2);
-;; float     IupGetFloat    (Ihandle* ih, const char* name);
-;; double    IupGetDouble(Ihandle* ih, const char* name);
-;; void      IupGetRGB      (Ihandle* ih, const char* name, unsigned char *r, unsigned char *g, unsigned char *b);
-
-;; void  IupSetAttributeId(Ihandle* ih, const char* name, int id, const char *value);
-
 (defcfun (%iup-set-str-attribute-id "IupSetStrAttributeId") :void
   (handle ihandle)
   (name :string)
   (id :int)
   (value :string))
-
-;; void  IupSetStrfId(Ihandle* ih, const char* name, int id, const char* format, ...);
-;; void  IupSetIntId(Ihandle* ih, const char* name, int id, int value);
-;; void  IupSetFloatId(Ihandle* ih, const char* name, int id, float value);
-;; void  IupSetDoubleId(Ihandle* ih, const char* name, int id, double value);
-;; void  IupSetRGBId(Ihandle* ih, const char* name, int id, unsigned char r, unsigned char g, unsigned char b);
-
-;; char*  IupGetAttributeId(Ihandle* ih, const char* name, int id);
-;; int    IupGetIntId(Ihandle* ih, const char* name, int id);
-;; float  IupGetFloatId(Ihandle* ih, const char* name, int id);
-;; double IupGetDoubleId(Ihandle* ih, const char* name, int id);
-;; void   IupGetRGBId(Ihandle* ih, const char* name, int id, unsigned char *r, unsigned char *g, unsigned char *b);
-
-;; void  IupSetAttributeId2(Ihandle* ih, const char* name, int lin, int col, const char* value);
 
 (defcfun (%iup-set-str-attribute-id-2 "IupSetStrAttributeId2") :void
   (handle ihandle)
@@ -149,12 +119,6 @@
   (line :int)
   (column :int)
   (value :string))
-
-;; void  IupSetStrfId2(Ihandle* ih, const char* name, int lin, int col, const char* format, ...);
-;; void  IupSetIntId2(Ihandle* ih, const char* name, int lin, int col, int value);
-;; void  IupSetFloatId2(Ihandle* ih, const char* name, int lin, int col, float value);
-;; void  IupSetDoubleId2(Ihandle* ih, const char* name, int lin, int col, double value);
-;; void  IupSetRGBId2(Ihandle* ih, const char* name, int lin, int col, unsigned char r, unsigned char g, unsigned char b);
 
 ;; char*  IupGetAttributeId2(Ihandle* ih, const char* name, int lin, int col);
 ;; int    IupGetIntId2(Ihandle* ih, const char* name, int lin, int col);
@@ -292,12 +256,16 @@
 ;; Ihandle*  IupTree       (void);
 ;; Ihandle*  IupLink       (const char* url, const char* title);
 ;; Ihandle*  IupAnimatedLabel(Ihandle* animation);
-;; Ihandle*  IupDatePick   (void);
-;; Ihandle*  IupCalendar   (void);
-;; Ihandle*  IupColorbar   (void);
-;; Ihandle*  IupGauge      (void);
-;; Ihandle*  IupDial       (const char* type);
-;; Ihandle*  IupColorBrowser(void);
+
+(defcfun (%iup-date-pick "IupDatePick") ihandle)
+(defcfun (%iup-calendar "IupCalendar") ihandle)
+(defcfun (%iup-colorbar "IupColorbar") ihandle)
+(defcfun (%iup-gauge "IupGauge") ihandle)
+
+(defcfun (%iup-dial "IupDial") ihandle
+  (orientation :string))
+
+(defcfun (%iup-color-browser "IupColorBrowser") ihandle)
 
 ;; /* String compare utility */
 ;; int IupStringCompare(const char* str1, const char* str2, int casesensitive, int lexicographic);
@@ -333,7 +301,6 @@
 (defcfun (%iup-font-dlg "IupFontDlg") ihandle)
 (defcfun (%iup-progress-dlg "IupProgressDlg") ihandle)
 
-
 ;; int  IupGetFile(char *arq);  // NB see docs on suppling memory buffer
 
 (defcfun (%iup-message "IupMessage") :void
@@ -341,13 +308,22 @@
   (message :string))
 
 (defcfun (%iup-message-error "IupMessageError") :void
-  (title :string)
+  (parent ihandle)
   (message :string))
 
-;; int IupMessageAlarm(Ihandle* parent, const char* title, const char *message, const char *buttons);
+(defcfun (%iup-message-error "IupMessageAlarm") :int
+  (parent ihandle)
+  (title :string)
+  (message :string)
+  (buttons :string))
 
-;; int  IupAlarm(const char *title, const char *msg, const char *b1, const char *b2, const char *b3);
-;; int  IupScanf(const char *format, ...);
+(defcfun (%iup-alarm "IupAlarm") :int
+  (title :string)
+  (message :string)
+  (button1 :string)
+  (button2 :string)
+  (button3 :string))
+
 ;; int  IupListDialog(int type, const char *title, int size, const char** list,
 ;;                    int op, int max_col, int max_lin, int* marks);
 ;; int  IupGetText(const char* title, char* text, int maxsize);
