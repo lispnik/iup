@@ -17,7 +17,31 @@
 (defconstant %iup-invalid -1)
 (defconstant %iup-invalid-id -10)
 
-(defctype ihandle :pointer)
+(define-foreign-type ihandle ()
+  ()
+  (:actual-type :pointer)
+  (:simple-parser ihandle))
+
+(defmethod translate-from-foreign (value (type ihandle))
+  (unless (null-pointer-p value)
+    value))
+
+(defmethod translate-to-foreign (value (type ihandle))
+  (or value (null-pointer)))
+
+(define-foreign-type attr-name ()
+  ()
+  (:actual-type :string)
+  (:simple-parser attr-name))
+
+(defmethod translate-from-foreign (value (type attr-name))
+  (unless (null-pointer-p value)
+    (make-keyword value)))
+
+(defmethod translate-to-foreign (value (type attr-name))
+  (if value
+      (symbol-name value)
+      (null-pointer)))
 
 (defcfun (%iup-open "IupOpen") :int
   (argv :pointer)
@@ -96,7 +120,9 @@
   (handle ihandle))
 
 (defcfun (%iup-show-xy "IupShowXY") :int
-  (handle ihandle))
+  (handle ihandle)
+  (x :int)
+  (y :int))
 
 (defcfun (%iup-hide "IupHide") :int
   (handle ihandle))
@@ -107,7 +133,10 @@
 (defcfun (%iup-unmap "IupUnmap") :int
   (handle ihandle))
 
-;; void      IupResetAttribute(Ihandle* ih, const char* name);
+(defcfun (%iup-reset-attribute "IupResetAttribute") :void
+  (handle ihandle)
+  (name :string))
+
 ;; int       IupGetAllAttributes(Ihandle* ih, char** names, int n);
 ;; Ihandle*  IupSetAtt(const char* handle_name, Ihandle* ih, const char* name, ...);
 ;; Ihandle*  IupSetAttributes (Ihandle* ih, const char *str);
@@ -117,6 +146,10 @@
   (handle ihandle)
   (name :string)
   (value :string))
+
+(defcfun (%iup-get-attribute "IupGetAttribute") :string
+  (handle ihandle)
+  (name :string))
 
 (defcfun (%iup-set-str-attribute-id "IupSetStrAttributeId") :void
   (handle ihandle)
@@ -186,13 +219,13 @@
 (defcfun (%iup-radio "IupRadio") ihandle
   (child ihandle))
 
-(defcfun (%iup-vbox-v "IupVBoxv") ihandle
+(defcfun (%iup-vbox-v "IupVboxv") ihandle
   (children :pointer))
 
-(defcfun (%iup-zbox-v "IupZBoxv") ihandle
+(defcfun (%iup-zbox-v "IupZboxv") ihandle
   (children :pointer))
 
-(defcfun (%iup-hbox-v "IupHBoxv") ihandle
+(defcfun (%iup-hbox-v "IupHboxv") ihandle
   (children :pointer))
 
 (defcfun (%iup-normalizer-v "IupNormalizerv") ihandle
