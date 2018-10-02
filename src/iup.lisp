@@ -19,6 +19,11 @@
 	   #:vbox
 	   #:label
 
+	   #:item
+	   #:submenu
+	   #:menu
+	   #:separator
+
 	   #:with-iup
 	   #:attr)
   (:shadow #:open
@@ -60,38 +65,62 @@
 
 (alias 'show-xy #'iup-cffi::%iup-show-xy)
 
+(defun menu (&rest children)
+  (let ((array (foreign-alloc 'iup-cffi::ihandle :initial-contents children :null-terminated-p t)))
+    (unwind-protect
+	 (iup-cffi::%iup-menu-v array)
+      (foreign-free array))))
+
 (defun vbox (&rest children)
   (let ((array (foreign-alloc 'iup-cffi::ihandle :initial-contents children :null-terminated-p t)))
     (unwind-protect
 	 (iup-cffi::%iup-vbox-v array)
       (foreign-free array))))
 
+
+
+
 (defun attr (handle attr)
   (iup-cffi::%iup-get-attribute handle (symbol-name attr)))
 
 (defun (setf attr) (new-value handle attr)
-  (iup-cffi::%iup-set-str-attribute handle (symbol-name attr) (or new-value (cffi:null-pointer))))
+  (if (typep new-value 'string)
+      (iup-cffi::%iup-set-str-attribute handle attr (or new-value (cffi:null-pointer)))
+      ;; FIXME else it's a handle???:
+      ;; note: in the source code for IUP an internal function check for a is this pointer a handle by tesing the first 4 bytes
+      (iup-cffi::%iup-set-attribute-handle handle attr (or new-value (cffi:null-pointer)))))
 
-(defun apply-attributes (handle attributes)
-  (loop for (key value) on attributes by #'cddr
-	do (iup-cffi::%iup-set-str-attribute
-	    handle
-	    (symbol-name key)
-	    (or value (cffi:null-pointer)))))
+(defun set-attrs (handle attrs)	;TODO make into (setf attrs)?
+  (loop for (attr value) on attrs by #'cddr
+	do (progn
+	     (format t "~S,~S~%" attr value)
+	     (setf (attr handle attr) value))))
 
-(defun multi-line (&rest attributes &key &allow-other-keys)
+(defun multi-line (&rest attrs &key &allow-other-keys)
   (let ((handle (iup-cffi::%iup-multi-line (cffi:null-pointer))))
-    (apply-attributes handle attributes)
+    (set-attrs handle attrs)
     handle))
 
-(defun dialog (child &rest attributes &key &allow-other-keys)
+(defun dialog (child &rest attrs &key &allow-other-keys)
   (let ((handle (iup-cffi::%iup-dialog child)))
-    (apply-attributes handle attributes)
+    (set-attrs handle attrs)
     handle))
 
-;;; some controls have attributes that can be set at creation only e.g. IupDial
-;;; some attributes are write only
-;;; some attributes are read only
+(defun item (&rest attrs &key &allow-other-keys)
+  (let ((handle (iup-cffi::%iup-item (cffi:null-pointer) (cffi:null-pointer))))
+    (set-attrs handle attrs)
+    handle))
+
+(defun submenu (menu &rest attrs &key &allow-other-keys)
+  (let ((handle (iup-cffi::%iup-submenu (cffi:null-pointer) menu)))
+    (set-attrs handle attrs)
+    handle))
+
+(alias 'separator #'iup-cffi::%iup-separator)
+
+;;; some controls have attrs that can be set at creation only e.g. IupDial
+;;; some attrs are write only
+;;; some attrs are read only
 ;;; some are not inheritable (maybe not applicable for Lisp binding?)
 ;;; attribute names have no spacing: ARROWIMAGEHIGHLIGHT -- convert to :arrow-image-highlight?
 

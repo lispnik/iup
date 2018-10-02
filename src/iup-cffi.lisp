@@ -29,19 +29,28 @@
 (defmethod translate-to-foreign (value (type ihandle))
   (or value (null-pointer)))
 
-(define-foreign-type attr-name ()
-  ()
-  (:actual-type :string)
-  (:simple-parser attr-name))
+;; (define-foreign-type attr-name ()
+;;   ()
+;;   (:actual-type :string)
+;;   (:simple-parser attr-name))
 
-(defmethod translate-from-foreign (value (type attr-name))
-  (unless (null-pointer-p value)
-    (make-keyword value)))
+;; (defmethod translate-from-foreign (value (type attr-name))
+;;   (unless (null-pointer-p value)
+;;     (make-keyword value)))
 
-(defmethod translate-to-foreign (value (type attr-name))
-  (if value
-      (symbol-name value)
-      (null-pointer)))
+;; (defmethod translate-to-foreign (value (type attr-name))
+;;   (call-next-method (symbol-name value)))
+
+(defun attr-name-from-c (value)
+  (if (null-pointer-p value) nil value))
+
+(defun attr-name-to-c (value)
+  (if value (symbol-name value) (null-pointer)))
+
+(defctype attr-name
+    (:wrapper :string
+     :from-c attr-name-from-c
+     :to-c attr-name-to-c))
 
 (defcfun (%iup-open "IupOpen") :int
   (argv :pointer)
@@ -135,7 +144,7 @@
 
 (defcfun (%iup-reset-attribute "IupResetAttribute") :void
   (handle ihandle)
-  (name :string))
+  (name attr-name))
 
 ;; int       IupGetAllAttributes(Ihandle* ih, char** names, int n);
 ;; Ihandle*  IupSetAtt(const char* handle_name, Ihandle* ih, const char* name, ...);
@@ -144,16 +153,16 @@
 
 (defcfun (%iup-set-str-attribute "IupSetStrAttribute") :void
   (handle ihandle)
-  (name :string)
+  (name attr-name)
   (value :string))
 
 (defcfun (%iup-get-attribute "IupGetAttribute") :string
   (handle ihandle)
-  (name :string))
+  (name attr-name))
 
 (defcfun (%iup-set-str-attribute-id "IupSetStrAttributeId") :void
   (handle ihandle)
-  (name :string)
+  (name attr-name)
   (id :int)
   (value :string))
 
@@ -192,7 +201,12 @@
 ;; int       IupGetAllDialogs(char** names, int n);
 ;; char*     IupGetName      (Ihandle* ih);
 
-;; void      IupSetAttributeHandle(Ihandle* ih, const char* name, Ihandle* ih_named);
+
+(defcfun (%iup-set-attribute-handle "IupSetAttributeHandle") :void
+  (handle ihandle)
+  (name attr-name)
+  (other-handle ihandle))
+
 ;; Ihandle*  IupGetAttributeHandle(Ihandle* ih, const char* name);
 ;; void      IupSetAttributeHandleId(Ihandle* ih, const char* name, int id, Ihandle* ih_named);
 ;; Ihandle*  IupGetAttributeHandleId(Ihandle* ih, const char* name, int id);
@@ -269,11 +283,18 @@
 ;; Ihandle*  IupImageRGB   (int width, int height, const unsigned char *pixmap);
 ;; Ihandle*  IupImageRGBA  (int width, int height, const unsigned char *pixmap);
 
-;; Ihandle*  IupItem       (const char* title, const char* action);
-;; Ihandle*  IupSubmenu    (const char* title, Ihandle* child);
-;; Ihandle*  IupSeparator  (void);
-;; Ihandle*  IupMenu       (Ihandle* child, ...);
-;; Ihandle*  IupMenuv      (Ihandle* *children);
+(defcfun (%iup-item "IupItem") ihandle
+  (title :string)
+  (action :string))
+
+(defcfun (%iup-separator "IupSeparator") ihandle)
+
+(defcfun (%iup-submenu "IupSubmenu") ihandle
+  (title :string)
+  (menu ihandle))
+
+(defcfun (%iup-menu-v "IupMenuv") ihandle
+  (children :pointer))
 
 (defcfun (%iup-button "IupButton") ihandle
   (title :string)
