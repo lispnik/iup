@@ -9,6 +9,10 @@
       (setf (attr dlg :usersize) nil)
       (main-loop))))
 
+(cffi:defcallback exit-cb :int ((handle iup-cffi::ihandle))
+  (declare (ignore handle))
+  -3)
+
 (defun simple-notepad-3-2 ()
   (with-iup
     (let* ((text (multi-line :expand "YES"))
@@ -20,11 +24,13 @@
 	   (menu (menu submenu))
 	   (vbox (vbox text))
 	   (dlg (dialog vbox :title "Simple Notepad" :size "QUARTERxQUARTER" :menu menu)))
-      ;;   IupSetCallback(item_exit, "ACTION", (Icallback)exit_cb);
+;;      (iup-cffi::%iup-set-callback item-exit :action (callback exit-cb))
+      (iup-cffi::%iup-set-callback item-exit :action (cffi:callback exit-cb))
       (show-xy dlg +center+ +center+)
       (setf (attr dlg :usersize) nil)
       (main-loop))))
 
+(lambda (handle))
 #+nil
 (sb-int:with-float-traps-masked
     (:divide-by-zero)

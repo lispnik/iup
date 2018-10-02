@@ -11,6 +11,11 @@
 
 (use-foreign-library iup)
 
+;; #define IUP_IGNORE    -1
+;; #define IUP_DEFAULT   -2
+;; #define IUP_CLOSE     -3
+;; #define IUP_CONTINUE  -4
+
 (defconstant %iup-error 1)
 (defconstant %iup-noerror 0)
 (defconstant %iup-opened -1)
@@ -189,7 +194,12 @@
 ;; Ihandle*  IupNextField    (Ihandle* ih);
 
 ;; Icallback IupGetCallback (Ihandle* ih, const char *name);
-;; Icallback IupSetCallback (Ihandle* ih, const char *name, Icallback func);
+
+(defcfun (%iup-set-callback "IupSetCallback") :pointer
+  (handle ihandle)
+  (name attr-name)
+  (func :pointer))
+
 ;; Ihandle*  IupSetCallbacks(Ihandle* ih, const char *name, Icallback func, ...);
 
 ;; Icallback IupGetFunction(const char *name);

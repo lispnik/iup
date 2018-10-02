@@ -35,13 +35,13 @@
   `(setf (fdefinition ,target) ,source))
 
 (defconstant +center+ #xffff)
-(defconstant +left+ #xffff)
-(defconstant +right+ #xffff)
-(defconstant +mousepos+ #xffff)
-(defconstant +current+ #xffff)
-(defconstant +centerparent+ #xffff)
-(defconstant +top+ #xffff)
-(defconstant +bottom+ #xffff)
+(defconstant +left+ #xfffe)
+(defconstant +right+ #xffd)
+(defconstant +mousepos+ #xfffc)
+(defconstant +current+ #xfffb)
+(defconstant +centerparent+ #xfffa)
+(defconstant +top+ +left+)
+(defconstant +bottom+ +right+)
 
 (defun open ()
   (let ((ret (iup-cffi::%iup-open (cffi:null-pointer) (cffi:null-pointer))))
@@ -77,8 +77,6 @@
 	 (iup-cffi::%iup-vbox-v array)
       (foreign-free array))))
 
-
-
 (defun attr (handle attr)
   (iup-cffi::%iup-get-attribute handle (symbol-name attr)))
 
@@ -97,20 +95,16 @@
 	finally (return handle)))
 
 (defun multi-line (&rest attrs &key &allow-other-keys)
-  (let ((handle (iup-cffi::%iup-multi-line (cffi:null-pointer))))
-    (apply-attrs handle attrs)))
+  (apply-attrs (iup-cffi::%iup-multi-line (cffi:null-pointer)) attrs))
 
 (defun dialog (child &rest attrs &key &allow-other-keys)
-  (let ((handle (iup-cffi::%iup-dialog child)))
-    (apply-attrs handle attrs)))
+  (apply-attrs (iup-cffi::%iup-dialog child) attrs))
 
 (defun item (&rest attrs &key &allow-other-keys)
-  (let ((handle (iup-cffi::%iup-item (cffi:null-pointer) (cffi:null-pointer))))
-    (apply-attrs handle attrs)))
+  (apply-attrs (iup-cffi::%iup-item (cffi:null-pointer) (cffi:null-pointer)) attrs))
 
 (defun submenu (menu &rest attrs &key &allow-other-keys)
-  (let ((handle (iup-cffi::%iup-submenu (cffi:null-pointer) menu)))
-    (apply-attrs handle attrs)))
+  (apply-attrs (iup-cffi::%iup-submenu (cffi:null-pointer) menu) attrs))
 
 (alias 'separator #'iup-cffi::%iup-separator)
 
