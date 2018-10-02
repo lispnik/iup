@@ -23,3 +23,8 @@
        (%iup-open (cffi:null-pointer) (cffi:null-pointer))
        (%iup-image-lib-open))
   (%iup-close))
+
+(in-package #:iup)
+
+(with-iup
+  (let ((multi-text (multi-text )))))

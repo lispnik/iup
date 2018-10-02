@@ -87,20 +87,31 @@
 ;; Ihandle*  IupGetDialogChild(Ihandle* ih, const char* name);
 ;; int       IupReparent     (Ihandle* ih, Ihandle* new_parent, Ihandle* ref_child);
 
-;; int       IupPopup         (Ihandle* ih, int x, int y);
-;; int       IupShow          (Ihandle* ih);
-;; int       IupShowXY        (Ihandle* ih, int x, int y);
-;; int       IupHide          (Ihandle* ih);
-;; int       IupMap           (Ihandle* ih);
-;; void      IupUnmap         (Ihandle* ih);
+(defcfun (%iup-popup "IupPopup") :int
+  (handle ihandle)
+  (x :int)
+  (y :int))
+
+(defcfun (%iup-show "IupShow") :int
+  (handle ihandle))
+
+(defcfun (%iup-show-xy "IupShowXY") :int
+  (handle ihandle))
+
+(defcfun (%iup-hide "IupHide") :int
+  (handle ihandle))
+
+(defcfun (%iup-map "IupMap") :int
+  (handle ihandle))
+
+(defcfun (%iup-unmap "IupUnmap") :int
+  (handle ihandle))
 
 ;; void      IupResetAttribute(Ihandle* ih, const char* name);
 ;; int       IupGetAllAttributes(Ihandle* ih, char** names, int n);
 ;; Ihandle*  IupSetAtt(const char* handle_name, Ihandle* ih, const char* name, ...);
 ;; Ihandle*  IupSetAttributes (Ihandle* ih, const char *str);
 ;; char*     IupGetAttributes (Ihandle* ih);
-
-;; void      IupSetAttribute   (Ihandle* ih, const char* name, const char* value);
 
 (defcfun (%iup-set-str-attribute "IupSetStrAttribute") :void
   (handle ihandle)
@@ -231,19 +242,44 @@
 ;; Ihandle*  IupMenu       (Ihandle* child, ...);
 ;; Ihandle*  IupMenuv      (Ihandle* *children);
 
-;; Ihandle*  IupButton     (const char* title, const char* action);
-;; Ihandle*  IupFlatButton (const char* title);
-;; Ihandle*  IupFlatToggle (const char* title);
-;; Ihandle*  IupDropButton (Ihandle* dropchild);
-;; Ihandle*  IupFlatLabel  (const char* title);
-;; Ihandle*  IupFlatSeparator(void);
-;; Ihandle*  IupCanvas(const char* action);
-;; Ihandle*  IupDialog     (Ihandle* child);
-;; Ihandle*  IupUser       (void);
-;; Ihandle*  IupLabel      (const char* title);
-;; Ihandle*  IupList       (const char* action);
-;; Ihandle*  IupText       (const char* action);
-;; Ihandle*  IupMultiLine  (const char* action);
+(defcfun (%iup-button "IupButton") ihandle
+  (title :string)
+  (action :string))
+
+(defcfun (%iup-flat-button "IupFlatButton") ihandle
+  (title :string))
+
+(defcfun (%iup-flat-toggle "IupFlatToggle") ihandle
+  (title :string))
+
+(defcfun (%iup-drop-button "IupDropButton") ihandle
+  (drop-child ihandle))
+
+(defcfun (%iup-flat-label "IupFlatLabel") ihandle
+  (title :string))
+
+(defcfun (%iup-flat-separator "IupFlatSeparator") ihandle)
+
+(defcfun (%iup-canvas "IupCanvas") ihandle
+  (action :string))
+
+(defcfun (%iup-dialog "IupDialog") ihandle
+  (child ihandle))
+
+(defcfun (%iup-user "IupUser") ihandle)
+
+(defcfun (%iup-label "IupLabel") ihandle
+  (title :string))
+
+(defcfun (%iup-list "IupList") ihandle
+  (action :string))
+
+(defcfun (%iup-text "IupText") ihandle
+  (action :string))
+
+(defcfun (%iup-multi-line "IupMultiLine") ihandle
+  (action :string))
+
 ;; Ihandle*  IupToggle     (const char* title, const char* action);
 ;; Ihandle*  IupTimer      (void);
 ;; Ihandle*  IupClipboard  (void);

@@ -13,17 +13,27 @@
 
 (in-package #:iup)
 
-(define-condition iup-error () ())
+(defmacro alias (target source)
+  `(setf (fdefinition ,target) ,source))
 
 (defun open ()
   (let ((ret (iup-cffi::%iup-open (cffi:null-pointer) (cffi:null-pointer))))
     (when (= ret iup-cffi::%iup-error)
       (error 'iup-error))))
 
-(setf (fdefinition 'close) #'iup-cffi::%iup-close)
+(alias 'close #'iup-cffi::%iup-close)
 
-(setf (fdefinition 'version) #'iup-cffi::%iup-version)
-(setf (fdefinition 'version-number) #'iup-cffi::%iup-version-number)
+(defmacro with-iup (&body body)
+  `(progn
+     (iup:open)
+     (unwind-protect
+	 (progn
+	   ,@body)
+       (iup:close))))
+
+(alias 'image-lib-open #'iup-cffi::%iup-image-lib-open)
+(alias 'version #'iup-cffi::%iup-version)
+(alias 'version-number #'iup-cffi::%iup-version-number)
 
 (defun vbox (&rest children)
   (let ((array (foreign-alloc 'ihandle :initial-contents children :null-terminated-p t)))
@@ -31,10 +41,18 @@
 	 (iup-cffi::%iup-vbox-v array)
       (foreign-free array))))
 
-(defun iup-label (&rest attributes &key &allow-other-keys)
-  (iup-cffi::%iup-label (cffi:null-pointer))
+(defun apply-attributes (handle attributes)
+  (loop for (key value) on attributes by #'cddr
+	do (iup-cffi::%iup-set-str-attribute
+	    handle
+	    (symbol-name key)
+	    (or value (cffi:null-pointer)))))
 
-)
+(defun multi-line (&rest attributes &key &allow-other-keys)
+  (let ((handle (iup-cffi::%iup-multi-line (cffi:null-pointer))))
+    (apply-attributes handle attributes)))
+
+(defmacro defcontrol ())
 
 ;;; some controls have attributes that can be set at creation only e.g. IupDial
 ;;; some attributes are write only
