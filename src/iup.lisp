@@ -79,42 +79,38 @@
 
 
 
-
 (defun attr (handle attr)
   (iup-cffi::%iup-get-attribute handle (symbol-name attr)))
 
 (defun (setf attr) (new-value handle attr)
   (if (typep new-value 'string)
       (iup-cffi::%iup-set-str-attribute handle attr (or new-value (cffi:null-pointer)))
-      ;; FIXME else it's a handle???:
-      ;; note: in the source code for IUP an internal function check for a is this pointer a handle by tesing the first 4 bytes
+      ;; FIXME else it's a handle??? note: in the source code for IUP
+      ;; an internal function check for a is this pointer a handle by
+      ;; tesing the first 4 bytes
       (iup-cffi::%iup-set-attribute-handle handle attr (or new-value (cffi:null-pointer)))))
 
-(defun set-attrs (handle attrs)	;TODO make into (setf attrs)?
+(defun apply-attrs (handle attrs)	;TODO make into (setf attrs)?
   (loop for (attr value) on attrs by #'cddr
 	do (progn
-	     (format t "~S,~S~%" attr value)
-	     (setf (attr handle attr) value))))
+	     (setf (attr handle attr) value))
+	finally (return handle)))
 
 (defun multi-line (&rest attrs &key &allow-other-keys)
   (let ((handle (iup-cffi::%iup-multi-line (cffi:null-pointer))))
-    (set-attrs handle attrs)
-    handle))
+    (apply-attrs handle attrs)))
 
 (defun dialog (child &rest attrs &key &allow-other-keys)
   (let ((handle (iup-cffi::%iup-dialog child)))
-    (set-attrs handle attrs)
-    handle))
+    (apply-attrs handle attrs)))
 
 (defun item (&rest attrs &key &allow-other-keys)
   (let ((handle (iup-cffi::%iup-item (cffi:null-pointer) (cffi:null-pointer))))
-    (set-attrs handle attrs)
-    handle))
+    (apply-attrs handle attrs)))
 
 (defun submenu (menu &rest attrs &key &allow-other-keys)
   (let ((handle (iup-cffi::%iup-submenu (cffi:null-pointer) menu)))
-    (set-attrs handle attrs)
-    handle))
+    (apply-attrs handle attrs)))
 
 (alias 'separator #'iup-cffi::%iup-separator)
 
