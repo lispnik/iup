@@ -1,5 +1,12 @@
 (in-package #:iup)
 
+(defmacro define-callback (name return-type args)
+  (let ((name (gensym ))))
+  `(cffi:defcallback `,(gensym ,(symbol-name name))))
+
+(define-callback action :int ((handle iup-cffi::ihandle)))
+
+
 (defmacro idle-action (() &body body)
   `(cffi:get-callback
     (cffi:defcallback ,(gensym) :int ()
@@ -9,6 +16,9 @@
   `(cffi:get-callback
     (cffi:defcallback ,(gensym) :int ((,c :int))
       ,@body)))
+
+(type-of (cffi:defcallback #:frapc :int ((c :int))
+   t))
 
 (defmacro defcommon-callback (name)
   `(defmacro ,name ((handle) &body body)
@@ -27,9 +37,10 @@
 (defcommon-callback leavewindow-callback)
 
 (defmacro focus-callback ((handle focus) &body body)
-  `(cffi:get-callback
-    (cffi:defcallback ,(gensym) :int ((,handle iup-cffi::ihandle) (,focus :boolean))
-      ,@body)))
+`(cffi:defcallback ,(gensym) :int ((,handle iup-cffi::ihandle) (,focus :boolean))
+   ,@body))
+
+(focus-callback (handle focus) 123)
 
 (defmacro tabchange-callback ((handle new-tab-handle old-tab-handle) &body body)
   `(cffi:get-callback

@@ -3,11 +3,12 @@
 (defun simple-notepad-3-1 ()
   (with-iup
     (let* ((text (multi-line :expand "YES"))
-	   (vbox (vbox text))
+	   (vbox (vbox (list text)))
 	   (dlg (dialog vbox :title "Simple Notepad" :size "QUARTERxQUARTER")))
       (show-xy dlg +center+ +center+)
-      (setf (attr dlg :usersize) nil)
+;;      (setf (attr dlg :usersize) nil)
       (main-loop))))
+
 
 (cffi:defcallback exit-cb :int ((handle iup-cffi::ihandle))
   (declare (ignore handle))
@@ -71,7 +72,22 @@
 	  (open-file dialog file))
 	(main-loop)))))
 
+(defun simple-web-browser ()
+  (with-iup
+    (image-lib-open)
+    (iup-web:web-browser-open)
+    (let* ((web-browser (iup-web:web-browser))
+	   (vbox (vbox (list web-browser)))
+	   (dlg (dialog vbox :size "HALFxHALF")))
+      (show-xy dlg +center+ +center+)
+      (main-loop))))
+
 #+nil
 (sb-int:with-float-traps-masked
     (:divide-by-zero)
-  (simple-notepad))
+  (simple-notepad-3-1))
+
+#+nil
+(sb-int:with-float-traps-masked
+    (:divide-by-zero)
+  (simple-web-browser))

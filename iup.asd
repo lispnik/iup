@@ -1,17 +1,55 @@
-#-:asdf3.1 (error "IUP requires ASDF 3")
-
-(in-package #:asdf-user)
+#-asdf3.2 (error "IUP requires ASDF 3")
 
 (defsystem #:iup
-  :description "Lua-like CFFI bindings to IUP Portable User Interface library"
+  :description "CFFI bindings to the IUP Portable User Interface library"
   :author "Matthew Kennedy <burnsidemk@gmail.com>"
-  :licence "LLGPL"
+  :licence "MIT"
   :version (:read-file-line "version.txt")
-  :components
-  ((:module "src"
-    :serial t
-    :components ((:file "iup-cffi")
-		 (:file "iup"))))
-  :in-order-to ((test-op (test-op #:iup-test)))
+  :serial t
+  :pathname "src/"
+  :components ((:file "iup-cffi")
+	       (:file "iup"))
   :depends-on (#:alexandria
 	       #:cffi))
+
+(defsystem #:iup/plot
+  :serial t
+  :pathname "srcplot/"
+  :components ((:file "plot-cffi")
+	       (:file "plot"))
+  :depends-on (#:alexandria
+	       #:cffi
+	       #:iup))
+
+(defsystem #:iup/mglplot
+  :serial t
+  :pathname "srcmglplot/"
+  :components ((:file "mglplot-cffi")
+	       (:file "mglplot"))
+  :depends-on (#:alexandria
+	       #:cffi
+	       #:iup))
+
+(defsystem #:iup/web
+  :serial t
+  :pathname "srcweb/"
+  :components ((:file "web-cffi")
+	       (:file "web"))
+  :depends-on (#:alexandria
+	       #:cffi
+	       #:iup))
+
+(defsystem #:iup/scintilla
+  :serial t
+  :pathname "srcscintilla/"
+  :components ((:file "scintilla-cffi")
+	       (:file "scintilla"))
+  :depends-on (#:alexandria
+	       #:cffi
+	       #:iup))
+
+
+;;; gl
+;;; glcontrols
+;;; im
+;;; cd
