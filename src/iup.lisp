@@ -17,15 +17,25 @@
 	   #:version-number
 	   #:show-xy
 	   #:vbox
+	   #:hbox
+
 	   #:label
 
 	   #:item
 	   #:submenu
 	   #:menu
+	   #:button
 	   #:separator
 
 	   #:with-iup
-	   #:attr)
+	   #:attr
+
+
+	   #:config
+	   #:config-load
+	   #:config-save
+	   #:config-dialog-show
+	   #:config-dialog-closed)
   (:shadow #:open
 	   #:close))
 
@@ -71,10 +81,19 @@
 	 (iup-cffi::%iup-menu-v array)
       (foreign-free array))))
 
-(defun vbox (&rest children)
+(defun button (&rest attrs &key &allow-other-keys)
+  (apply-attrs (iup-cffi::%iup-button (cffi:null-pointer) (cffi:null-pointer)) attrs))
+
+(defun vbox (children &rest attrs &key &allow-other-keys)
   (let ((array (foreign-alloc 'iup-cffi::ihandle :initial-contents children :null-terminated-p t)))
     (unwind-protect
-	 (iup-cffi::%iup-vbox-v array)
+	 (apply-attrs (iup-cffi::%iup-vbox-v array) attrs)
+      (foreign-free array))))
+
+(defun hbox (children &rest attrs &key &allow-other-keys)
+  (let ((array (foreign-alloc 'iup-cffi::ihandle :initial-contents children :null-terminated-p t)))
+    (unwind-protect
+	 (apply-attrs (iup-cffi::%iup-hbox-v array) attrs)
       (foreign-free array))))
 
 (defun attr (handle attr)
@@ -108,6 +127,9 @@
 
 (alias 'separator #'iup-cffi::%iup-separator)
 
+(defun label (&rest attrs &key &allow-other-keys)
+  (apply-attrs (iup-cffi::%iup-label (cffi:null-pointer)) attrs))
+
 ;;; some controls have attrs that can be set at creation only e.g. IupDial
 ;;; some attrs are write only
 ;;; some attrs are read only
@@ -120,3 +142,12 @@
 
 ;;; callbacks are varied
 
+
+(defun config (&rest attrs &key &allow-other-keys)
+  (apply-attrs (iup-cffi::%iup-config) attrs))
+
+(alias 'config-load #'iup-cffi::%iup-config-load)
+(alias 'config-save #'iup-cffi::%iup-config-save)
+
+(alias 'config-dialog-show #'iup-cffi::%iup-config-dialog-show)
+(alias 'config-dialog-closed #'iup-cffi::%iup-config-dialog-closed)
