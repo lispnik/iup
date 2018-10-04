@@ -9,6 +9,7 @@
   :pathname "src/"
   :components ((:file "packages")
 	       (:file "iup-cffi")
+	       (:file "classes")
 	       (:file "iup"))
   :depends-on (#:alexandria
 	       #:cffi))

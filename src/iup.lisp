@@ -106,53 +106,6 @@
 (alias 'get-previous-field #'iup-cffi::%iup-get-previous-field)
 (alias 'get-next-field #'iup-cffi::%iup-get-next-field)
 
-(defun get-all-classes ()
-  (let* ((max-n (iup-cffi::%iup-get-all-classes (cffi:null-pointer) 0))
-	 (array (cffi:foreign-alloc :pointer :initial-element (cffi:null-pointer) :count max-n :null-terminated-p t)))
-    (unwind-protect
-	 (progn
-	   (iup-cffi::%iup-get-all-classes array max-n)
-	   (loop for i below max-n
-		 for ref = (cffi:mem-aref array :pointer i)
-		 until (cffi:null-pointer-p ref)
-		 collect (cffi:foreign-string-to-lisp ref)))
-      (cffi:foreign-free array))))
-
-(defun get-class-attributes (classname)
-    (let* ((max-n (iup-cffi::%iup-get-class-attributes classname (cffi:null-pointer) 0))
-	   (array (cffi:foreign-alloc :pointer :initial-element (cffi:null-pointer) :count max-n :null-terminated-p t)))
-    (unwind-protect
-	 (progn
-	   (iup-cffi::%iup-get-class-attributes classname array max-n)
-	   (loop for i below max-n
-		 for ref = (cffi:mem-aref array :pointer i)
-		 until (cffi:null-pointer-p ref)
-		 collect (make-keyword (cffi:foreign-string-to-lisp ref))))
-      (foreign-free array))))
-
-(defun get-class-callbacks (classname)
-    (let* ((max-n (iup-cffi::%iup-get-class-callbacks classname (cffi:null-pointer) 0))
-	   (array (cffi:foreign-alloc :pointer :initial-element (cffi:null-pointer) :count max-n :null-terminated-p t)))
-    (unwind-protect
-	 (progn
-	   (iup-cffi::%iup-get-class-callbacks classname array max-n)
-	   (loop for i below max-n
-		 for ref = (cffi:mem-aref array :pointer i)
-		 until (cffi:null-pointer-p ref)
-		 collect (make-keyword (cffi:foreign-string-to-lisp ref))))
-      (foreign-free array))))
-
-(defun build-attribute-and-callback-database (pathname)
-  (with-output-to-file (stream pathname :if-exists :supersede)
-    (let ((database (with-iup
-		       (mapcar #'(lambda (classname)
-				   (cl:list :classname classname
-					    :attributes (get-class-attributes classname)
-					    :callbacks (get-class-attributes classname)))
-			       (get-all-classes)))))
-      (write database :stream stream :pretty t :right-margin 90)
-      (values))))
-
 (defattrfun fill () (iup-cffi::%iup-fill))
 (defattrfun space () (iup-cffi::%iup-space))
 (defattrfun radio (child) (iup-cffi::%iup-radio child))
