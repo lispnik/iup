@@ -1,8 +1,3 @@
-(defpackage #:iup-cffi
-  (:use #:common-lisp
-	#:cffi
-	#:alexandria))
-
 (in-package #:iup-cffi)
 
 (define-foreign-library iup
@@ -56,12 +51,11 @@
 
 (defcfun (%iup-close "IupClose") :void)
 (defcfun (%iup-image-lib-open "IupImageLibOpen") :void)
-
 (defcfun (%iup-main-loop "IupMainLoop") :int)
 (defcfun (%iup-loop-step "IupLoopStep") :int)
 (defcfun (%iup-loop-step-wait "IupLoopStepWait") :int)
 (defcfun (%iup-main-loop-level "IupMainLoopLevel") :int)
-(defcfun (%iup-fush "IupFlush") :void)
+(defcfun (%iup-flush "IupFlush") :void)
 (defcfun (%iup-exit-loop "IupExitLoop") :void)
 
 (defcfun (%iup-record-input "IupRecordInput") :int
@@ -90,8 +84,6 @@
 (defcfun (%iup-version "IupVersion") :string)
 (defcfun (%iup-version-date "IupVersionDate") :string)
 (defcfun (%iup-version-number "IupVersionNumber") :int)
-
-
 (defcfun (%iup-destroy "IupDestroy") ihandle)
 (defcfun (%iup-detach "IupDetach") ihandle)
 
@@ -163,7 +155,7 @@
   (handle ihandle)
   (name attr-name))
 
-(defcfun (%iup-reset-attribute "IupGetAllAttributes") :int
+(defcfun (%iup-get-all-attributes "IupGetAllAttributes") :int
   (handle ihandle)
   (names :pointer)
   (n :int))
@@ -185,7 +177,7 @@
 
 (defcfun (%iup-set-str-attribute-id-2 "IupSetStrAttributeId2") :void
   (handle ihandle)
-  (name :int)
+  (name attr-name)
   (line :int)
   (column :int)
   (value :string))
@@ -196,7 +188,6 @@
 
 (defcfun (%iup-get-global "IupGetGlobal") :string
   (name attr-name))
-
 
 (defcfun (%iup-set-focus "IupSetFocus") ihandle
   (handle ihandle))
@@ -378,7 +369,7 @@
   (title :string)
   (action :string))
 
-(defcfun (%iup-timer "IupToggle") ihandle)
+(defcfun (%iup-timer "IupTimer") ihandle)
 (defcfun (%iup-clipboard "IupClipboard") ihandle)
 (defcfun (%iup-progress-bar "IupProgressBar") ihandle)
 
@@ -443,7 +434,7 @@
   (parent ihandle)
   (message :string))
 
-(defcfun (%iup-message-error "IupMessageAlarm") :int
+(defcfun (%iup-message-alarm "IupMessageAlarm") :int
   (parent ihandle)
   (title :string)
   (message :string)
@@ -532,19 +523,6 @@
 ;; #define iup_isbutton4(_s)  (_s[8]=='4')
 ;; #define iup_isbutton5(_s)  (_s[9]=='5')
 
-;; /* Old definitions for backward compatibility */
-;; #define isshift     iup_isshift
-;; #define iscontrol   iup_iscontrol
-;; #define isbutton1   iup_isbutton1
-;; #define isbutton2   iup_isbutton2
-;; #define isbutton3   iup_isbutton3
-;; #define isdouble    iup_isdouble
-;; #define isalt       iup_isalt
-;; #define issys       iup_issys
-;; #define isbutton4   iup_isbutton4
-;; #define isbutton5   iup_isbutton5
-
-
 ;; /************************************************************************/
 ;; /*                      Pre-Defined Masks                               */
 ;; /************************************************************************/
@@ -556,13 +534,6 @@
 ;; #define IUP_MASK_UFLOATCOMMA       "(/d+/,?/d*|/,/d+)"
 ;; #define IUP_MASK_INT          "[+/-]?/d+"
 ;; #define IUP_MASK_UINT               "/d+"
-
-;; /* Old definitions for backward compatibility */
-;; #define IUPMASK_FLOAT     IUP_MASK_FLOAT
-;; #define IUPMASK_UFLOAT    IUP_MASK_UFLOAT
-;; #define IUPMASK_EFLOAT    IUP_MASK_EFLOAT
-;; #define IUPMASK_INT	      IUP_MASK_INT
-;; #define IUPMASK_UINT      IUP_MASK_UINT
 
 
 ;; /************************************************************************/
@@ -588,30 +559,6 @@
 ;; /*                   Record Input Modes                                 */
 ;; /************************************************************************/
 ;; enum {IUP_RECBINARY, IUP_RECTEXT};
-
-
-;; /************************************************************************/
-;; /*              Replacement for the WinMain in Windows,                 */
-;; /*        this allows the application to start from "main".             */
-;; /*        Used only for Watcom.                                         */
-;; /************************************************************************/
-;; #if defined (__WATCOMC__)
-;; #ifdef __cplusplus
-;; extern "C" {
-;; int IupMain (int argc, char** argv); /* In C++ we have to declare the prototype */
-;; }
-;; #endif
-;; #define main IupMain /* this is the trick for Watcom and MetroWerks */
-;; #endif
-
-
-
-
-
-
-
-
-
 
 ;;; iup_config.h
 

@@ -7,7 +7,8 @@
   :version (:read-file-line "version.txt")
   :serial t
   :pathname "src/"
-  :components ((:file "iup-cffi")
+  :components ((:file "packages")
+	       (:file "iup-cffi")
 	       (:file "iup"))
   :depends-on (#:alexandria
 	       #:cffi))
