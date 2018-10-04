@@ -237,3 +237,5 @@
 ;; typedef int    (*IFniid)(Ihandle*, int, int, double);  /* numericsetvalue_cb */
 
 ;; #endif
+
+(iup-cffi::%iup-get-all-attributes)

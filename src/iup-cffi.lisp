@@ -233,11 +233,26 @@
 ;; void      IupSetAttributeHandleId2(Ihandle* ih, const char* name, int lin, int col, Ihandle* ih_named);
 ;; Ihandle*  IupGetAttributeHandleId2(Ihandle* ih, const char* name, int lin, int col);
 
-;; char*     IupGetClassName(Ihandle* ih);
-;; char*     IupGetClassType(Ihandle* ih);
-;; int       IupGetAllClasses(char** names, int n);
-;; int       IupGetClassAttributes(const char* classname, char** names, int n);
-;; int       IupGetClassCallbacks(const char* classname, char** names, int n);
+(defcfun (%iup-get-class-name "IupGetClassName") :string
+  (handle ihandle))
+
+(defcfun (%iup-get-class-type "IupGetClassType") :string
+  (handle ihandle))
+
+(defcfun (%iup-get-all-classes "IupGetAllClasses") :int
+  (names :pointer)
+  (n :int))
+
+(defcfun (%iup-get-class-attributes "IupGetClassAttributes") :int
+  (classname :string)
+  (names :pointer)
+  (n :int))
+
+(defcfun (%iup-get-class-callbacks "IupGetClassCallbacks") :int
+  (classname :string)
+  (names :pointer)
+  (n :int))
+
 ;; void      IupSaveClassAttributes(Ihandle* ih);
 ;; void      IupCopyClassAttributes(Ihandle* src_ih, Ihandle* dst_ih);
 ;; void      IupSetClassDefaultAttribute(const char* classname, const char *name, const char* value);
