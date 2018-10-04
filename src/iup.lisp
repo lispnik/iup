@@ -144,7 +144,7 @@
 
 (defattrfun submenu (menu) (iup-cffi::%iup-submenu (cffi:null-pointer) menu))
 
-(defattrfun-children menu iup-cffi::%iup-vbox-v)
+(defattrfun-children menu iup-cffi::%iup-menu-v)
 
 (defattrfun button () (iup-cffi::%iup-button (cffi:null-pointer) (cffi:null-pointer)))
 (defattrfun flat-button () (iup-cffi::%iup-flat-button (cffi:null-pointer)))

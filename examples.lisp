@@ -2,40 +2,25 @@
 
 (defun simple-notepad-3-1 ()
   (with-iup
-    (let* ((text (multi-line :expand "YES"))
+    (let* ((text (print (multi-line :expand "YES")))
 	   (vbox (vbox (list text)))
 	   (dlg (dialog vbox :title "Simple Notepad" :size "QUARTERxQUARTER")))
       (show-xy dlg +center+ +center+)
 ;;      (setf (attr dlg :usersize) nil)
       (main-loop))))
 
-
-(cffi:defcallback exit-cb :int ((handle iup-cffi::ihandle))
-  (declare (ignore handle))
-  -3)
-
-(defun simple-notepad-3-2 ()
+(defun simple-notepad-3-1 ()
   (with-iup
-    (let* ((text (multi-line :expand "YES"))
-	   (item-open (item :title "Open"))
-	   (item-save-as (item :title "Save As"))
-	   (item-exit (item :title "Exit"))
-	   (file-menu (menu item-open item-save-as (separator) item-exit))
-	   (submenu (submenu file-menu :title "File"))
-	   (menu (menu submenu))
-	   (vbox (vbox text))
-	   (dlg (dialog vbox :title "Simple Notepad" :size "QUARTERxQUARTER" :menu menu)))
-;;      (iup-cffi::%iup-set-callback item-exit :action (callback exit-cb))
-      (iup-cffi::%iup-set-callback item-exit :action (cffi:callback exit-cb))
+    (let* ((text (print (multi-line :expand "YES")))
+	   (dlg (dialog text :title "Simple Notepad" :size "QUARTERxQUARTER")))
       (show-xy dlg +center+ +center+)
-      (setf (attr dlg :usersize) nil)
+;;      (setf (attr dlg :usersize) nil)
       (main-loop))))
 
 #+nil
 (sb-int:with-float-traps-masked
     (:divide-by-zero)
-  (simple-notepad-3-2))
-
+  (simple-notepad-3-1))
 
 ;;; simple_notepad.c
 
@@ -48,7 +33,7 @@
 	 (item-open (item :title "&Open...	Ctrl+O" :image "IUP_FileOpen"))
 	 (btn-open (button :image "IUP_FileOpen" :flat "YES" :tip "Open (Ctrl+O)" :canfocus "NO"))
 
-	 (file-menu (menu item-new item-open))
+	 (file-menu (menu (list item-new item-open)))
 	 (submenu-file (submenu file-menu :title "&File"))
 	 (menu (menu submenu-file))
 
@@ -81,11 +66,6 @@
 	   (dlg (dialog vbox :size "HALFxHALF")))
       (show-xy dlg +center+ +center+)
       (main-loop))))
-
-#+nil
-(sb-int:with-float-traps-masked
-    (:divide-by-zero)
-  (simple-notepad-3-1))
 
 #+nil
 (sb-int:with-float-traps-masked
