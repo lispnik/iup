@@ -30,19 +30,9 @@
 	   #:refresh
 	   #:refresh-children
 
-	   #:load
-	   #:load-buffer
-	   
 	   #:version
 	   #:version-date
 	   #:version-number
-
-	   #:set-language
-	   #:get-language
-	   #:set-language-string
-	   #:store-language-string
-	   #:get-language-string
-	   #:set-language-pack
 
 	   #:destroy
 	   #:detach
@@ -66,18 +56,80 @@
 	   #:unmap
 
 	   #:reset-attribute
-	   #:get-all-attributes
-	   
-	   #:vbox
-	   #:hbox
+	   ;; ...
 
-	   #:label
+	   #:set-focus
+	   #:get-focus
+	   #:previous-field
+	   #:next-field
+	   ;; ...
+
+	   #:fill
+	   #:space
+	   #:radio	
+	   #:vbox 
+	   #:zbox 
+	   #:hbox
+	   #:normalizer
+	   #:cbox
+	   #:sbox
+	   #:split
+	   #:scroll-box
+	   #:flat-scroll-box
+	   #:grid-box
+	   #:multi-box
+	   #:expander
+	   #:detach-box
+	   #:background-box
+
+	   #:frame
+	   #:flat-frame
+
+	   #:image
+	   #:image-rgb
+	   #:image-rgba
 
 	   #:item
 	   #:submenu
-	   #:menu
-	   #:button
 	   #:separator
+	   #:menu
+
+	   #:button
+	   #:flat-button
+	   #:flat-toggle
+	   #:drop-button
+	   #:flat-label
+	   #:flat-separator
+	   #:canvas
+	   #:dialog
+	   #:user
+	   #:label
+	   #:list
+	   #:list
+	   #:text
+	   #:multi-line
+	   #:toggle
+	   #:timer
+	   #:clipboard
+	   #:progress-bar
+	   #:val
+	   #:tabs
+	   #:flat-tabs
+	   #:tree
+	   #:link
+	   #:animated-label
+	   #:date-pick
+	   #:calendar
+	   #:colorbar
+	   #:gauge
+	   #:dial
+	   #:color-browser
+
+	   #:spin
+	   #:spin-box
+
+	   ;; ...
+
 
 
 	   #:config
@@ -131,11 +183,31 @@
       (error 'iup-error))))
 
 (alias 'close #'iup-cffi::%iup-close)
-(alias 'main-loop #'iup-cffi::%iup-main-loop)
-
 (alias 'image-lib-open #'iup-cffi::%iup-image-lib-open)
+
+(alias 'main-loop #'iup-cffi::%iup-main-loop)
+(alias 'loop-step #'iup-cffi::%iup-loop-step)
+(alias 'loop-step-wait #'iup-cffi::%iup-loop-step-wait)
+(alias 'main-loop-level #'iup-cffi::%iup-main-loop-level)
+(alias 'flush #'iup-cffi::%iup-flush)
+(alias 'exit-loop #'iup-cffi::%iup-exit-loop)
+
+(alias 'record-input #'iup-cffi::%iup-record-input)
+(alias 'play-input #'iup-cffi::%iup-play-input)
+
+(alias 'update #'iup-cffi::%iup-update)
+(alias 'update-children #'iup-cffi::%iup-update-children)
+(alias 'redraw #'iup-cffi::%iup-redraw)
+(alias 'refresh #'iup-cffi::%iup-refresh)
+(alias 'refresh-children #'iup-cffi::%iup-refresh-children)
+
+(alias 'play-input #'iup-cffi::%iup-play-input)
+(alias 'play-input #'iup-cffi::%iup-play-input)
+
 (alias 'version #'iup-cffi::%iup-version)
+(alias 'version-date #'iup-cffi::%iup-version-date)
 (alias 'version-number #'iup-cffi::%iup-version-number)
+
 (alias 'show-xy #'iup-cffi::%iup-show-xy)
 
 (defattrfun menu (children)
@@ -194,3 +266,9 @@
 ;;; some containers inherit from others (IupFlatFrame inheris from IupBackgroundBox
 
 ;;; callbacks are varied
+
+
+
+
+
+

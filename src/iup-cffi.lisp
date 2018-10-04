@@ -68,7 +68,7 @@
   (filename :string)
   (mode :int))
 
-(defcfun (%iup-record-input "IupPlayInput") :int
+(defcfun (%iup-play-input "IupPlayInput") :int
   (filename :string))
 
 (defcfun (%iup-update "IupUpdate") :void
@@ -87,36 +87,55 @@
 (defcfun (%iup-refresh-children "IupRefreshChildren") :void
   (handle ihandle))
 
-(defcfun (%iup-load "IupLoad") :string
-  (filename :string))
-
-(defcfun (%iup-load "IupLoadBuffer") :string
-  (filename :string))
-
 (defcfun (%iup-version "IupVersion") :string)
-(defcfun (%iup-date "IupVersionDate") :string)
+(defcfun (%iup-version-date "IupVersionDate") :string)
 (defcfun (%iup-version-number "IupVersionNumber") :int)
 
-;; void      IupSetLanguage   (const char *lng);
-;; char*     IupGetLanguage   (void);
-;; void      IupSetLanguageString(const char* name, const char* str);
-;; void      IupStoreLanguageString(const char* name, const char* str);
-;; char*     IupGetLanguageString(const char* name);
-;; void      IupSetLanguagePack(Ihandle* ih);
 
-;; void      IupDestroy      (Ihandle* ih);
-;; void      IupDetach       (Ihandle* child);
-;; Ihandle*  IupAppend       (Ihandle* ih, Ihandle* child);
-;; Ihandle*  IupInsert       (Ihandle* ih, Ihandle* ref_child, Ihandle* child);
-;; Ihandle*  IupGetChild     (Ihandle* ih, int pos);
-;; int       IupGetChildPos  (Ihandle* ih, Ihandle* child);
-;; int       IupGetChildCount(Ihandle* ih);
-;; Ihandle*  IupGetNextChild (Ihandle* ih, Ihandle* child);
-;; Ihandle*  IupGetBrother   (Ihandle* ih);
-;; Ihandle*  IupGetParent    (Ihandle* ih);
-;; Ihandle*  IupGetDialog    (Ihandle* ih);
-;; Ihandle*  IupGetDialogChild(Ihandle* ih, const char* name);
-;; int       IupReparent     (Ihandle* ih, Ihandle* new_parent, Ihandle* ref_child);
+(defcfun (%iup-destroy "IupDestroy") ihandle)
+(defcfun (%iup-detach "IupDetach") ihandle)
+
+(defcfun (%iup-append "IupAppend") ihandle
+  (handle ihandle)
+  (child ihandle))
+
+(defcfun (%iup-insert "IupInsert") ihandle
+  (handle ihandle)
+  (ref-child ihandle)
+  (child ihandle))
+
+(defcfun (%iup-get-child "IupGetChild") ihandle
+  (handle ihandle)
+  (pos :int))
+
+(defcfun (%iup-get-child-pos "IupGetChildPos") :int
+  (handle ihandle)
+  (child ihandle))
+
+(defcfun (%iup-get-child-count "IupGetChildCount") :int
+  (handle ihandle))
+
+(defcfun (%iup-get-next-child "IupGetNextChild")  ihandle
+  (handle ihandle)
+  (child ihandle))
+
+(defcfun (%iup-get-brother "IupGetBrother") ihandle
+  (handle ihandle))
+
+(defcfun (%iup-get-parent "IupGetParent") ihandle
+  (handle ihandle))
+
+(defcfun (%iup-get-dialog "IupGetDialog") ihandle
+  (handle ihandle))
+
+(defcfun (%iup-get-dialog-child "IupGetDialogChild") ihandle
+  (handle ihandle)
+  (name :string))
+
+(defcfun (%iup-reparent "IupReparent") :int
+  (handle ihandle)
+  (new-parent ihandle)
+  (ref-child ihandle))
 
 (defcfun (%iup-popup "IupPopup") :int
   (handle ihandle)
@@ -137,17 +156,17 @@
 (defcfun (%iup-map "IupMap") :int
   (handle ihandle))
 
-(defcfun (%iup-unmap "IupUnmap") :int
+(defcfun (%iup-unmap "IupUnmap") :void
   (handle ihandle))
 
 (defcfun (%iup-reset-attribute "IupResetAttribute") :void
   (handle ihandle)
   (name attr-name))
 
-;; int       IupGetAllAttributes(Ihandle* ih, char** names, int n);
-;; Ihandle*  IupSetAtt(const char* handle_name, Ihandle* ih, const char* name, ...);
-;; Ihandle*  IupSetAttributes (Ihandle* ih, const char *str);
-;; char*     IupGetAttributes (Ihandle* ih);
+(defcfun (%iup-reset-attribute "IupGetAllAttributes") :int
+  (handle ihandle)
+  (names :pointer)
+  (n :int))
 
 (defcfun (%iup-set-str-attribute "IupSetStrAttribute") :void
   (handle ihandle)
@@ -171,39 +190,46 @@
   (column :int)
   (value :string))
 
-;; char*  IupGetAttributeId2(Ihandle* ih, const char* name, int lin, int col);
-;; int    IupGetIntId2(Ihandle* ih, const char* name, int lin, int col);
-;; float  IupGetFloatId2(Ihandle* ih, const char* name, int lin, int col);
-;; double IupGetDoubleId2(Ihandle* ih, const char* name, int lin, int col);
-;; void   IupGetRGBId2(Ihandle* ih, const char* name, int lin, int col, unsigned char *r, unsigned char *g, unsigned char *b);
+(defcfun (%iup-set-str-global "IupSetStrGlobal") :void
+  (name attr-name)
+  (value :string))
 
-;; void      IupSetGlobal  (const char* name, const char* value);
-;; void      IupSetStrGlobal(const char* name, const char* value);
-;; char*     IupGetGlobal  (const char* name);
+(defcfun (%iup-get-global "IupGetGlobal") :string
+  (name attr-name))
 
-;; Ihandle*  IupSetFocus     (Ihandle* ih);
-;; Ihandle*  IupGetFocus     (void);
-;; Ihandle*  IupPreviousField(Ihandle* ih);  
-;; Ihandle*  IupNextField    (Ihandle* ih);
 
-;; Icallback IupGetCallback (Ihandle* ih, const char *name);
+(defcfun (%iup-set-focus "IupSetFocus") ihandle
+  (handle ihandle))
+
+(defcfun (%iup-get-focus "IupGetFocus") ihandle)
+
+(defcfun (%iup-get-previous-field "IupGetPreviousField") ihandle
+  (handle ihandle))
+
+(defcfun (%iup-get-next-field "IupGetNextField") ihandle
+  (handle ihandle))
 
 (defcfun (%iup-set-callback "IupSetCallback") :pointer
   (handle ihandle)
   (name attr-name)
   (func :pointer))
 
-;; Ihandle*  IupSetCallbacks(Ihandle* ih, const char *name, Icallback func, ...);
+(defcfun (%iup-get-callback "IupGetCallback") :pointer
+  (handle ihandle)
+  (name attr-name))
 
-;; Icallback IupGetFunction(const char *name);
-;; Icallback IupSetFunction(const char *name, Icallback func);
+(defcfun (%iup-get-function "IupGetFunction") :pointer
+  (name attr-name))
+
+(defcfun (%iup-set-function "IupSetFunction") :pointer
+  (name attr-name)
+  (func :pointer))
 
 ;; Ihandle*  IupGetHandle    (const char *name);
 ;; Ihandle*  IupSetHandle    (const char *name, Ihandle* ih);
 ;; int       IupGetAllNames  (char** names, int n);
 ;; int       IupGetAllDialogs(char** names, int n);
 ;; char*     IupGetName      (Ihandle* ih);
-
 
 (defcfun (%iup-set-attribute-handle "IupSetAttributeHandle") :void
   (handle ihandle)
@@ -282,9 +308,20 @@
 (defcfun (%iup-flat-frame "IupFlatFrame") ihandle
   (child ihandle))
 
-;; Ihandle*  IupImage      (int width, int height, const unsigned char *pixmap);
-;; Ihandle*  IupImageRGB   (int width, int height, const unsigned char *pixmap);
-;; Ihandle*  IupImageRGBA  (int width, int height, const unsigned char *pixmap);
+(defcfun (%iup-image "IupImage") ihandle
+  (width :int)
+  (height :int)
+  (pixmap :pointer))
+
+(defcfun (%iup-image "IupImageRGB") ihandle
+  (width :int)
+  (height :int)
+  (pixmap :pointer))
+
+(defcfun (%iup-image "IupImageRGBA") ihandle
+  (width :int)
+  (height :int)
+  (pixmap :pointer))
 
 (defcfun (%iup-item "IupItem") ihandle
   (title :string)
@@ -337,18 +374,31 @@
 (defcfun (%iup-multi-line "IupMultiLine") ihandle
   (action :string))
 
-;; Ihandle*  IupToggle     (const char* title, const char* action);
-;; Ihandle*  IupTimer      (void);
-;; Ihandle*  IupClipboard  (void);
-;; Ihandle*  IupProgressBar(void);
-;; Ihandle*  IupVal        (const char *type);
-;; Ihandle*  IupTabs       (Ihandle* child, ...);
-;; Ihandle*  IupTabsv      (Ihandle* *children);
-;; Ihandle*  IupFlatTabs   (Ihandle* first, ...);
-;; Ihandle*  IupFlatTabsv  (Ihandle* *children);
-;; Ihandle*  IupTree       (void);
-;; Ihandle*  IupLink       (const char* url, const char* title);
-;; Ihandle*  IupAnimatedLabel(Ihandle* animation);
+(defcfun (%iup-toggle "IupToggle") ihandle
+  (title :string)
+  (action :string))
+
+(defcfun (%iup-timer "IupToggle") ihandle)
+(defcfun (%iup-clipboard "IupClipboard") ihandle)
+(defcfun (%iup-progress-bar "IupProgressBar") ihandle)
+
+(defcfun (%iup-val "IupVal") ihandle
+  (type :string))
+
+(defcfun (%iup-tabs-v "IupTabsv") ihandle
+  (children :pointer))
+
+(defcfun (%iup-flat-tabs-v "IupFlatTabsv") ihandle
+  (children :pointer))
+
+(defcfun (%iup-tree "IupTree") ihandle)
+
+(defcfun (%iup-link "IupLink") ihandle
+  (url :string)
+  (title :string))
+
+(defcfun (%iup-animated-label "IupAnimatedLabel") ihandle
+  (animation ihandle))
 
 (defcfun (%iup-date-pick "IupDatePick") ihandle)
 (defcfun (%iup-calendar "IupCalendar") ihandle)
@@ -373,15 +423,6 @@
 ;; /* IupText, IupList, IupTree, IupMatrix and IupScintilla utility */
 ;; int   IupConvertXYToPos(Ihandle* ih, int x, int y);
 
-;; /* OLD names, kept for backward compatibility, will never be removed. */
-;; void IupStoreGlobal(const char* name, const char* value);
-;; void IupStoreAttribute(Ihandle* ih, const char* name, const char* value);
-;; void IupSetfAttribute(Ihandle* ih, const char* name, const char* format, ...);
-;; void IupStoreAttributeId(Ihandle* ih, const char* name, int id, const char *value);
-;; void IupSetfAttributeId(Ihandle* ih, const char* name, int id, const char* f, ...);
-;; void IupStoreAttributeId2(Ihandle* ih, const char* name, int lin, int col, const char* value);
-;; void IupSetfAttributeId2(Ihandle* ih, const char* name, int lin, int col, const char* format, ...);
-
 ;; /* IupTree utilities */
 ;; int   IupTreeSetUserId(Ihandle* ih, int id, void* userid);
 ;; void* IupTreeGetUserId(Ihandle* ih, int id);
@@ -393,8 +434,6 @@
 (defcfun (%iup-color-dlg "IupColorDlg") ihandle)
 (defcfun (%iup-font-dlg "IupFontDlg") ihandle)
 (defcfun (%iup-progress-dlg "IupProgressDlg") ihandle)
-
-;; int  IupGetFile(char *arq);  // NB see docs on suppling memory buffer
 
 (defcfun (%iup-message "IupMessage") :void
   (title :string)
@@ -572,17 +611,6 @@
 
 
 
-
-
-(defcfun (%iup-label "IupLabel") ihandle
-  (title :string))
-
-(defcfun (%iup-dialog "IupDialog") ihandle
-  (child ihandle))
-
-(defcfun (%iup-button "IupButton") ihandle
-  (title :string)
-  (action :pointer))
 
 
 ;;; iup_config.h
