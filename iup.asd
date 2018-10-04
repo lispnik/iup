@@ -1,4 +1,4 @@
-#-asdf3.2 (error "IUP requires ASDF 3")
+#-asdf3 (error "IUP requires ASDF 3")
 
 (defsystem #:iup
   :description "CFFI bindings to the IUP Portable User Interface library"
@@ -6,7 +6,7 @@
   :licence "MIT"
   :version (:read-file-line "version.txt")
   :serial t
-  :pathname "src/"
+  :pathname "iup/"
   :components ((:file "packages")
 	       (:file "iup-cffi")
 	       (:file "classes")
@@ -16,7 +16,7 @@
 
 (defsystem #:iup/web
   :serial t
-  :pathname "srcweb/"
+  :pathname "web/"
   :components ((:file "packages")
 	       (:file "web-cffi")
 	       (:file "web"))
@@ -26,7 +26,7 @@
 
 (defsystem #:iup/scintilla
   :serial t
-  :pathname "srcscintilla/"
+  :pathname "scintilla/"
   :components ((:file "packages")
 	       (:file "scintilla-cffi")
 	       (:file "scintilla"))
@@ -36,7 +36,7 @@
 
 (defsystem #:iup/plot
   :serial t
-  :pathname "srcplot/"
+  :pathname "plot/"
   :components ((:file "plot-cffi")
 	       (:file "plot"))
   :depends-on (#:alexandria
@@ -45,7 +45,7 @@
 
 (defsystem #:iup/mglplot
   :serial t
-  :pathname "srcmglplot/"
+  :pathname "mglplot/"
   :components ((:file "mglplot-cffi")
 	       (:file "mglplot"))
   :depends-on (#:alexandria
