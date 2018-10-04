@@ -106,35 +106,32 @@
 (alias 'get-previous-field #'iup-cffi::%iup-get-previous-field)
 (alias 'get-next-field #'iup-cffi::%iup-get-next-field)
 
-(defun get-all-classes-count ()
-  (iup-cffi::%iup-get-all-classes (cffi:null-pointer) 0))
-
 (defun get-all-classes ()
-  (let* ((n (get-all-classes-count)))
-    (with-foreign-object (array :string n)
-      (iup-cffi::%iup-get-all-classes array n)
-      (loop for i below n
-	    collect (cffi:mem-aref array :string i)))))
-
-(defun get-class-attributes-count (classname)
-  (iup-cffi::%iup-get-class-attributes classname (cffi:null-pointer) 0))
+  (let* ((max-n (iup-cffi::%iup-get-all-classes (cffi:null-pointer) 0))
+	 (array (cffi:foreign-alloc :pointer :initial-element (cffi:null-pointer) :count max-n :null-terminated-p t)))
+    (unwind-protect
+	 (progn
+	   (iup-cffi::%iup-get-all-classes array max-n)
+	   (loop for i below max-n
+		 while (not (cffi:null-pointer-p (cffi:mem-aref array :pointer i)))
+		 collect (cffi:mem-aref array :string i)))
+      (foreign-free array))))
 
 (defun get-class-attributes (classname)
-  (let* ((n (get-class-attributes-count classname)))
-    (with-foreign-object (array :string n)
-      (iup-cffi::%iup-get-class-attributes classname array n)
-      ;; seems to be a sort of fixed array, null terminating mix??
-      (loop for i below n
-	    while (cffi:mem-aref array :string i)
-	    collect (make-keyword (cffi:mem-aref array :string i))))))
+    (let* ((max-n (iup-cffi::%iup-get-class-attributes classname (cffi:null-pointer) 0))
+	   (array (cffi:foreign-alloc :pointer :initial-element (cffi:null-pointer) :count max-n :null-terminated-p t)))
+    (unwind-protect
+	 (progn
+	   (iup-cffi::%iup-get-class-attributes classname array max-n)
+	   (loop for i below max-n
+		 while (not (cffi:null-pointer-p (cffi:mem-aref array :pointer i)))
+		 collect (cffi:mem-aref array :string i)))
+      (foreign-free array))))
 
-;;; FIXME still memory faults
-;; (with-iup (mapcar #'get-class-attributes (get-all-classes)))
-;; (with-iup (get-all-classes))
-;; (with-iup (get-class-attributes "canvas"))
-;; (with-iup (loop for i in (get-all-classes) do (progn (print i) (print (get-class-attributes i)))))
-;; (loop for i below 10 collect i)
-
+#+nil
+(with-iup (mapcar #'(lambda (classname)
+		      (cons classname (get-class-attributes classname)))
+		  (get-all-classes)))
 
 (defattrfun fill () (iup-cffi::%iup-fill))
 (defattrfun space () (iup-cffi::%iup-space))
