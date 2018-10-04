@@ -13,6 +13,26 @@
   :depends-on (#:alexandria
 	       #:cffi))
 
+(defsystem #:iup/web
+  :serial t
+  :pathname "srcweb/"
+  :components ((:file "packages")
+	       (:file "web-cffi")
+	       (:file "web"))
+  :depends-on (#:alexandria
+	       #:cffi
+	       #:iup))
+
+(defsystem #:iup/scintilla
+  :serial t
+  :pathname "srcscintilla/"
+  :components ((:file "packages")
+	       (:file "scintilla-cffi")
+	       (:file "scintilla"))
+  :depends-on (#:alexandria
+	       #:cffi
+	       #:iup))
+
 (defsystem #:iup/plot
   :serial t
   :pathname "srcplot/"
@@ -27,24 +47,6 @@
   :pathname "srcmglplot/"
   :components ((:file "mglplot-cffi")
 	       (:file "mglplot"))
-  :depends-on (#:alexandria
-	       #:cffi
-	       #:iup))
-
-(defsystem #:iup/web
-  :serial t
-  :pathname "srcweb/"
-  :components ((:file "web-cffi")
-	       (:file "web"))
-  :depends-on (#:alexandria
-	       #:cffi
-	       #:iup))
-
-(defsystem #:iup/scintilla
-  :serial t
-  :pathname "srcscintilla/"
-  :components ((:file "scintilla-cffi")
-	       (:file "scintilla"))
   :depends-on (#:alexandria
 	       #:cffi
 	       #:iup))

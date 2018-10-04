@@ -6,7 +6,7 @@
 	   (vbox (iup:vbox (list text)))
 	   (dlg (iup:dialog vbox :title "Simple Notepad" :size "QUARTERxQUARTER")))
       (iup:show-xy dlg iup:+center+ iup:+center+)
-;;      (setf (attr dlg :usersize) nil)
+      (setf (iup:attr dlg :usersize) nil)
       (iup:main-loop))))
 
 

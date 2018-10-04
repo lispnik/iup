@@ -1,4 +1,4 @@
-(in-package #:iup-cffi)
+(in-package #:iup-web-cffi)
 
 (define-foreign-library iupweb
   (:unix "libiupweb.so")
@@ -7,4 +7,4 @@
 (use-foreign-library iupweb)
 
 (defcfun (%iup-web-browser-open "IupWebBrowserOpen") :int)
-(defcfun (%iup-web-browser "IupWebBrowser") ihandle)
+(defcfun (%iup-web-browser "IupWebBrowser") iup-cffi::ihandle)
