@@ -30,14 +30,25 @@
 (defun get-class-callbacks (classname)
   (get-classname-names classname #'iup-cffi::%iup-get-class-callbacks))
 
-(defun build-class-db ()
-  (with-iup
-    (mapcar #'(lambda (classname)
-		(cl:list :classname classname
-			 :attributes (get-class-attributes classname)
-			 :callbacks (get-class-attributes classname)))
-	    (get-all-classes))))
+;;; experimental
 
+#|
+(defun build-class-db (pathname)
+  (with-open-file (stream pathname :direction :output :if-exists :supersede)
+    (write 
+     (with-iup
+       (iup-scintilla:scintilla)
+       (mapcar #'(lambda (classname)
+		   (cl:list :classname classname
+			    :attributes (get-class-attributes classname)
+			    :callbacks (get-class-attributes classname)))
+	       (get-all-classes)))
+     :stream stream
+     :pretty t
+     :right-margin 80))
+  (values))
+
+#+linux
 (defvar *class-db*
   '((:CLASSNAME "fill" :ATTRIBUTES
      (:USERSIZE :FONTSTYLE :FONTSIZE :EXPANDWEIGHT :MAXSIZE :ACTIVE :NATURALSIZE
@@ -1336,3 +1347,4 @@
       :CLIENTSIZE :CLIENTOFFSET :FORECOLOR :DRAGTYPES :EXTRAALIGNMENT :FONTSTYLE
       :TOUCH :TABTITLE :EXTRAIMAGEHIGHLIGHT :XDISPLAY :TABACTIVE :FONT)))) 
 
+|#

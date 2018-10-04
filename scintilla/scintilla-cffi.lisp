@@ -6,4 +6,5 @@
 
 (use-foreign-library iupscintilla)
 
+(defcfun (%iup-scintilla-open "IupScintillaOpen") :void)
 (defcfun (%iup-scintilla "IupScintilla") iup-cffi::ihandle)
