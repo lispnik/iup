@@ -1,16 +1,5 @@
 (in-package #:iup-cffi)
 
-;; #define IUP_IGNORE    -1
-;; #define IUP_DEFAULT   -2
-;; #define IUP_CLOSE     -3
-;; #define IUP_CONTINUE  -4
-
-(defconstant %iup-error 1)
-(defconstant %iup-noerror 0)
-(defconstant %iup-opened -1)
-(defconstant %iup-invalid -1)
-(defconstant %iup-invalid-id -10)
-
 (define-foreign-type ihandle ()
   ()
   (:actual-type :pointer)
@@ -478,36 +467,6 @@
 ;; Ihandle* IupElementPropertiesDialog(Ihandle* elem);
 
 ;; /************************************************************************/
-;; /*                   Common Flags and Return Values                     */
-;; /************************************************************************/
-;; #define IUP_ERROR     1
-;; #define IUP_NOERROR   0
-;; #define IUP_OPENED   -1
-;; #define IUP_INVALID  -1
-;; #define IUP_INVALID_ID -10
-
-
-;; /************************************************************************/
-;; /*                   Callback Return Values                             */
-;; /************************************************************************/
-;; #define IUP_IGNORE    -1
-;; #define IUP_DEFAULT   -2
-;; #define IUP_CLOSE     -3
-;; #define IUP_CONTINUE  -4
-
-;; /************************************************************************/
-;; /*           IupPopup and IupShowXY Parameter Values                    */
-;; /************************************************************************/
-;; #define IUP_CENTER        0xFFFF  /* 65535 */
-;; #define IUP_LEFT          0xFFFE  /* 65534 */
-;; #define IUP_RIGHT         0xFFFD  /* 65533 */
-;; #define IUP_MOUSEPOS      0xFFFC  /* 65532 */
-;; #define IUP_CURRENT       0xFFFB  /* 65531 */
-;; #define IUP_CENTERPARENT  0xFFFA  /* 65530 */
-;; #define IUP_TOP       IUP_LEFT
-;; #define IUP_BOTTOM    IUP_RIGHT
-
-;; /************************************************************************/
 ;; /*               SHOW_CB Callback Values                                */
 ;; /************************************************************************/
 ;; enum{IUP_SHOW, IUP_RESTORE, IUP_MINIMIZE, IUP_MAXIMIZE, IUP_HIDE};
@@ -563,17 +522,6 @@
 ;; #define IUP_GETPARAM_OK     IUP_GETPARAM_BUTTON1
 ;; #define IUP_GETPARAM_CANCEL IUP_GETPARAM_BUTTON2
 ;; #define IUP_GETPARAM_HELP   IUP_GETPARAM_BUTTON3
-
-;; /************************************************************************/
-;; /*                   Used by IupColorbar                                */
-;; /************************************************************************/
-;; #define IUP_PRIMARY -1
-;; #define IUP_SECONDARY -2
-
-;; /************************************************************************/
-;; /*                   Record Input Modes                                 */
-;; /************************************************************************/
-;; enum {IUP_RECBINARY, IUP_RECTEXT};
 
 ;;; iup_config.h
 

@@ -83,6 +83,17 @@
 
 (defmacro alias (target source) `(setf (fdefinition ,target) ,source))
 
+(defconstant +error+ 1)
+(defconstant +noerror+ 0)
+(defconstant +opened+ -1)
+(defconstant +invalid+ -1)
+(defconstant +invalid-id+ -10)
+
+(defconstant +ignore+ -1)
+(defconstant +default+ -2)
+(defconstant +close+ -3)
+(defconstant +continue+ -4)
+
 (defconstant +center+ #xffff)
 (defconstant +left+ #xfffe)
 (defconstant +right+ #xffd)
@@ -92,10 +103,17 @@
 (defconstant +top+ +left+)
 (defconstant +bottom+ +right+)
 
+(defconstant +primary+ -1)
+(defconstant +secondary+ -2)
+
+(defconstant +recbinary+ 0)
+(defconstant +rectext+ 1)
+
+
 (defun open ()
   (let ((ret (iup-cffi::%iup-open (cffi:null-pointer) (cffi:null-pointer))))
-    (when (= ret iup-cffi::%iup-error)
-      (error 'iup-error))))
+    (when (= ret +error+)
+      (error "Can't initialize IUP"))))
 
 (alias 'close #'iup-cffi::%iup-close)
 
