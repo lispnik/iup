@@ -1,5 +1,14 @@
 (in-package #:iup)
 
+(defmacro alias (target source) `(setf (fdefinition ,target) ,source))
+
+(defun handle-p (handle)
+  (and (not (cffi:null-pointer-p handle))
+       (= (char-code #\I) (cffi:mem-ref handle :char 0))
+       (= (char-code #\U) (cffi:mem-ref handle :char 1))
+       (= (char-code #\P) (cffi:mem-ref handle :char 2))
+       (zerop (cffi:mem-ref handle :char 3))))
+
 (defun get-classname-names (classname name-producer)
   (let* ((max-n (funcall name-producer classname (cffi:null-pointer) 0))
          (array (cffi:foreign-alloc :pointer :initial-element (cffi:null-pointer) :count max-n :null-terminated-p t)))
@@ -81,8 +90,6 @@
   `(defun ,name (,@args &rest attributes &key &allow-other-keys)
      (setf (attributes (progn ,@body)) attributes)))
 
-(defmacro alias (target source) `(setf (fdefinition ,target) ,source))
-
 (defconstant +error+      1)
 (defconstant +noerror+    0)
 (defconstant +opened+     -1)
@@ -138,7 +145,6 @@
 (alias 'redraw                  #'iup-cffi::%iup-redraw)
 (alias 'refresh                 #'iup-cffi::%iup-refresh)
 (alias 'refresh-children        #'iup-cffi::%iup-refresh-children)
-(alias 'play-input              #'iup-cffi::%iup-play-input)
 (alias 'play-input              #'iup-cffi::%iup-play-input)
 (alias 'version                 #'iup-cffi::%iup-version)
 (alias 'version-date            #'iup-cffi::%iup-version-date)
@@ -251,6 +257,8 @@
 (alias 'message-error #'iup-cffi::%iup-message-error)
 (alias 'message-alarm #'iup-cffi::%iup-message-alarm)
 (alias 'alarm         #'iup-cffi::%iup-alarm)
+
+(alias 'set-attribute-handle #'iup-cffi::%iup-set-attribute-handle)
 
 (defattributefun config () (iup-cffi::%iup-config))
 

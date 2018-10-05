@@ -57,3 +57,11 @@
 ;;; glcontrols
 ;;; im
 ;;; cd
+
+(defsystem #:iup/examples
+  :serial t
+  :pathname "examples/"
+  :components ((:file "packages")
+	       (:file "simple-notepad"))
+  :depends-on (#:alexandria
+	       #:iup))

@@ -52,6 +52,7 @@
 	   #:hide
 	   #:map
 	   #:unmap
+	   #:set-attribute-handle
 	   #:reset-attribute
 	   #:set-global
 	   #:get-global
