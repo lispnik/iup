@@ -3,7 +3,8 @@
 (defmacro alias (target source) `(setf (fdefinition ,target) ,source))
 
 (defun handle-p (handle)
-  (and (not (cffi:null-pointer-p handle))
+  (and (cffi:pointerp handle)
+       (not (cffi:null-pointer-p handle))
        (= (char-code #\I) (cffi:mem-ref handle :char 0))
        (= (char-code #\U) (cffi:mem-ref handle :char 1))
        (= (char-code #\P) (cffi:mem-ref handle :char 2))
@@ -49,6 +50,14 @@
 (alias 'copy-class-attributes       #'iup-cffi::%iup-copy-class-attributes)
 (alias 'set-class-default-attribute #'iup-cffi::%iup-set-class-default-attribute)
 
+(defun attribute-handle (handle name)
+  (iup-cffi::%iup-get-attribute-handle handle name))
+
+(defun (setf attribute-handle) (new-value handle name)
+  (print (cl:list new-value handle name))
+  (print (cl:list handle name new-value))
+  (iup-cffi::%iup-set-attribute-handle handle name new-value))
+
 (defun callback (handle name)
   (iup-cffi::%iup-get-callback handle name))
 
@@ -73,7 +82,7 @@
         finally (return handle)))
 
 (defun attributes (handle)
-  (iup-cffi::%iup-get-all-attributes)
+;;   (iup-cffi::%iup-get-all-attributes)
   ;; FIXME implement
   (error "not implemented")
   )
@@ -86,9 +95,33 @@
   ;; FIXME implement
   )
 
+(defun (setf attribute-callback-handle-dwim) (new-value handle name)
+  (let ((name-string (symbol-name name)))
+    (cond
+      ((or (ends-with-subseq "_CB" name-string)
+           (starts-with-subseq "K_" name-string))
+       (print "a callback?")
+       (setf (callback handle name) new-value))
+      ((handle-p new-value)
+       (print "a handle")
+       (setf (attribute-handle handle name) new-value))
+      (t
+       (print "an attribute")
+       (setf (attribute handle name) new-value)))))
+
+(defun (setf attribute-callback-handles-dwim) (names handle)
+  (loop for (name value) on names by #'cddr
+        do (progn
+             (setf (attribute-callback-handle-dwim handle name) value))
+        finally (return handle)))
+
 (defmacro defattributefun (name args &rest body)
   `(defun ,name (,@args &rest attributes &key &allow-other-keys)
-     (setf (attributes (progn ,@body)) attributes)))
+     (setf (attribute-callback-handles-dwim (progn ,@body)) attributes)))
+
+;; (defmacro defattributefun (name args &rest body)
+;;   `(defun ,name (,@args &rest attributes &key &allow-other-keys)
+;;      (setf (attributes (progn ,@body)) attributes)))
 
 (defconstant +error+      1)
 (defconstant +noerror+    0)
@@ -257,8 +290,6 @@
 (alias 'message-error #'iup-cffi::%iup-message-error)
 (alias 'message-alarm #'iup-cffi::%iup-message-alarm)
 (alias 'alarm         #'iup-cffi::%iup-alarm)
-
-(alias 'set-attribute-handle #'iup-cffi::%iup-set-attribute-handle)
 
 (defattributefun config () (iup-cffi::%iup-config))
 

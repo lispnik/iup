@@ -96,7 +96,7 @@
 			       :|K_F3| nil
 			       :|K_cF3| nil
 			       :|K_cV| nil)))
-    (iup:set-attribute-handle nil :parentdialog dlg)
+    (setf (iup:attribute-handle nil :parentdialog) dlg)
     ;; TODO configy stuff
     dlg))
 

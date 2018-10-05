@@ -206,6 +206,10 @@
   (name attr-name)
   (other-handle ihandle))
 
+(defcfun (%iup-get-attribute-handle "IupGetAttributeHandle") ihandle
+  (handle ihandle)
+  (name attr-name))
+
 ;; Ihandle*  IupGetAttributeHandle(Ihandle* ih, const char* name);
 ;; void      IupSetAttributeHandleId(Ihandle* ih, const char* name, int id, Ihandle* ih_named);
 ;; Ihandle*  IupGetAttributeHandleId(Ihandle* ih, const char* name, int id);
