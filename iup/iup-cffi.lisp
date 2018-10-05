@@ -1,16 +1,5 @@
 (in-package #:iup-cffi)
 
-(define-foreign-library iup
-  (:unix "libiup.so")
-  (t (:default "iup")))
-
-(define-foreign-library iupimglib
-  (:unix "libiupimglib.so")
-  (t (:default "iupimglib")))
-
-(use-foreign-library iup)
-(use-foreign-library iupimglib)
-
 ;; #define IUP_IGNORE    -1
 ;; #define IUP_DEFAULT   -2
 ;; #define IUP_CLOSE     -3
@@ -50,7 +39,7 @@
   (argc :pointer))
 
 (defcfun (%iup-close "IupClose") :void)
-(defcfun (%iup-image-lib-open "IupImageLibOpen") :void)
+(defcfun (%iup-image-lib-open "IupImageLibOpen" :library iupimglib) :void)
 (defcfun (%iup-main-loop "IupMainLoop") :int)
 (defcfun (%iup-loop-step "IupLoopStep") :int)
 (defcfun (%iup-loop-step-wait "IupLoopStepWait") :int)
@@ -194,10 +183,10 @@
 
 (defcfun (%iup-get-focus "IupGetFocus") ihandle)
 
-(defcfun (%iup-get-previous-field "IupGetPreviousField") ihandle
+(defcfun (%iup-previous-field "IupPreviousField") ihandle
   (handle ihandle))
 
-(defcfun (%iup-get-next-field "IupGetNextField") ihandle
+(defcfun (%iup-next-field "IupNextField") ihandle
   (handle ihandle))
 
 (defcfun (%iup-set-callback "IupSetCallback") :pointer
@@ -208,6 +197,7 @@
 (defcfun (%iup-get-callback "IupGetCallback") :pointer
   (handle ihandle)
   (name attr-name))
+
 
 (defcfun (%iup-get-function "IupGetFunction") :pointer
   (name attr-name))
@@ -253,9 +243,19 @@
   (names :pointer)
   (n :int))
 
-;; void      IupSaveClassAttributes(Ihandle* ih);
-;; void      IupCopyClassAttributes(Ihandle* src_ih, Ihandle* dst_ih);
-;; void      IupSetClassDefaultAttribute(const char* classname, const char *name, const char* value);
+(defcfun (%iup-save-class-attributes "IupSaveClassAttributes") :void
+  (handle ihandle))
+
+
+(defcfun (%iup-copy-class-attributes "IupCopyClassAttributes") :void
+  (source-handle ihandle)
+  (destination-handle ihandle))
+
+(defcfun (%iup-set-class-default-attribute "IupSetClassDefaultAttribute") :void
+  (classname :string)
+  (name attr-name)
+  (value :string))
+
 ;; int       IupClassMatch(Ihandle* ih, const char* classname);
 
 ;; Ihandle*  IupCreate (const char *classname);
@@ -319,12 +319,12 @@
   (height :int)
   (pixmap :pointer))
 
-(defcfun (%iup-image "IupImageRGB") ihandle
+(defcfun (%iup-image-rgb "IupImageRGB") ihandle
   (width :int)
   (height :int)
   (pixmap :pointer))
 
-(defcfun (%iup-image "IupImageRGBA") ihandle
+(defcfun (%iup-image-rgba "IupImageRGBA") ihandle
   (width :int)
   (height :int)
   (pixmap :pointer))

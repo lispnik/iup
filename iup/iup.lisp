@@ -1,40 +1,87 @@
 (in-package #:iup)
 
-(defmacro alias (target source) `(setf (fdefinition ,target) ,source))
+(defun get-classname-names (classname name-producer)
+  (let* ((max-n (funcall name-producer classname (cffi:null-pointer) 0))
+	 (array (cffi:foreign-alloc :pointer :initial-element (cffi:null-pointer) :count max-n :null-terminated-p t)))
+    (unwind-protect
+	 (progn
+	   (funcall name-producer classname array max-n)
+	   (loop for i below max-n
+		 for ref = (cffi:mem-aref array :pointer i)
+		 until (cffi:null-pointer-p ref)
+		 collect (make-keyword (cffi:foreign-string-to-lisp ref))))
+      (foreign-free array))))
 
-(defun attr (handle attr)
-  (iup-cffi::%iup-get-attribute handle (symbol-name attr)))
+(defun class-attributes (classname)
+  (get-classname-names classname #'iup-cffi::%iup-get-class-attributes))
 
-(defun (setf attr) (new-value handle attr)
-  (prog1
-      handle
-    (typecase new-value
-      (string (iup-cffi::%iup-set-str-attribute handle attr (or new-value (cffi:null-pointer))))
-      (symbol (iup-cffi::%iup-set-callback handle attr (cffi:get-callback new-value)))
-      (t (iup-cffi::%iup-set-attribute-handle handle attr (or new-value (cffi:null-pointer)))))))
+(defun class-callbacks (classname)
+  (get-classname-names classname #'iup-cffi::%iup-get-class-callbacks))
 
-(defun (setf attrs) (attrs handle)
-  (loop for (attr value) on attrs by #'cddr
+(defun all-classes ()
+  (let* ((max-n (iup-cffi::%iup-get-all-classes (cffi:null-pointer) 0))
+	 (array (cffi:foreign-alloc :pointer :initial-element (cffi:null-pointer) :count max-n :null-terminated-p t)))
+    (unwind-protect
+	 (progn
+	   (iup-cffi::%iup-get-all-classes array max-n)
+	   (loop for i below max-n
+		 for ref = (cffi:mem-aref array :pointer i)
+		 until (cffi:null-pointer-p ref)
+		 collect (cffi:foreign-string-to-lisp ref)))
+      (cffi:foreign-free array))))
+
+(defun class-name (handle)
+  (iup-cffi::%iup-get-class-name handle))
+
+(defun class-type (handle)
+  (iup-cffi::%iup-get-class-type handle))
+
+(alias 'save-class-attributes #'iup-cffi::%iup-save-class-attributes)
+(alias 'copy-class-attributes #'iup-cffi::%iup-copy-class-attributes)
+(alias 'set-class-default-attribute #'iup-cffi::%iup-set-class-default-attribute)
+
+(defun callback (handle name)
+  (iup-cffi::%iup-get-callback handle name))
+
+(defun (setf callback) (new-value handle name)
+  (iup-cffi::%iup-set-callback
+   handle
+   name
+   (if new-value
+       (cffi:get-callback new-value)
+       (cffi:null-pointer))))
+
+(defun attribute (handle attribute)
+  (iup-cffi::%iup-get-attribute handle (symbol-name attribute)))
+
+(defun (setf attribute) (new-value handle attribute)
+  (iup-cffi::%iup-set-str-attribute handle attribute (or new-value (cffi:null-pointer))))
+
+(defun (setf attributes) (attributes handle)
+  (loop for (attribute value) on attributes by #'cddr
 	do (progn
-	     (setf (attr handle attr) value))
+	     (setf (attribute handle attribute) value))
 	finally (return handle)))
 
-(defun attrs (handle)
+(defun attributes (handle)
+  (iup-cffi::%iup-get-all-attributes)
   ;; FIXME implement
   (error "not implemented")
   )
 
-(defun (setf attr-id) (new-value handle attr id)
+(defun (setf attribute-id) (new-value handle attribute id)
   ;; FIXME implement
   )
 
-(defun (setf attr-id-2) (new-value handle attr line column)
+(defun (setf attribute-id-2) (new-value handle attribute line column)
   ;; FIXME implement
   )
 
-(defmacro defattrfun (name args &rest body)
-  `(defun ,name (,@args &rest attrs &key &allow-other-keys)
-     (setf (attrs (progn ,@body)) attrs)))
+(defmacro defattributefun (name args &rest body)
+  `(defun ,name (,@args &rest attributes &key &allow-other-keys)
+     (setf (attributes (progn ,@body)) attributes)))
+
+(defmacro alias (target source) `(setf (fdefinition ,target) ,source))
 
 (defconstant +center+ #xffff)
 (defconstant +left+ #xfffe)
@@ -98,97 +145,97 @@
 (alias 'hide #'iup-cffi::%iup-hide)
 (alias 'map #'iup-cffi::%iup-map)
 (alias 'unmap #'iup-cffi::%iup-unmap)
-(alias 'reset-attr #'iup-cffi::%iup-reset-attribute)
+(alias 'reset-attribute #'iup-cffi::%iup-reset-attribute)
 (alias 'set-gloabl #'iup-cffi::%iup-set-str-global)
 (alias 'get-gloabl #'iup-cffi::%iup-get-global)
 (alias 'set-focus #'iup-cffi::%iup-set-focus)
 (alias 'get-focus #'iup-cffi::%iup-get-focus)
-(alias 'get-previous-field #'iup-cffi::%iup-get-previous-field)
-(alias 'get-next-field #'iup-cffi::%iup-get-next-field)
+(alias 'previous-field #'iup-cffi::%iup-previous-field)
+(alias 'next-field #'iup-cffi::%iup-next-field)
 
-(defattrfun fill () (iup-cffi::%iup-fill))
-(defattrfun space () (iup-cffi::%iup-space))
-(defattrfun radio (child) (iup-cffi::%iup-radio child))
+(defattributefun fill () (iup-cffi::%iup-fill))
+(defattributefun space () (iup-cffi::%iup-space))
+(defattributefun radio (child) (iup-cffi::%iup-radio child))
 
-(defmacro defattrfun-children (name func)
-  `(defattrfun ,name (children)
+(defmacro defattributefun-children (name func)
+  `(defattributefun ,name (children)
      (let ((array (foreign-alloc 'iup-cffi::ihandle :initial-contents children :null-terminated-p t)))
        (unwind-protect
 	    (,func array)
 	 (foreign-free array)))))
 
-(defattrfun-children vbox iup-cffi::%iup-vbox-v)
-(defattrfun-children zbox iup-cffi::%iup-zbox-v)
-(defattrfun-children hbox iup-cffi::%iup-hbox-v)
-(defattrfun-children normalizer iup-cffi::%iup-normalizer-v)
-(defattrfun-children cbox iup-cffi::%iup-cbox-v)
+(defattributefun-children vbox iup-cffi::%iup-vbox-v)
+(defattributefun-children zbox iup-cffi::%iup-zbox-v)
+(defattributefun-children hbox iup-cffi::%iup-hbox-v)
+(defattributefun-children normalizer iup-cffi::%iup-normalizer-v)
+(defattributefun-children cbox iup-cffi::%iup-cbox-v)
 
-(defattrfun sbox (child) (iup-cffi::%iup-sbox child))
-(defattrfun split (child1 child2) (iup-cffi::%iup-split child1 child2))
-(defattrfun scroll-box (child) (iup-cffi::%iup-scroll-box child))
-(defattrfun flat-scroll-box (child) (iup-cffi::%iup-flat-scroll-box child))
+(defattributefun sbox (child) (iup-cffi::%iup-sbox child))
+(defattributefun split (child1 child2) (iup-cffi::%iup-split child1 child2))
+(defattributefun scroll-box (child) (iup-cffi::%iup-scroll-box child))
+(defattributefun flat-scroll-box (child) (iup-cffi::%iup-flat-scroll-box child))
 
-(defattrfun-children grid-box iup-cffi::%iup-gridbox-v)
+(defattributefun-children grid-box iup-cffi::%iup-gridbox-v)
 
-(defattrfun expander (child) (iup-cffi::%iup-expander child))
-(defattrfun detach-box (child) (iup-cffi::%iup-detach-box child))
-(defattrfun background-box (child) (iup-cffi::%iup-background-box child))
-(defattrfun frame (child) (iup-cffi::%iup-frame child))
-(defattrfun flat-frame (child) (iup-cffi::%iup-flat-frame child))
+(defattributefun expander (child) (iup-cffi::%iup-expander child))
+(defattributefun detach-box (child) (iup-cffi::%iup-detach-box child))
+(defattributefun background-box (child) (iup-cffi::%iup-background-box child))
+(defattributefun frame (child) (iup-cffi::%iup-frame child))
+(defattributefun flat-frame (child) (iup-cffi::%iup-flat-frame child))
 
 ;;; image...
 
-(defattrfun item () (iup-cffi::%iup-item (cffi:null-pointer) (cffi:null-pointer)))
+(defattributefun item () (iup-cffi::%iup-item (cffi:null-pointer) (cffi:null-pointer)))
 
 (alias 'separator #'iup-cffi::%iup-separator)
 
-(defattrfun submenu (menu) (iup-cffi::%iup-submenu (cffi:null-pointer) menu))
+(defattributefun submenu (menu) (iup-cffi::%iup-submenu (cffi:null-pointer) menu))
 
-(defattrfun-children menu iup-cffi::%iup-menu-v)
+(defattributefun-children menu iup-cffi::%iup-menu-v)
 
-(defattrfun button () (iup-cffi::%iup-button (cffi:null-pointer) (cffi:null-pointer)))
-(defattrfun flat-button () (iup-cffi::%iup-flat-button (cffi:null-pointer)))
-(defattrfun flat-toggle () (iup-cffi::%iup-flat-toggle (cffi:null-pointer)))
-(defattrfun drop-button () (iup-cffi::%iup-drop-button (cffi:null-pointer)))
-(defattrfun flat-label () (iup-cffi::%iup-flat-label (cffi:null-pointer)))
-(defattrfun flat-separator () (iup-cffi::%iup-flat-separator))
-(defattrfun canvas () (iup-cffi::%iup-canvas (cffi:null-pointer)))
-(defattrfun dialog (child) (iup-cffi::%iup-dialog child))
-(defattrfun user () (iup-cffi::%iup-user))
-(defattrfun label () (iup-cffi::%iup-label (cffi:null-pointer)))
-(defattrfun list () (iup-cffi::%iup-list (cffi:null-pointer)))
-(defattrfun text () (iup-cffi::%iup-text (cffi:null-pointer)))
-(defattrfun multi-line () (iup-cffi::%iup-multi-line (cffi:null-pointer)))
-(defattrfun toggle () (iup-cffi::%iup-toggle (cffi:null-pointer) (cffi:null-pointer)))
-(defattrfun timer () (iup-cffi::%iup-timer))
-(defattrfun clipboard () (iup-cffi::%iup-clipboard))
-(defattrfun progress-bar () (iup-cffi::%iup-progress-bar))
-(defattrfun val () (iup-cffi::%iup-val (cffi:null-pointer)))
+(defattributefun button () (iup-cffi::%iup-button (cffi:null-pointer) (cffi:null-pointer)))
+(defattributefun flat-button () (iup-cffi::%iup-flat-button (cffi:null-pointer)))
+(defattributefun flat-toggle () (iup-cffi::%iup-flat-toggle (cffi:null-pointer)))
+(defattributefun drop-button () (iup-cffi::%iup-drop-button (cffi:null-pointer)))
+(defattributefun flat-label () (iup-cffi::%iup-flat-label (cffi:null-pointer)))
+(defattributefun flat-separator () (iup-cffi::%iup-flat-separator))
+(defattributefun canvas () (iup-cffi::%iup-canvas (cffi:null-pointer)))
+(defattributefun dialog (child) (iup-cffi::%iup-dialog child))
+(defattributefun user () (iup-cffi::%iup-user))
+(defattributefun label () (iup-cffi::%iup-label (cffi:null-pointer)))
+(defattributefun list () (iup-cffi::%iup-list (cffi:null-pointer)))
+(defattributefun text () (iup-cffi::%iup-text (cffi:null-pointer)))
+(defattributefun multi-line () (iup-cffi::%iup-multi-line (cffi:null-pointer)))
+(defattributefun toggle () (iup-cffi::%iup-toggle (cffi:null-pointer) (cffi:null-pointer)))
+(defattributefun timer () (iup-cffi::%iup-timer))
+(defattributefun clipboard () (iup-cffi::%iup-clipboard))
+(defattributefun progress-bar () (iup-cffi::%iup-progress-bar))
+(defattributefun val () (iup-cffi::%iup-val (cffi:null-pointer)))
 
-(defattrfun-children tabs iup-cffi::%iup-tabs-v)
-(defattrfun-children flat-tabs iup-cffi::%iup-flat-tabs-v)
+(defattributefun-children tabs iup-cffi::%iup-tabs-v)
+(defattributefun-children flat-tabs iup-cffi::%iup-flat-tabs-v)
 
-(defattrfun tree () (iup-cffi::%iup-tree))
-(defattrfun link () (iup-cffi::%iup-link (cffi:null-pointer) (cffi:null-pointer)))
-(defattrfun animated-label () (iup-cffi::%iup-animated-label (cffi:null-pointer)))
-(defattrfun date-pick () (iup-cffi::%iup-date-pick))
-(defattrfun calendar () (iup-cffi::%iup-calendar))
-(defattrfun colorbar () (iup-cffi::%iup-colorbar))
-(defattrfun gauge () (iup-cffi::%iup-gauge))
-(defattrfun dial () (iup-cffi::%iup-dial (cffi:null-pointer)))
-(defattrfun color-browser () (iup-cffi::%iup-color-browser))
-(defattrfun file-dialog () (iup-cffi::%iup-file-dlg))
-(defattrfun message-dialog () (iup-cffi::%iup-message-dlg))
-(defattrfun color-dialog () (iup-cffi::%iup-color-dlg))
-(defattrfun font-dialog () (iup-cffi::%iup-font-dlg))
-(defattrfun progress-dialog () (iup-cffi::%iup-progress-dlg))
+(defattributefun tree () (iup-cffi::%iup-tree))
+(defattributefun link () (iup-cffi::%iup-link (cffi:null-pointer) (cffi:null-pointer)))
+(defattributefun animated-label () (iup-cffi::%iup-animated-label (cffi:null-pointer)))
+(defattributefun date-pick () (iup-cffi::%iup-date-pick))
+(defattributefun calendar () (iup-cffi::%iup-calendar))
+(defattributefun colorbar () (iup-cffi::%iup-colorbar))
+(defattributefun gauge () (iup-cffi::%iup-gauge))
+(defattributefun dial () (iup-cffi::%iup-dial (cffi:null-pointer)))
+(defattributefun color-browser () (iup-cffi::%iup-color-browser))
+(defattributefun file-dialog () (iup-cffi::%iup-file-dlg))
+(defattributefun message-dialog () (iup-cffi::%iup-message-dlg))
+(defattributefun color-dialog () (iup-cffi::%iup-color-dlg))
+(defattributefun font-dialog () (iup-cffi::%iup-font-dlg))
+(defattributefun progress-dialog () (iup-cffi::%iup-progress-dlg))
 
 (alias 'message #'iup-cffi::%iup-message)
 (alias 'message-error #'iup-cffi::%iup-message-error)
 (alias 'message-alarm #'iup-cffi::%iup-message-alarm)
 (alias 'alarm #'iup-cffi::%iup-alarm)
 
-(defattrfun config () (iup-cffi::%iup-config))
+(defattributefun config () (iup-cffi::%iup-config))
 
 (alias 'config-load #'iup-cffi::%iup-config-load)
 (alias 'config-save #'iup-cffi::%iup-config-save)

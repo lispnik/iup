@@ -8,6 +8,7 @@
   :serial t
   :pathname "iup/"
   :components ((:file "packages")
+	       (:file "reload")
 	       (:file "iup-cffi")
 	       (:file "classes")
 	       (:file "iup"))

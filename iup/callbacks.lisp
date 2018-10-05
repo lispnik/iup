@@ -4,7 +4,13 @@
   (let ((name (gensym ))))
   `(cffi:defcallback `,(gensym ,(symbol-name name))))
 
-(define-callback action :int ((handle iup-cffi::ihandle)))
+(defmacro action :int ((handle) &body body)
+  `(cffi:defcallback ,(gensym) :int ((,handle :ihandle))))
+
+(defmacro idle-action (() &body body)
+  `(cffi:get-callback
+    (cffi:defcallback ,(gensym) :int ()
+      ,@body)))
 
 
 (defmacro idle-action (() &body body)

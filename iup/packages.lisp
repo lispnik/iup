@@ -52,13 +52,13 @@
 	   #:hide
 	   #:map
 	   #:unmap
-	   #:reset-attr
+	   #:reset-attribute
 	   #:set-global
 	   #:get-global
 	   #:set-focus
 	   #:get-focus
-	   #:get-previous-field
-	   #:get-next-field
+	   #:previous-field
+	   #:next-field
 
 	   ;; TODO
 	   ;; set-callback
@@ -143,14 +143,24 @@
 	   #:config-dialog-show
 	   #:config-dialog-closed
 
+	   #:all-classes
+	   #:class-attibutes
+	   #:class-callbacks
+	   #:class-name
+	   #:class-type
+	   #:save-class-attributes
+	   #:copy-class-attributes
+	   
 	   #:with-iup
-	   #:attr
-	   #:attr-id
-	   #:attr-id-2)
+	   #:attribute
+	   #:attribute-id
+	   #:attribute-id-2
+	   #:attributes)
   (:shadow #:open
 	   #:close
 	   #:map
 	   #:append
 	   #:list
 	   #:fill
-	   #:space))
+	   #:space
+	   #:class-name))

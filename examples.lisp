@@ -2,11 +2,11 @@
 
 (defun simple-notepad-3-1 ()
   (iup:with-iup
-    (let* ((text (print (iup:multi-line :expand "YES")))
+    (let* ((text (iup:multi-line :expand "YES"))
 	   (vbox (iup:vbox (list text)))
 	   (dlg (iup:dialog vbox :title "Simple Notepad" :size "QUARTERxQUARTER")))
       (iup:show-xy dlg iup:+center+ iup:+center+)
-      (setf (iup:attr dlg :usersize) nil)
+      (setf (iup:attribute dlg :usersize) nil)
       (iup:main-loop))))
 
 
