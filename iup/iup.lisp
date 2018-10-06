@@ -54,8 +54,6 @@
   (iup-cffi::%iup-get-attribute-handle handle name))
 
 (defun (setf attribute-handle) (new-value handle name)
-  (print (cl:list new-value handle name))
-  (print (cl:list handle name new-value))
   (iup-cffi::%iup-set-attribute-handle handle name new-value))
 
 (defun callback (handle name)
@@ -112,6 +110,12 @@
              (setf (attribute-callback-handle-dwim handle name) value))
         finally (return handle)))
 
+(defun (setf handle) (new-value name)
+  (iup-cffi::%iup-set-handle name new-value))
+
+(defun handle (name)
+  (iup-cffi::%iup-get-handle name))
+
 (defmacro defattributefun (name args &rest body)
   `(defun ,name (,@args &rest attributes &key &allow-other-keys)
      (setf (attribute-callback-handles-dwim (progn ,@body)) attributes)))
@@ -153,7 +157,7 @@
 
 (alias 'close #'iup-cffi::%iup-close)
 
-(defmacro with-iup (&body body)
+(defmacro with-iup (() &body body)
   `(progn
      (iup:open)
      (unwind-protect
@@ -236,7 +240,23 @@
 (defattributefun frame          (child) (iup-cffi::%iup-frame child))
 (defattributefun flat-frame     (child) (iup-cffi::%iup-flat-frame child))
 
-;;; image...
+(defattributefun image (width height pixels)
+  (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height))))
+    (unwind-protect
+	 (iup-cffi::%iup-image width height array)
+      (cffi:foreign-free array))))
+
+(defattributefun image-rgb (width height pixels)
+  (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height 3))))
+    (unwind-protect
+	 (iup-cffi::%iup-image-rgb width height array)
+      (cffi:foreign-free array))))
+
+(defattributefun image-rgba (width height pixels)
+  (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height 4))))
+    (unwind-protect
+	 (iup-cffi::%iup-image-rgba width height array)
+      (cffi:foreign-free array))))
 
 (defattributefun item () (iup-cffi::%iup-item (cffi:null-pointer) (cffi:null-pointer)))
 

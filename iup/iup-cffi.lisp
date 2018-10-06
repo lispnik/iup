@@ -195,8 +195,13 @@
   (name attr-name)
   (func :pointer))
 
-;; Ihandle*  IupGetHandle    (const char *name);
-;; Ihandle*  IupSetHandle    (const char *name, Ihandle* ih);
+(defcfun (%iup-get-handle "IupGetHandle") ihandle
+  (name :string))
+
+(defcfun (%iup-set-handle "IupSetHandle") ihandle
+  (name :string)
+  (handle ihandle))
+
 ;; int       IupGetAllNames  (char** names, int n);
 ;; int       IupGetAllDialogs(char** names, int n);
 ;; char*     IupGetName      (Ihandle* ih);

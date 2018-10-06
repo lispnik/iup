@@ -7,3 +7,8 @@
   (:use #:common-lisp
 	#:alexandria)
   (:export #:web-browser))
+
+(defpackage #:iup-sample
+  (:use #:common-lisp
+	#:alexandria)
+  (:export #:sample))

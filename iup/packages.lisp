@@ -156,7 +156,9 @@
 	   #:attribute
 	   #:attribute-id
 	   #:attribute-id-2
-	   #:attributes)
+	   #:attributes
+	   #:callback
+	   #:handle)
   (:shadow #:open
 	   #:close
 	   #:map

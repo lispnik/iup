@@ -2,8 +2,8 @@
 
 ;;; webbrowser.c
 
-(defun web-browser-test ()
-  (iup:with-iup
+(defun web-browser ()
+  (iup:with-iup ()
     (iup-web:web-browser-open)
     (let* ((btn-back (iup:button :title "Back" :action nil))
 	   (btn-forward (iup:button :title "Forward" :action nil))

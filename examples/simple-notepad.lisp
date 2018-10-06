@@ -101,7 +101,7 @@
     dlg))
 
 (defun simple-notepad (&rest files)
-  (iup:with-iup
+  (iup:with-iup ()
     (iup:image-lib-open)
     (let* ((config (iup:config :app_name "simple_notepad")))
       (iup:config-load config)
