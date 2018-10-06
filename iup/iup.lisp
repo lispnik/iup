@@ -100,13 +100,10 @@
     (cond
       ((or (ends-with-subseq "_CB" name-string)
            (starts-with-subseq "K_" name-string))
-       (print "a callback?")
        (setf (callback handle name) new-value))
       ((handle-p new-value)
-       (print "a handle")
        (setf (attribute-handle handle name) new-value))
       (t
-       (print "an attribute")
        (setf (attribute handle name) new-value)))))
 
 (defun (setf attribute-callback-handles-dwim) (names handle)
