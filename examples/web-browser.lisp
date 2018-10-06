@@ -3,24 +3,35 @@
 ;;; webbrowser.c
 
 (defun web-browser-test ()
-	      
-  )
-	    
-(defun web-browser (&rest files)
   (iup:with-iup
-    (iup-web-browser::opene)
-    (iup:image-lib-open)
-    (let* ((config (iup:config :app_name "web_browser")))
-      (iup:config-load config)
-      (let* ((dialog (create-main-dialog config)))
-	(iup:config-dialog-show config dialog "MainWindow")
-	(new-file dialog)
-	(dolist (file files)
-	  (open-file dialog file))
-	(iup:main-loop)))))
-
+    (iup-web:web-browser-open)
+    (let* ((btn-back (iup:button :title "Back" :action nil))
+	   (btn-forward (iup:button :title "Forward" :action nil))
+	   (text (iup:text :expand "HORIZONTAL" :value "https://lisp-lang.org"))
+	   (btn-load (iup:button :title "Load"))
+	   (btn-reload (iup:button :title "Reload"))
+	   (btn-stop (iup:button :title "Stop"))
+	   #+linux (btn-history (iup:button :title "History"))
+	   (web (iup-web:web-browser))
+	   (dialog (iup:dialog
+		    (iup:vbox
+		     (list (iup:hbox (list  btn-back
+					    btn-forward
+					    text
+					    btn-load
+					    btn-reload
+					    btn-stop
+					    #+linux btn-history))
+			   web))
+		    :title "IupWebBrowser"
+		    :rastersize "800x600"
+		    :margin "5x5"
+		    :gap "5")))
+      (iup:show dialog)
+      (iup:main-loop))))
+	    
 #+nil
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)
-  (simple-notepad))
+  (web-browser-test))
 

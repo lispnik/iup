@@ -62,8 +62,6 @@
   :serial t
   :pathname "examples/"
   :components ((:file "packages")
-	       (:file "simple-notepad")
-	       (:file "web-browser"))
+	       (:file "simple-notepad"))
   :depends-on (#:alexandria
-	       #:iup
-	       #:iup/web))
+	       #:iup))
