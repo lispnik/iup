@@ -38,11 +38,13 @@
 (defsystem #:iup/plot
   :serial t
   :pathname "plot/"
-  :components ((:file "plot-cffi")
+  :components ((:file "packages")
+	       (:file "plot-cffi")
 	       (:file "plot"))
   :depends-on (#:alexandria
 	       #:cffi
-	       #:iup))
+	       #:iup
+	       #:cd))
 
 (defsystem #:iup/mglplot
   :serial t

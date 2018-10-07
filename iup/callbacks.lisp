@@ -1,17 +1,25 @@
 (in-package #:iup)
 
-(defmacro define-callback (name return-type args)
-  (let ((name (gensym ))))
-  `(cffi:defcallback `,(gensym ,(symbol-name name))))
+;;; use case 1: define a top level function
+;;; use case 2: define an anonymous function
 
-(defmacro action :int ((handle) &body body)
-  `(cffi:defcallback ,(gensym) :int ((,handle :ihandle))))
+
+;; (defmacro action (name (handle) &body body)
+;;   `(cffi:defcallback ,(gensym) :int ((,handle iup-cffi::ihandle))))
+
+(defaction-cb button1cb (handle)
+  (iup:message "HI! from handle " handl ))
+
+(action-cb (handle)
+	   (iup:message "hi! from ahndle" handle))
+
+
+(defmacro foo (args  ))
 
 (defmacro idle-action (() &body body)
   `(cffi:get-callback
     (cffi:defcallback ,(gensym) :int ()
       ,@body)))
-
 
 (defmacro idle-action (() &body body)
   `(cffi:get-callback
