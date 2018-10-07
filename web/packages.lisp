@@ -5,4 +5,6 @@
 (defpackage #:iup-web
   (:use #:common-lisp)
   (:export #:web-browser-open
-	   #:web-browser))
+	   #:web-browser)
+  (:import-from #:iup-utils
+		#:alias))

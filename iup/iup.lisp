@@ -1,7 +1,5 @@
 (in-package #:iup)
 
-(defmacro alias (target source) `(setf (fdefinition ,target) ,source))
-
 (defun handle-p (handle)
   (and (cffi:pointerp handle)
        (not (cffi:null-pointer-p handle))

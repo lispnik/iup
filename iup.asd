@@ -13,17 +13,32 @@
 	       (:file "iup-cffi")
 	       (:file "iup"))
   :depends-on (#:alexandria
+	       #:cffi
+	       #:iup/utils))
+
+(defsystem #:iup/utils
+  :serial t
+  :pathname "utils/"
+  :components ((:file "packages")
+	       (:file "utils"))
+  :depends-on (#:alexandria
 	       #:cffi))
 
-(defsystem #:iup/web
+(defsystem #:iup
+  :description "CFFI bindings to the IUP Portable User Interface library"
+  :author "Matthew Kennedy <burnsidemk@gmail.com>"
+  :homepage "https://github.com/lispnik/iup"
+  :licence "MIT"
+  :version (:read-file-line "version.txt")
   :serial t
-  :pathname "web/"
+  :pathname "iup/"
   :components ((:file "packages")
-	       (:file "web-cffi")
-	       (:file "web"))
+	       (:file "reload")
+	       (:file "iup-cffi")
+	       (:file "iup"))
   :depends-on (#:alexandria
 	       #:cffi
-	       #:iup))
+	       #:iup/utils))
 
 (defsystem #:iup/scintilla
   :serial t
@@ -33,7 +48,8 @@
 	       (:file "scintilla"))
   :depends-on (#:alexandria
 	       #:cffi
-	       #:iup))
+	       #:iup
+	       #:iup/utils))
 
 (defsystem #:iup/plot
   :serial t
@@ -44,7 +60,19 @@
   :depends-on (#:alexandria
 	       #:cffi
 	       #:iup
+	       #:iup/utils
 	       #:cd))
+
+(defsystem #:iup/gl
+  :serial t
+  :pathname "gl/"
+  :components ((:file "packages")
+	       (:file "gl-cffi")
+	       (:file "gl"))
+  :depends-on (#:alexandria
+	       #:cffi
+	       #:iup
+	       #:iup/utils))
 
 (defsystem #:iup/mglplot
   :serial t
@@ -53,20 +81,34 @@
 	       (:file "mglplot"))
   :depends-on (#:alexandria
 	       #:cffi
-	       #:iup))
+	       #:iup
+	       #:iup/utils))
 
-
-;;; gl
-;;; glcontrols
-;;; im
-;;; cd
+(defsystem #:iup/web
+  :serial t
+  :pathname "web/"
+  :components ((:file "packages")
+	       (:file "web-cffi")
+	       (:file "web"))
+  :depends-on (#:alexandria
+	       #:iup
+	       #:iup/utils))
 
 (defsystem #:iup/examples
   :serial t
   :pathname "examples/"
   :components ((:file "packages")
 	       (:file "simple-notepad")
-	       (:file "web-browser"))
+	       (:file "web-browser")
+	       (:file "cube")
+	       (:file "teapot"))
   :depends-on (#:alexandria
 	       #:iup
-	       #:iup/web))
+	       #:iup/web
+	       #:iup/plot
+	       #:iup/gl
+	       #:cl-opengl
+	       #:cl-glut))
+
+
+;;; glcontrols

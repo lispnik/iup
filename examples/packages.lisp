@@ -12,3 +12,8 @@
   (:use #:common-lisp
 	#:alexandria)
   (:export #:sample))
+
+(defpackage #:iup-teapot
+  (:use #:common-lisp
+	#:alexandria)
+  (:export #:teapot))

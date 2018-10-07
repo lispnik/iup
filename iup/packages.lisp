@@ -166,4 +166,6 @@
 	   #:list
 	   #:fill
 	   #:space
-	   #:class-name))
+	   #:class-name)
+  (:import-from #:iup-utils
+		#:alias))
