@@ -66,7 +66,7 @@
        (cffi:null-pointer))))
 
 (defun attribute (handle attribute)
-  (iup-cffi::%iup-get-attribute handle (symbol-name attribute)))
+  (iup-cffi::%iup-get-attribute handle attribute))
 
 (defun (setf attribute) (new-value handle attribute)
   (iup-cffi::%iup-set-str-attribute handle attribute (or new-value (cffi:null-pointer))))

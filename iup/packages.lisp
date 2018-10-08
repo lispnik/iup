@@ -134,10 +134,14 @@
 	   #:spin
 	   #:spin-box
 
-	   ;; ...
-
-
-
+	   #:file-dialog
+	   #:message-dialog
+	   #:color-dialog
+	   #:font-dialog
+	   #:message
+	   #:message-error
+	   #:message-alarm
+	   #:alarm
 	   #:config
 	   #:config-load
 	   #:config-save

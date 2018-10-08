@@ -16,7 +16,11 @@
   (if (null-pointer-p value) nil value))
 
 (defun attr-name-to-c (value)
-  (if value (symbol-name value) (null-pointer)))
+  (if value
+      (etypecase value
+	(symbol (symbol-name value))
+	(string value))
+      (null-pointer)))
 
 (defctype attr-name
     (:wrapper :string

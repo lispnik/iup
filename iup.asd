@@ -98,6 +98,7 @@
   :serial t
   :pathname "examples/"
   :components ((:file "packages")
+	       (:file "buttons")
 	       (:file "simple-notepad")
 	       (:file "web-browser")
 	       (:file "sample")
