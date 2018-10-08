@@ -81,7 +81,6 @@
       (setf (iup:callback canvas :action) 'repaint-cb
 	    (iup:callback canvas :resize_cb) 'resize-cb)
       (iup-cffi::%iup-set-function :idle_action (cffi:get-callback 'idle-cb))
-
       (iup:show dialog)
       (iup:main-loop))))
 	    
