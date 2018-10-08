@@ -110,7 +110,8 @@
 	       #:iup/plot
 	       #:iup/gl
 	       #:cl-opengl
-	       #:cl-glut))
+	       #:cl-glut
+	       #:cl-glu))
 
 
 ;;; glcontrols

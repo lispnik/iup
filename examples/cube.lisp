@@ -1,7 +1,7 @@
 (in-package #:iup-cube)
 
 (defvar canvas nil)
-(defvar tt 0)
+(defvar tt 0.0)
 (defvar vertices
   #((-1 -1 1) (-1 1 1) (1 1 1) (1 -1 1)
     (-1 -1 -1) (-1 1 -1) (1 1 -1) (1 -1 -1)))
@@ -35,25 +35,40 @@
   (polygon 5 4 0 1))
 
 (defun repaint (handle)
-  (gl:clear-color 0.3 0 0 1)
+  (gl:clear-color 0.3 0.3 0.3 1.0)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   (gl:enable :depth-test)
   (gl:matrix-mode :modelview)
   (gl:with-pushed-matrix
     (gl:translate 0 0 0)
-    (gl:scale 1.0 1.0 1.0)
+    (gl:scale 1 1 1)
     (gl:rotate tt 0 0 1)
     (color-cube))
-  (iup-gl:swap-buffers handle))
+  (iup-gl:swap-buffers handle)
+  iup::+default+)
 
 (cffi:defcallback repaint-cb :int ((handle iup-cffi::ihandle))
   (iup-gl:make-current handle)
   (repaint handle))
 
+(defun resize (handle width height)
+  (gl:viewport 0 0 width height)
+  (gl:matrix-mode :modelview)
+  (gl:load-identity)
+  (gl:matrix-mode :projection)
+  (gl:load-identity)
+  (glu:perspective 60 (/ 4 3) 1 15)
+  (glu:look-at 3 3 3 0 0 0 0 0 1)
+  iup::+default+)
+
+(cffi:defcallback resize-cb :int ((handle iup-cffi::ihandle) (width :int) (height :int))
+  (iup-gl:make-current handle)
+  (resize handle width height))
+
 (cffi:defcallback idle-cb :int ()
   (incf tt)
-  
-  ;; FIXME
+  (iup-gl:make-current canvas)
+  (repaint canvas)
   iup::+default+)
 
 (defun cube ()
@@ -63,9 +78,10 @@
     (let* ((dialog (iup:dialog
 		    canvas
 		    :title "IUP 3D OpenGL")))
-      (repaint canvas)
-      ;; (setf (iup:callback canvas :action) 'repaint-cb
-      ;; 	    (iup:callback canvas :idle_action) 'idle-cb)
+      (setf (iup:callback canvas :action) 'repaint-cb
+	    (iup:callback canvas :resize_cb) 'resize-cb)
+      (iup-cffi::%iup-set-function :idle_action (cffi:get-callback 'idle-cb))
+
       (iup:show dialog)
       (iup:main-loop))))
 	    
@@ -73,4 +89,3 @@
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)
   (cube))
-
