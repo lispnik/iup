@@ -100,6 +100,7 @@
   :components ((:file "packages")
 	       (:file "simple-notepad")
 	       (:file "web-browser")
+	       (:file "sample")
 	       (:file "cube")
 	       (:file "teapot"))
   :depends-on (#:alexandria

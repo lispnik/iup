@@ -13,6 +13,11 @@
 	#:alexandria)
   (:export #:sample))
 
+(defpackage #:iup-cube
+  (:use #:common-lisp
+	#:alexandria)
+  (:export #:cube))
+
 (defpackage #:iup-teapot
   (:use #:common-lisp
 	#:alexandria)

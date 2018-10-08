@@ -1,4 +1,4 @@
-(in-package #:iup-teapot)
+(in-package #:iup-cube)
 
 (defvar canvas nil)
 (defvar tt 0)
