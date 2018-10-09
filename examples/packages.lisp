@@ -27,3 +27,7 @@
   (:use #:common-lisp
 	#:alexandria)
   (:export #:teapot))
+
+(defpackage #:iup-dialogs
+  (:use #:common-lisp)
+  (:export #:dialogs))
