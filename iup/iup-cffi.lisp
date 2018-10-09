@@ -66,8 +66,12 @@
 (defcfun (%iup-version "IupVersion") :string)
 (defcfun (%iup-version-date "IupVersionDate") :string)
 (defcfun (%iup-version-number "IupVersionNumber") :int)
-(defcfun (%iup-destroy "IupDestroy") ihandle)
-(defcfun (%iup-detach "IupDetach") ihandle)
+
+(defcfun (%iup-destroy "IupDestroy") :void
+  (handle ihandle))
+
+(defcfun (%iup-detach "IupDetach") :void
+  (handle ihandle))
 
 (defcfun (%iup-append "IupAppend") ihandle
   (handle ihandle)
