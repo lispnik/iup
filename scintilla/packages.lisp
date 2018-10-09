@@ -9,4 +9,5 @@
 	   #:scintilla-send-message
 	   #:open)
   (:import-from #:iup-utils
-		#:alias))
+		#:alias)
+  (:shadow #:open))
