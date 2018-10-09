@@ -109,6 +109,7 @@
 	       #:iup/web
 	       #:iup/plot
 	       #:iup/gl
+	       #:iup/scintilla
 	       #:cl-opengl
 	       #:cl-glut
 	       #:cl-glu))

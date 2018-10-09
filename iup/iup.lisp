@@ -94,7 +94,8 @@
 (defun (setf attribute-callback-handle-dwim) (new-value handle name)
   (let ((name-string (symbol-name name)))
     (cond
-      ((or (ends-with-subseq "_CB" name-string)
+      ((or (string= "ACTION" name-string)
+	   (ends-with-subseq "_CB" name-string)
            (starts-with-subseq "K_" name-string))
        (setf (callback handle name) new-value))
       ((handle-p new-value)

@@ -5,4 +5,8 @@
 (defpackage #:iup-scintilla
   (:use #:common-lisp)
   (:export #:scintilla
-	   #:scintilla-send-message))
+	   #:scintilla-dialog
+	   #:scintilla-send-message
+	   #:open)
+  (:import-from #:iup-utils
+		#:alias))
