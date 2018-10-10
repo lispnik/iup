@@ -2,14 +2,41 @@
 
 ;;; simple_notepad.c
 
-(defun new-file (dialog-handle))
+;;; utilities
+
+(defun write-file (filename string count)
+  (with-open-file (stream filename :direction :output :if-exists :supersede)
+    (write-sequence string stream :end count)))
+
+(defun save-file (handle)
+  (let ((filename (iup:attribute handle :filename))
+	(str (iup:attribute handle :value))
+	(count (iup:attribute handle :count :int)))
+    (when (write-file filename str count)
+      (setf (iup:attribute handle :dirty)  "NO"))))
+
+(defun save-check (handle)
+  (let ((multitext (iup:get-dialog-child handle :multitext)))
+    (unless (zerop (iup:attribute multitext :dirty :int))
+      (ecase (iup:alarm "Warning" "File is not saved! Save it now?" "Yes" "No" "Cancel")
+	(1 (save-file multitext))
+	(2 (return-from save-check t))
+	(3 (return-from save-check nil)))))
+  t)
+;;; callbacks
+
+(cffi:defcallback item-new-action-cb :int ((item-new iup-cffi::ihandle))
+  (when (save-check item-new)
+    (new-file item-new))
+  iup::+default+)
+
 (defun open-file (dialog-handle file))
 
 (defun create-main-dialog (config-handle)
   ;; FIXME how to handle callbacks?
   (let* ((multitext (iup:multi-line :expand "YES" :name "MULTITEXT" :dirty "NO" :caret_cb nil :valuechanged_cb nil :dropfiles_cb nil))
 	 (lbl-statusbar (iup:label :name "STATUSBAR" :expand "HORIZONTAL" :padding "10x5"))
-	 (item-new (iup:item :title "&New	Ctrl+N" :image "IUP_FileNew" :action nil))
+	 (item-new (iup:item :title "&New	Ctrl+N" :image "IUP_FileNew" :action 'item-new-action-cb))
 	 (btn-new (iup:button :image "IUP_FileNew" :flat "YES" :tip "New (Ctrl+N)" :canfocus "NO" :action nil))
 	 (item-open (iup:item :title "&Open...	Ctrl+O" :image "IUP_FileOpen" :action nil))
 	 (btn-open (iup:button :image "IUP_FileOpen" :flat "YES" :tip "Open (Ctrl+O)" :canfocus "NO" :action nil))

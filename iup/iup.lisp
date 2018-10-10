@@ -66,10 +66,21 @@
        (cffi:null-pointer))))
 
 (defun attribute (handle attribute)
+  ;; TODO attribute types call the differnt underlying CFFI function
   (iup-cffi::%iup-get-attribute handle attribute))
 
 (defun (setf attribute) (new-value handle attribute)
-  (iup-cffi::%iup-set-str-attribute handle attribute (or new-value (cffi:null-pointer))))
+  (typecase new-value
+    (string (iup-cffi::%iup-set-str-attribute handle attribute (or new-value (cffi:null-pointer))))
+    (integer (iup-cffi::%iup-set-int-attribute handle attribute new-value))
+    (single-float (iup-cffi::%iup-set-float-attribute handle attribute new-value))
+    (double-float (iup-cffi::%iup-set-double-attribute handle attribute new-value))
+    (t (iup-cffi::%iup-set-str-attribute
+	handle
+	attribute
+	(if new-value
+	    (princ new-value)
+	    (cffi:null-pointer)))))))
 
 (defun (setf attributes) (attributes handle)
   (loop for (attribute value) on attributes by #'cddr

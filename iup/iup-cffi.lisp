@@ -151,7 +151,7 @@
   (name attr-name)
   (value :string))
 
-(defcfun (%iup-get-attribute "IupGetAttribute") :string
+(defcfun (%iup-get-attribute "IupGetAttribute") :pointer
   (handle ihandle)
   (name attr-name))
 
@@ -167,6 +167,21 @@
   (line :int)
   (column :int)
   (value :string))
+
+(defcfun (%iup-set-int-attribute "IupSetInt") :void
+  (handle ihandle)
+  (name attr-name)
+  (value :int))
+
+(defcfun (%iup-set-float-attribute "IupSetFloat") :void
+  (handle ihandle)
+  (name attr-name)
+  (value :float))
+
+(defcfun (%iup-set-double-attribute "IupSetDouble") :void
+  (handle ihandle)
+  (name attr-name)
+  (value :double))
 
 (defcfun (%iup-set-str-global "IupSetStrGlobal") :void
   (name attr-name)
