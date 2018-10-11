@@ -2,9 +2,7 @@
 
 (defvar canvas nil)
 (defvar tt 0.0)
-(defvar vertices
-  #((-1 -1 1) (-1 1 1) (1 1 1) (1 -1 1)
-    (-1 -1 -1) (-1 1 -1) (1 1 -1) (1 -1 -1)))
+(defvar vertices #((-1 -1 1) (-1 1 1) (1 1 1) (1 -1 1) (-1 -1 -1) (-1 1 -1) (1 1 -1) (1 -1 -1)))
 
 (defun polygon (a b c d)
   (gl:begin :polygon)
