@@ -74,6 +74,17 @@
 	       #:iup
 	       #:iup/utils))
 
+(defsystem #:iup/controls
+  :serial t
+  :pathname "controls/"
+  :components ((:file "packages")
+	       (:file "controls-cffi")
+	       (:file "controls"))
+  :depends-on (#:alexandria
+	       #:cffi
+	       #:iup
+	       #:iup/utils))
+
 (defsystem #:iup/mglplot
   :serial t
   :pathname "mglplot/"

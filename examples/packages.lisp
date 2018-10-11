@@ -31,3 +31,7 @@
 (defpackage #:iup-dialogs
   (:use #:common-lisp)
   (:export #:dialogs))
+
+(defpackage #:iup-plottest
+  (:use #:common-lisp)
+  (:export #;plottest))
