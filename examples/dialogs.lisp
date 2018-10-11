@@ -42,7 +42,7 @@
     (unwind-protect
 	 (progn
 	   (iup:popup dialog iup:+center+ iup:+center+)
-	   (iup:message "Result" (format nil "Go button response ~S~%Got font ~S"
+	   (iup:message "Result" (format nil "Got button response ~S~%Got font ~S"
 					 (iup:attribute dialog :status)
 					 (iup:attribute dialog :value)))))))
 
@@ -52,7 +52,7 @@
 	 (progn
 	   (break)
 	   (iup:popup dialog iup:+center+ iup:+center+)
-	   (iup:message "Result" (format nil "Go button response ~S~%Got font ~S"
+	   (iup:message "Result" (format nil "Got button response ~S~%Got font ~S"
 					 (iup:attribute dialog :status)
 					 (iup:attribute dialog :value)))))))
 
