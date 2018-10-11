@@ -34,4 +34,4 @@
 
 (defpackage #:iup-plottest
   (:use #:common-lisp)
-  (:export #;plottest))
+  (:export #:plottest))
