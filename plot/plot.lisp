@@ -1,12 +1,26 @@
 (in-package #:iup-plot)
 
 (alias 'open		#'iup-plot-cffi::%iup-plot-open)
-(alias 'plot		#'iup-plot-cffi::%iup-plot)
+
+(iup::defattributefun plot () (iup-plot-cffi::%iup-plot))
+
 (alias 'begin		#'iup-plot-cffi::%iup-plot-begin)
-(alias 'add		#'iup-plot-cffi::%iup-plot-add)
+(alias 'end		#'iup-plot-cffi::%iup-plot-end)
+
+(defmacro with-plot ((handle &optional (string-x nil)) &body body)
+  (let ((handle-gensym (gensym)))
+    `(let ((,handle-gensym ,handle))
+       (unwind-protect
+	    (progn
+	      (iup-plot:begin ,handle-gensym ,(if string-x 1 0))
+	      ,@body)
+	 (iup-plot:end ,handle-gensym)))))
+
+(defun add (handle x y)
+  (iup-plot-cffi::%iup-plot-add handle (coerce x 'double-float) (coerce y 'double-float)))
+
 (alias 'add-segment	#'iup-plot-cffi::%iup-plot-add-segment)
 (alias 'add-string	#'iup-plot-cffi::%iup-plot-add-str)
-(alias 'end		#'iup-plot-cffi::%iup-plot-end)
 (alias 'load-data	#'iup-plot-cffi::%iup-plot-load-data)
 
 (alias 'insert #'iup-plot-cffi::%iup-plot-insert)
@@ -21,7 +35,7 @@
 
 (alias 'sample #'iup-plot-cffi::%iup-plot-get-sample)
 (alias 'sample-string #'iup-plot-cffi::%iup-plot-get-sample-str)
-(alias 'sample-selection #'iup-plot-cffi::%iup-plot-get-selection)
+(alias 'sample-selection #'iup-plot-cffi::%iup-plot-get-sample-selection)
 
 (alias 'sample-extra #'iup-plot-cffi::%iup-plot-get-sample-extra)
 

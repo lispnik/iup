@@ -1,5 +1,11 @@
 (in-package #:iup-plot-cffi)
 
+(define-foreign-library iupplot
+  (:unix "libiup_plot.so")
+  (t (:default "libiup_plot")))
+
+(use-foreign-library iupplot)
+
 (defcfun (%iup-plot-open "IupPlotOpen") :void)
 
 (defcfun (%iup-plot "IupPlot") iup-cffi::ihandle)

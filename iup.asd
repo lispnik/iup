@@ -61,6 +61,7 @@
 	       #:cffi
 	       #:iup
 	       #:iup/utils
+	       #:iup/controls
 	       #:cd))
 
 (defsystem #:iup/gl
