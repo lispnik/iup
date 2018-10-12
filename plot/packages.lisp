@@ -16,6 +16,7 @@
 	   #:insert
 	   #:insert-string
 	   #:insert-segment
+	   #:insert-samples
 	   #:sample
 	   #:sample-string
 	   #:sample-selection

@@ -1,20 +1,23 @@
 (in-package #:iup-plot)
 
-(alias 'open		#'iup-plot-cffi::%iup-plot-open)
+(alias 'open #'iup-plot-cffi::%iup-plot-open)
 
 (iup::defattributefun plot () (iup-plot-cffi::%iup-plot))
 
-(alias 'begin		#'iup-plot-cffi::%iup-plot-begin)
-(alias 'end		#'iup-plot-cffi::%iup-plot-end)
+(alias 'begin #'iup-plot-cffi::%iup-plot-begin)
+(alias 'end #'iup-plot-cffi::%iup-plot-end)
 
-(defmacro with-plot ((handle &optional (string-x nil)) &body body)
-  (let ((handle-gensym (gensym)))
-    `(let ((,handle-gensym ,handle))
+(defmacro with-plot ((handle &optional string-x-p) &body body)
+  (let ((handle-gensym (gensym))
+	(result (gensym)))
+    `(let ((,handle-gensym ,handle)
+	   ,result)
        (unwind-protect
 	    (progn
-	      (iup-plot:begin ,handle-gensym ,(if string-x 1 0))
+	      (iup-plot:begin ,handle-gensym ,string-x-p)
 	      ,@body)
-	 (iup-plot:end ,handle-gensym)))))
+	 (setf ,result (iup-plot:end ,handle-gensym)))
+       ,result)))
 
 (defun add (handle x y)
   (iup-plot-cffi::%iup-plot-add handle (coerce x 'double-float) (coerce y 'double-float)))
@@ -29,7 +32,20 @@
 
 ;;; FIXME
 ;; (alias 'insert-string-samples #'iup-plot-cffi::%iup-plot-insert-str-samples)
-;; (alias 'insert-samples #'iup-plot-cffi::%iup-plot-insert-samples)
+
+(defun sequence-to-double-float-vector (sequence)
+  (map '(vector double-float *)
+       #'(lambda (x) (coerce x 'double-float))
+       sequence))
+
+(defun insert-samples (handle ds-index sample-index x-sequence y-sequence)
+  (let ((x-length (length x-sequence))
+	(y-length (length y-sequence)))
+    (assert (= x-length y-length))
+    (cffi:with-foreign-array (x-ptr (sequence-to-double-float-vector x-sequence) `(:array :double ,x-length))
+      (cffi:with-foreign-array (y-ptr (sequence-to-double-float-vector y-sequence) `(:array :double ,x-length))
+	(iup-plot-cffi::%iup-plot-insert-samples handle ds-index sample-index x-ptr y-ptr x-length)))))
+
 ;; (alias 'add-samples #'iup-plot-cffi::%iup-plot-add-samples)
 ;; (alias 'add-string-samples #'iup-plot-cffi::%iup-plot-add-str-samples)
 
