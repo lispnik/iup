@@ -4,6 +4,7 @@
 
 (defpackage #:iup-plot
   (:use #:common-lisp)
-  (:export)
+  (:export #:open)
   (:import-from #:iup-utils
-		#:alias))
+		#:alias)
+  (:shadow #:open))

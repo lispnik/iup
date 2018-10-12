@@ -1,5 +1,7 @@
 (in-package #:iup-plot-cffi)
 
+(defcfun (%iup-plot-open "IupPlotOpen") :void)
+
 (defcfun (%iup-plot "IupPlot") iup-cffi::ihandle)
 
 (defcfun (%iup-plot-begin "IupPlotBegin") :void
@@ -99,7 +101,7 @@
   (x (:pointer :string))
   (y (:pointer :double)))
 
-(defcfun (%iup-plot-get-selection "IupPlotGetSelection") :int
+(defcfun (%iup-plot-get-sample-selection "IupPlotGetSampleSelection") :int
   (handle iup-cffi::ihandle)
   (ds-index :int)
   (sample-index :int))
