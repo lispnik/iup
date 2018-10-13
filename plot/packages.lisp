@@ -21,7 +21,9 @@
 	   #:sample-string
 	   #:sample-selection
 	   #:sample-extra
-	   
+
+	   #:transform
+	   #:transform-to
 	   #:paint-to)
   (:import-from #:iup-utils
 		#:alias)

@@ -119,14 +119,91 @@
 	  (iup:attribute plot :ds_mode) "BAR")
     plot))
 
+(defun plot-4 ()
+  (let ((plot (iup-plot:plot :title "Marks Mode"
+			     :axs_xautomin "NO"
+			     :axs_xautomax "NO"
+			     :axs_yautomin "NO"
+			     :axs_yautomax "NO"
+			     :axs_xmin 0
+			     :axs_xmax 0.011
+			     :axs_ymin 0
+			     :axs_ymax 0.22
+			     :axs_xtickformat "%1.3f"
+			     :legendshow "YES"
+			     :legendpos "BOTTOMRIGHT")))
+    (iup-plot:with-plot (plot)
+      (loop with the-fac = 1e-6
+	    for the-i from 0 to 10
+	    for x = (+ 0.0001 (* the-i 0.001))
+	    for y = (+ 0.01 (* the-fac the-i the-i))
+	    do (iup-plot:add plot x y)))
+    (setf (iup:attribute plot :ds_mode) "MARKLINE")
+    (iup-plot:with-plot (plot)
+      (loop with the-fac = 1e-6
+    	   for the-i from 0 to 10
+    	   for x = (+ 0.0001 (* the-i 0.001))
+    	   for y = (- 0.2 (* the-fac the-i the-i))
+    	   do (iup-plot:add plot x y)))
+    (setf (iup:attribute plot :ds_mode) "MARK"
+    	  (iup:attribute plot :ds_markstyle) "HOLLOW_CIRCLE")
+    plot))
+
+(cffi:defcallback delete-cb :int
+    ((handle iup-cffi::ihandle) (index :int) (sample-index :int) (x :double) (y :double))
+  (declare (ignore handle))
+  (iup:message "Delete Callback"
+	       (format nil "index ~A sample-index ~A x ~A y ~A" index sample-index x y))
+  iup::+default+)
+
+(cffi:defcallback select-cb :int
+    ((handle iup-cffi::ihandle) (index :int) (sample-index :int) (x :double) (y :double) (select :int))
+  (declare (ignore handle))
+  (iup:message "Select Callback"
+	       (format nil "index ~A sample-index ~A x ~A y ~A select ~A" index sample-index x y select))
+  iup::+default+)
+
+(cffi:defcallback postdraw-cb :int
+    ((handle iup-cffi::ihandle) (canvas cd-cffi::cd-canvas))
+  (multiple-value-bind (ix iy)
+      (iup-plot:transform handle 0.003 0.02)
+    ;; FIXME cd bindings
+    ;; cdCanvasFont(cnv, NULL, CD_BOLD, 10);
+    ;; cdCanvasTextAlignment(cnv, CD_SOUTH);
+    ;; cdfCanvasText(cnv, ix, iy, "My Inline Legend");
+    (iup:message  "Post Draw Callback"
+		  (format nil "Unimplemented ~A ~A" ix iy)))
+  iup::+default+)
+
+(cffi:defcallback predraw-cb :int
+    ((handle iup-cffi::ihandle) (canvas cd-cffi::cd-canvas))
+    (iup:message  "Pre Draw Callback" "Unimplemented")
+  iup::+default+)
+
+(defun plot-5 ()
+  (let ((plot (iup-plot:plot :title "Data Selection and Editing"))
+	(filename (namestring (make-pathname :name "plot" :type "dat" :defaults #.(or *compile-file-truename* *load-truename*)))))
+    (iup-plot:load-data plot filename nil)
+    (setf (iup:attribute plot :ds_color) "100 100 200"
+	  (iup:attribute plot :editablevalues) "YES"
+	  (iup:attribute plot :readonly) "NO")
+    (setf (iup:callback plot :delete_cb)  'delete-cb
+	  (iup:callback plot :select_cb) 'select-cb
+	  (iup:callback plot :postdraw_cb) 'postdraw-cb
+	  (iup:callback plot :predraw_cb) 'predraw-cb) 
+    plot))
+
 (defun plottest ()
   (iup:with-iup ()
     (iup-controls:open)
     (iup-plot:open)
-    (let* ((vbox (iup:vbox (list (plot-0)
-				 (plot-1)
-				 (plot-2)
-				 (plot-3))))
+    (let* ((vbox (iup:grid-box (list (plot-0)
+				     (plot-1)
+				     (plot-2)
+				     (plot-3)
+				     (plot-4)
+				     (plot-5))
+			       :numdiv 3))
 	   (dialog (iup:dialog vbox :title "IUP Plot Test" :rastersize "800x600")))
       (iup:show-xy dialog iup:+center+ iup:+center+)
       (iup:main-loop))))

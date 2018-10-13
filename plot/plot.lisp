@@ -82,6 +82,14 @@
 ;; (defun (setf sample-selection ()))
 ;; (defun (setf sample-extra ()))
 
+(defun transform (handle x y)
+  (cffi:with-foreign-objects
+      ((ix :double)
+       (iy :double))
+    (iup-plot-cffi::%iup-plot-transform handle (coerce x 'double-float) (coerce y 'double-float) ix iy)
+    (values (cffi:mem-ref ix :double)
+	    (cffi:mem-ref iy :double))))
+
 ;;; TODO
 ;; (alias 'transform #'iup-plot-cffi::%iup-plot-transform
 ;; (alias 'transform-to #'iup-plot-cffi::%iup-plot-transform-to
