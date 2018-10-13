@@ -279,7 +279,7 @@
 				     (plot-10)
 				     (plot-11))
 			       :numdiv 4))
-	   (dialog (iup:dialog vbox :title "IUP Plot Test" :rastersize "800x600")))
+	   (dialog (iup:dialog vbox :title "IUP Plot Test" :rastersize "1280x1024")))
       (iup:show-xy dialog iup:+center+ iup:+center+)
       (iup:main-loop))))
 
