@@ -7,14 +7,14 @@
 (alias 'begin #'iup-plot-cffi::%iup-plot-begin)
 (alias 'end #'iup-plot-cffi::%iup-plot-end)
 
-(defmacro with-plot ((handle &optional string-x-p) &body body)
+(defmacro with-plot ((handle &key x-labels) &body body)
   (let ((handle-gensym (gensym))
 	(result (gensym)))
     `(let ((,handle-gensym ,handle)
 	   ,result)
        (unwind-protect
 	    (progn
-	      (iup-plot:begin ,handle-gensym ,string-x-p)
+	      (iup-plot:begin ,handle-gensym ,x-labels)
 	      ,@body)
 	 (setf ,result (iup-plot:end ,handle-gensym)))
        ,result)))
@@ -23,7 +23,10 @@
   (iup-plot-cffi::%iup-plot-add handle (coerce x 'double-float) (coerce y 'double-float)))
 
 (alias 'add-segment	#'iup-plot-cffi::%iup-plot-add-segment)
-(alias 'add-string	#'iup-plot-cffi::%iup-plot-add-str)
+
+(defun add-string (handle x-label y)
+  (iup-plot-cffi::%iup-plot-add-str handle x-label (coerce y 'double-float)))
+
 (alias 'load-data	#'iup-plot-cffi::%iup-plot-load-data)
 
 (alias 'insert #'iup-plot-cffi::%iup-plot-insert)

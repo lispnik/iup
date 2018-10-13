@@ -2,7 +2,7 @@
 
 (define-foreign-library iupplot
   (:unix "libiup_plot.so")
-  (t (:default "libiup_plot")))
+  (t (:default "iup_plot")))
 
 (use-foreign-library iupplot)
 

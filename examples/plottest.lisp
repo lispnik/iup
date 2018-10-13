@@ -11,9 +11,7 @@
 			     :axs_xlabel "gnu (foo)"
 			     :axs_ylabel "Space (m^3)"
 			     :axs_xcrossorigin "YES"
-			     :axs_ycrossorigin "YES"
-			     :ds_linewidth 3
-			     :ds_legend "Curve 1")))
+			     :axs_ycrossorigin "YES")))
     ;; add example
     (iup-plot:with-plot (plot)
       (loop with the-fac = 1e-6
@@ -21,6 +19,8 @@
 	    for x = (+ the-i 50)
 	    for y = (* the-fac (expt the-i 3))
 	    do (iup-plot:add plot x y)))
+    (setf (iup:attribute plot :ds_legend) "Curve 1"
+	  (iup:attribute plot :ds_linewidth) 3)
     ;; insert example
     (let ((index (iup-plot:with-plot (plot)
 		   (loop with the-fac = 0.02
@@ -44,7 +44,8 @@
 	      for x = (- (* 0.01 the-i the-i) 30)
 	      for y = (* 0.01 the-i )
 	      do (iup-plot:add plot x y)))
-      (setf (iup:attribute plot :ds_legend) "Curve 2"))))
+      (setf (iup:attribute plot :ds_legend) "Curve 2"))
+    plot))
 
 (defun plot-1 ()
   (let ((plot (iup-plot:plot :title "No Autoscale+No CrossOrigin"
@@ -62,16 +63,70 @@
 			     :axs_ymax 0.5
 			     :axs_xfontstyle "ITALIC"
 			     :axs_yfontstyle "BOLD"
-			     
-			     )))))
+			     :axs_xreverse "YES"
+			     :gridcolor "128 255 128"
+			     :gridlinestyle "DOTTED"
+			     :grid "YES"
+			     :legendshow "YES"
+			     :axs_xlabelcentered "YES"
+			     :axs_ylabelcentered "YES"
+			     :graphicsmode "IMAGERGB")))
+    (iup-plot:with-plot (plot)
+      (loop with the-fac = 1e-6
+	    for the-i from 0 to 100
+	    for x = the-i
+	    for y = (* the-fac (expt the-i 3))
+	    do (iup-plot:add plot x y)))
+    (iup-plot:with-plot (plot)
+      (loop with the-fac = 0.02
+	    for the-i from 0 to 100
+	    for x = the-i
+	    for y = (- (* the-fac the-i))
+	    do (iup-plot:add plot x y)))
+    plot))
 
+(defun plot-2 ()
+  (let ((plot (iup-plot:plot :title "Log Scale"
+			     :titlefontsize 16
+			     :margintop 40
+			     :marginleft 70
+			     :marginbottom 60
+			     :grid "YES"
+			     :axs_xscale "LOG10"
+			     :axs_yscale "LOG2"
+			     :axs_xlabel "Tg (X)"
+			     :axs_ylabel "Tg (Y)"
+			     :axs_xfontstyle "BOLD"
+			     :axs_yfontstyle "BOLD")))
+    (iup-plot:with-plot (plot)
+      (loop with the-fac = 1e-6
+	    for the-i from 0 to 100
+	    for x = (+ 0.0001 (* the-i 0.001))
+	    for y = (+ 0.01 (* the-fac (expt the-i 3)))
+	    do (iup-plot:add plot x y)))
+    (setf (iup:attribute plot :ds_color)  "100 100 200"
+	  (iup:attribute plot :ds_linestyle) "DOTTED")
+    plot))
+
+
+(defun plot-3 ()
+  (let ((plot (iup-plot:plot :title "Bar Mode")))
+    (iup-plot:with-plot (plot :x-labels t)
+      (loop for label in '("jan" "feb" "mar" "apr" "may" "jun" "jul" "aug" "sep" "oct" "nov" "dec")
+	    for data in '(10 20 30 40 50 60 70 80 90 0 10 20)
+	    do (iup-plot:add-string plot label data)))
+    (setf (iup:attribute plot :ds_color)  "100 100 200"
+	  (iup:attribute plot :ds_mode) "BAR")
+    plot))
 
 (defun plottest ()
   (iup:with-iup ()
     (iup-controls:open)
     (iup-plot:open)
-    (let* ((plot (plot-1))
-	   (vbox (iup:vbox (list plot)))
+    (let* ((vbox (iup:vbox (list (plot-0)
+				 (plot-1)
+				 (plot-2)
+				 (plot-3))))
 	   (dialog (iup:dialog vbox :title "IUP Plot Test" :rastersize "800x600")))
       (iup:show-xy dialog iup:+center+ iup:+center+)
       (iup:main-loop))))
