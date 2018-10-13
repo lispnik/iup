@@ -56,8 +56,6 @@
 (alias 'sample-string #'iup-plot-cffi::%iup-plot-get-sample-str)
 (alias 'sample-selection #'iup-plot-cffi::%iup-plot-get-sample-selection)
 
-(alias 'sample-extra #'iup-plot-cffi::%iup-plot-get-sample-extra)
-
 ;; (defstruct sample
 ;;   (x 0 :type double)
 ;;   (y 0 :type double))
@@ -80,7 +78,9 @@
 
 ;; (defun (setf sample-string) ())
 ;; (defun (setf sample-selection ()))
-;; (defun (setf sample-extra ()))
+
+(defun (setf sample-extra) (new-value handle ds-index sample-index)
+  (iup-plot-cffi::%iup-plot-set-sample-extra handle ds-index sample-index (coerce new-value 'double-float)))
 
 (defun transform (handle x y)
   (cffi:with-foreign-objects

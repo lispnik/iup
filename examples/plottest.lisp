@@ -171,13 +171,14 @@
     ;; cdCanvasFont(cnv, NULL, CD_BOLD, 10);
     ;; cdCanvasTextAlignment(cnv, CD_SOUTH);
     ;; cdfCanvasText(cnv, ix, iy, "My Inline Legend");
-    (iup:message  "Post Draw Callback"
-		  (format nil "Unimplemented ~A ~A" ix iy)))
+    ;; (iup:message  "Post Draw Callback"
+    ;; 		  (format nil "Unimplemented ~A ~A" ix iy))
+    )
   iup::+default+)
 
 (cffi:defcallback predraw-cb :int
     ((handle iup-cffi::ihandle) (canvas cd-cffi::cd-canvas))
-    (iup:message  "Pre Draw Callback" "Unimplemented")
+;;    (iup:message  "Pre Draw Callback" "Unimplemented")
   iup::+default+)
 
 (defun plot-5 ()
@@ -193,6 +194,74 @@
 	  (iup:callback plot :predraw_cb) 'predraw-cb) 
     plot))
 
+(defun plot-6 ()
+  (let ((plot (iup-plot:plot :title "Horizontal Bar Mode")))
+    (iup-plot:with-plot (plot)
+      (loop for label in '(10 20 30 40 50 60 70 80 90 0 10 20)
+	    for data in (loop for i from 1 to 12 collect i)
+	    do (iup-plot:add plot label data)))
+    (setf (iup:attribute plot :ds_color)  "100 100 200"
+	  (iup:attribute plot :ds_mode) "HORIZONTALBAR")
+    plot))
+
+(defun plot-7 ()
+  (let ((plot (iup-plot:plot :title "Step Curve")))
+    (iup-plot:with-plot (plot)
+      (loop with pi2 = (* 2 pi)
+	    for x from 0 to pi2 by (/ pi2 40)
+	    for y = (sin x)
+	    do (iup-plot:add plot x y)))
+    (setf (iup:attribute plot :ds_mode) "STEP")
+    plot))
+
+(defun plot-8 ()
+  (let ((plot (iup-plot:plot :title "Stem Mode"
+			     :legendshow "YES")))
+    (iup-plot:with-plot (plot)
+      (loop for x from 0 to pi by (/ pi 10)
+	    for y = (cos x)
+	    do (iup-plot:add plot x y)))
+    (setf (iup:attribute plot :ds_mode) "MARKSTEM"
+	  (iup:attribute plot :ds_legend) "cos")
+    plot))
+
+(defun plot-9 ()
+  (let ((plot (iup-plot:plot :title "Multi Bar Mode"))
+	(data '(10 20 30 40 50 60 70 80 90 0 10 20))
+	(months '("jan" "feb" "mar" "apr" "may" "jun" "jul" "aug" "sep" "oct" "nov" "dec")))
+    (loop repeat 3
+	  do (progn
+	       (iup-plot:with-plot (plot :x-labels t)
+		 (loop for label in months
+		       for y in data
+		       do (iup-plot:add-string plot label (* y (random 1.0)))))
+	       (setf (iup:attribute plot :ds_mode) "MULTIBAR")))
+    plot))
+
+(defun plot-10 ()
+  ;; FIXME
+  (let ((plot (iup-plot:plot :title "Error Bar")))
+    (iup-plot:with-plot (plot)
+      (loop with pi2 = (* 2 pi)
+	    for x from 0 to pi2 by (/ pi2 40)
+	    for y = (sin x)
+	    for i from 0
+	    do (progn
+		 (iup-plot:add plot x y)
+		 (setf (iup-plot:sample-extra plot 0 i) (random 0.15)))))
+    (setf (iup:attribute plot :ds_mode) "ERRORBAR")
+    plot))
+
+(defun plot-11 ()
+  (let ((plot (iup-plot:plot :title "Pie Mode")))
+    (iup-plot:with-plot (plot :x-labels t)
+      (loop for label in '("jan" "feb" "mar" "apr" "may" "jun" "jul" "aug" "sep" "oct" "nov" "dec")
+	    for data in '(10 20 30 40 50 60 70 80 90 0 10 20)
+	    do (iup-plot:add-string plot label data)))
+    (setf (iup:attribute plot :ds_pieslicelabel) "X"
+	  (iup:attribute plot :ds_mode) "PIE")
+    plot))
+
 (defun plottest ()
   (iup:with-iup ()
     (iup-controls:open)
@@ -202,8 +271,14 @@
 				     (plot-2)
 				     (plot-3)
 				     (plot-4)
-				     (plot-5))
-			       :numdiv 3))
+				     (plot-5)
+				     (plot-6)
+				     (plot-7)
+				     (plot-8)
+				     (plot-9)
+				     (plot-10)
+				     (plot-11))
+			       :numdiv 4))
 	   (dialog (iup:dialog vbox :title "IUP Plot Test" :rastersize "800x600")))
       (iup:show-xy dialog iup:+center+ iup:+center+)
       (iup:main-loop))))
