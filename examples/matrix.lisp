@@ -4,7 +4,12 @@
   (let ((matrix (iup-controls:matrix
 		 :numlin 20
 		 :numcol 8)))
-    (setf (iup:attribute-id-2 matrix :|| 1 1) (format nil "5.6~%3.33"))
+    (setf (iup:attribute-id-2 matrix :|| 1 1) "5.6"
+	  (iup:attribute-id-2 matrix :|| 2 1) 2.2 ;FIXME single floats not setting...
+	  (iup:attribute-id-2 matrix :|| 3 2) "Very Very Very Very Very Large Text"
+	  (iup:attribute-id-2 matrix :|| 1 2) 4
+	  )
+    
     matrix))
 
 (defun matrix ()
