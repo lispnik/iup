@@ -2,7 +2,7 @@
 
 (define-foreign-library iupplot
   (:unix "libiup_plot.so")
-  (t (:default "libiup_plot")))
+  (t (:default "iup_plot")))
 
 (use-foreign-library iupplot)
 
@@ -12,7 +12,7 @@
 
 (defcfun (%iup-plot-begin "IupPlotBegin") :void
   (handle iup-cffi::ihandle)
-  (str-x-data :int))
+  (str-x-data :boolean))
 
 (defcfun (%iup-plot-add "IupPlotAdd") :void
   (handle iup-cffi::ihandle)
@@ -35,7 +35,7 @@
 (defcfun (%iup-plot-load-data "IupPlotLoadData") :int
   (handle iup-cffi::ihandle)
   (filename :string)
-  (str-x-data :int))
+  (str-x-data :boolean))
 
 ;; /* available only when linking with "iupluaplot" */
 ;; int IupPlotSetFormula(Ihandle* ih, int sample_count, const char* formula, const char* init);

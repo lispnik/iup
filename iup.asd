@@ -122,6 +122,7 @@
 	       #:iup/plot
 	       #:iup/gl
 	       #:iup/scintilla
+	       #:cd
 	       #:cl-opengl
 	       #:cl-glut
 	       #:cl-glu))
