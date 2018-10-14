@@ -6,4 +6,23 @@
 
 (use-foreign-library iupcontrols)
 
-(defcfun (iup-controls-cffi::%iup-controls-open "IupControlsOpen") :void)
+(defcfun (%iup-controls-open "IupControlsOpen") :void)
+
+(defcfun (%iup-cells "IupCells") iup-cffi::ihandle)
+
+(defcfun (%iup-matrix "IupMatrix") iup-cffi::ihandle
+  (action :pointer))
+
+(defcfun (%iup-matrix-set-formula "IupMatrixSetFormula") :void
+  (handle iup-cffi::ihandle)
+  (col :int)
+  (formula :string)
+  (init :string))
+
+(defcfun (%iup-matrix-set-dynamic "IupMatrixSetDynamic") :void
+  (handle iup-cffi::ihandle)
+  (init :string))
+
+(defcfun (%iup-matrix-ex "IupMatrixEx") iup-cffi::ihandle)
+
+(defcfun (%iup-matrix-list "IupMatrixList") iup-cffi::ihandle)

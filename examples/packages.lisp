@@ -35,3 +35,7 @@
 (defpackage #:iup-plottest
   (:use #:common-lisp)
   (:export #:plottest))
+
+(defpackage #:iup-matrix
+  (:use #:common-lisp)
+  (:export #:matrix))

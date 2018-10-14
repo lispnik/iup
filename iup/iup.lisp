@@ -104,9 +104,28 @@
   ;; FIXME implement
   )
 
+(defun attribute-id-2 (handle attribute line column &optional (type :string))
+  (declare (type attribute-type type))
+  (case type
+    (:int (iup-cffi::%iup-get-int-attribute-id-2 handle attribute line column))
+    (:float (iup-cffi::%iup-get-float-attribute-id-2 handle attribute line column))
+    (:double (iup-cffi::%iup-get-double-attribute-id-2 handle attribute line column))
+    (:string (iup-cffi::%iup-get-attribute-id-2 handle attribute line column))))
+  
 (defun (setf attribute-id-2) (new-value handle attribute line column)
-  ;; FIXME implement
-  )
+    (typecase new-value
+    (string (iup-cffi::%iup-set-str-attribute-id-2 handle attribute line column (or new-value (cffi:null-pointer))))
+    (integer (iup-cffi::%iup-set-int-attribute-id-2 handle attribute line column new-value))
+    (single-float (iup-cffi::%iup-set-float-attribute-id-2 handle attribute line column new-value))
+    (double-float (iup-cffi::%iup-set-double-attribute-id-2 handle attribute line column new-value))
+    (t (iup-cffi::%iup-set-str-attribute-id-2
+	handle
+	attribute
+	line
+	column
+	(if new-value
+	    (princ new-value)
+	    (cffi:null-pointer))))))
 
 (defun (setf attribute-callback-handle-dwim) (new-value handle name)
   (let ((name-string (symbol-name name)))
