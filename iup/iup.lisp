@@ -113,7 +113,7 @@
     (:string (iup-cffi::%iup-get-attribute-id-2 handle attribute line column))))
   
 (defun (setf attribute-id-2) (new-value handle attribute line column)
-    (typecase new-value
+  (typecase new-value
     (string (iup-cffi::%iup-set-str-attribute-id-2 handle attribute line column (or new-value (cffi:null-pointer))))
     (integer (iup-cffi::%iup-set-int-attribute-id-2 handle attribute line column new-value))
     (single-float (iup-cffi::%iup-set-float-attribute-id-2 handle attribute line column new-value))

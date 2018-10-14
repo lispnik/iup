@@ -4,7 +4,7 @@
   (let ((matrix (iup-controls:matrix
 		 :numlin 20
 		 :numcol 8)))
-    (setf (iup:attribute matrix "1:1") (format nil "5.6~%3.33"))
+    (setf (iup:attribute-id-2 matrix :|| 1 1) (format nil "5.6~%3.33"))
     matrix))
 
 (defun matrix ()
