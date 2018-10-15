@@ -1,5 +1,3 @@
-#-asdf3 (error "IUP requires ASDF 3")
-
 (defsystem #:iup
   :description "CFFI bindings to the IUP Portable User Interface library"
   :author "Matthew Kennedy <burnsidemk@gmail.com>"
@@ -23,22 +21,6 @@
 	       (:file "utils"))
   :depends-on (#:alexandria
 	       #:cffi))
-
-(defsystem #:iup
-  :description "CFFI bindings to the IUP Portable User Interface library"
-  :author "Matthew Kennedy <burnsidemk@gmail.com>"
-  :homepage "https://github.com/lispnik/iup"
-  :licence "MIT"
-  :version (:read-file-line "version.txt")
-  :serial t
-  :pathname "iup/"
-  :components ((:file "packages")
-	       (:file "reload")
-	       (:file "iup-cffi")
-	       (:file "iup"))
-  :depends-on (#:alexandria
-	       #:cffi
-	       #:iup/utils))
 
 (defsystem #:iup/scintilla
   :serial t
@@ -70,6 +52,17 @@
   :components ((:file "packages")
 	       (:file "gl-cffi")
 	       (:file "gl"))
+  :depends-on (#:alexandria
+	       #:cffi
+	       #:iup
+	       #:iup/utils))
+
+(defsystem #:iup/glcontrols
+  :serial t
+  :pathname "glcontrols/"
+  :components ((:file "packages")
+	       (:file "glcontrols-cffi")
+	       (:file "glcontrols"))
   :depends-on (#:alexandria
 	       #:cffi
 	       #:iup
@@ -126,11 +119,9 @@
 	       #:iup/web
 	       #:iup/plot
 	       #:iup/gl
+	       #:iup/glcontrols
 	       #:iup/scintilla
 	       #:cd
 	       #:cl-opengl
 	       #:cl-glut
 	       #:cl-glu))
-
-
-;;; glcontrols
