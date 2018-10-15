@@ -115,7 +115,11 @@
 	       (:file "web-browser")
 	       (:file "sample")
 	       (:file "cube")
-	       (:file "teapot"))
+	       (:file "teapot")
+	       (:file "plottest")
+	       (:file "cells")
+	       (:file "matrix")
+	       #+windows (:file "windows"))
   :depends-on (#:alexandria
 	       #:iup
 	       #:iup/web

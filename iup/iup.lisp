@@ -65,7 +65,7 @@
        (cffi:get-callback new-value)
        (cffi:null-pointer))))
 
-(deftype attribute-type () '(member :int :float :double :string))
+(deftype attribute-type () '(member :int :float :double :string :pointer))
 
 (defun attribute (handle attribute &optional (type :string))
   (declare (type attribute-type type))
@@ -73,7 +73,8 @@
     (:int (iup-cffi::%iup-get-int-attribute handle attribute))
     (:float (iup-cffi::%iup-get-float-attribute handle attribute))
     (:double (iup-cffi::%iup-get-double-attribute handle attribute))
-    (:string (iup-cffi::%iup-get-attribute handle attribute))))
+    (:string (iup-cffi::%iup-get-attribute handle attribute))
+    (:pointer (iup-cffi::%iup-get-pointer-attribute handle attribute))))
 
 (defun (setf attribute) (new-value handle attribute)
   (typecase new-value

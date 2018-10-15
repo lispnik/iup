@@ -155,6 +155,11 @@
   (handle ihandle)
   (name attr-name))
 
+(defcfun (%iup-get-pointer-attribute "IupGetAttribute") :pointer
+  ;; same thing, no conversion
+  (handle ihandle)
+  (name attr-name))
+
 (defcfun (%iup-set-str-attribute-id "IupSetStrAttributeId") :void
   (handle ihandle)
   (name attr-name)

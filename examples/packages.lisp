@@ -43,3 +43,8 @@
 (defpackage #:iup-cells
   (:use #:common-lisp)
   (:export #:cells))
+
+#+windows
+(defpackage #:iup-flashbar
+  (:use #:common-lisp)
+  (:export #:flashbar))
