@@ -39,3 +39,7 @@
 (defpackage #:iup-matrix
   (:use #:common-lisp)
   (:export #:matrix))
+
+(defpackage #:iup-cells
+  (:use #:common-lisp)
+  (:export #:cells))
