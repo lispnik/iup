@@ -118,6 +118,7 @@
 	       (:file "teapot")
 	       (:file "plottest")
 	       (:file "cells")
+	       (:file "cells-numbered")
 	       (:file "matrix")
 	       #+windows (:file "windows"))
   :depends-on (#:alexandria

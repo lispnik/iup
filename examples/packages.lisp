@@ -42,7 +42,8 @@
 
 (defpackage #:iup-cells
   (:use #:common-lisp)
-  (:export #:cells))
+  (:export #:checkerboard
+	   #:numbered))
 
 #+windows
 (defpackage #:iup-flashbar
