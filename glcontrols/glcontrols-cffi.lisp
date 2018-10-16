@@ -35,7 +35,6 @@
 (defcfun (%iup-glcontrols-scroll-bar "IupGLScrollBar") iup-cffi::ihandle (child iup-cffi::ihandle))
 (defcfun (%iup-glcontrols-size-box "IupGLSizeBox") iup-cffi::ihandle (child iup-cffi::ihandle))
 
-
 (defcfun (%iup-glcontrols-draw-image "IupGLDrawImage") :void
   (child iup-cffi::ihandle)
   (name :string)
@@ -44,13 +43,22 @@
   (active :int))
 
 (defcfun (%iup-glcontrols-draw-text "IupGLDrawText") :void
-  (child iup-cffi::ihandle))
+  (child iup-cffi::ihandle)
+  (string :string)
+  (length :int)
+  (x :int)
+  (y :int))
 
-(defcfun (%iup-glcontrols-draw-image "IupGLDrawImage") :void
-  (child iup-cffi::ihandle))
-(defcfun (%iup-glcontrols-draw-image "IupGLDrawImage") :void
-  (child iup-cffi::ihandle))
-;; void IupGLDrawImage(Ihandle* ih, const char* name, int x, int y, int active);
-;; void IupGLDrawText(Ihandle* ih, const char* str, int len, int x, int y);
-;; void IupGLDrawGetTextSize(Ihandle* ih, const char* str, int *w, int *h);
-;; void IupGLDrawGetImageInfo(const char* name, int *w, int *h, int *bpp);
+(defcfun (%iup-glcontrols-draw-get-text-size "IupGLDrawGetTextSize") :void
+  (child iup-cffi::ihandle)
+  (string :string)
+  (length :int)
+  (x (:pointer :int))
+  (y (:pointer :int)))
+
+(defcfun (%iup-glcontrols-draw-get-image-info "IupGLDrawGetImageInfo") :void
+  (child iup-cffi::ihandle)
+  (name :string)
+  (w (:pointer :int))
+  (h (:pointer :int))
+  (bpp (:pointer :int)))
