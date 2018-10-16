@@ -1,9 +1,8 @@
 (in-package #:iup-gl)
 
-(alias 'open   #'iup-gl-cffi::%iup-gl-canvas-open)
-
 (iup::defattributefun canvas () (iup-gl-cffi::%iup-gl-canvas (cffi:null-pointer)))
 
+(alias 'open            #'iup-gl-cffi::%iup-gl-canvas-open)
 (alias 'make-current    #'iup-gl-cffi::%iup-gl-make-current)
 (alias 'current-p       #'iup-gl-cffi::%iup-gl-is-current)
 (alias 'swap-buffers    #'iup-gl-cffi::%iup-gl-swap-buffers)
