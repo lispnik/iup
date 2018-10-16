@@ -1,4 +1,4 @@
-(in-package #:iup-web-browser)
+(in-package #:iup-examples.web-browser)
 
 ;;; webbrowser.c
 

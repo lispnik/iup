@@ -1,4 +1,4 @@
-(in-package #:iup-teapot)
+(in-package #:iup-examples.teapot)
 
 (defun teapot ()
   (iup:with-iup ()

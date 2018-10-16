@@ -1,4 +1,4 @@
-(in-package #:iup-buttons)
+(in-package #:iup-examples.buttons)
 
 ;;; Demonstrate setting a button action at creation time (via keyword paremeter
 ;;; and at post creation, using (setf callback).

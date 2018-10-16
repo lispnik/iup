@@ -1,4 +1,4 @@
-(in-package #:iup-simple-notepad)
+(in-package #:iup-examples.simple-notepad)
 
 ;;; simple_notepad.c
 

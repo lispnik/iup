@@ -1,4 +1,4 @@
-(in-package #:iup-dialogs)
+(in-package #:iup-examples.dialogs)
 
 (cffi:defcallback file-dialog-cb :int ((handle iup-cffi::ihandle))
   (let ((dialog (iup:file-dialog)))

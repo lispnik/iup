@@ -1,4 +1,4 @@
-(in-package #:iup-sample)
+(in-package #:iup-examples.sample)
 
 (declaim (declaration load-image-tecgraf load-image-logo-tecgraph *image-bits*))
 

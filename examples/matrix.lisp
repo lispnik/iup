@@ -1,4 +1,4 @@
-(in-package #:iup-matrix)
+(in-package #:iup-examples.matrix)
 
 (defun create-matrix ()
   (let ((matrix (iup-controls:matrix

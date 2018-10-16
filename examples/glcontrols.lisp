@@ -1,4 +1,4 @@
-(in-package #:iup-examples.cube)
+(in-package #:iup-examples.glcontrols)
 
 (defvar canvas nil)
 (defvar tt 0.0)

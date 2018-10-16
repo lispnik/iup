@@ -1,1 +1,1 @@
-(in-package #:iup-cells)
+(in-package #:iup-examples.cells)

@@ -1,4 +1,4 @@
-(in-package #:iup-cells)
+(in-package #:iup-examples.cells)
 
 (cffi:defcallback nlines-cb :int ((handle iup-cffi::ihandle)) 8)
 (cffi:defcallback ncols-cb :int ((handle iup-cffi::ihandle)) 8)

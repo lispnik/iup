@@ -1,4 +1,4 @@
-(in-package #:iup-flashbar)
+(in-package #:iup-examples.flashbar)
 
 (cffi:define-foreign-library user32
   (:windows "user32.dll"))

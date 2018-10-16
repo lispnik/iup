@@ -1,4 +1,4 @@
-(in-package #:iup-plottest)
+(in-package #:iup-examples.plottest)
 
 (cffi:defcallback action-cb :int ((handle iup-cffi::ihandle))
   (declare (ignore handle))
