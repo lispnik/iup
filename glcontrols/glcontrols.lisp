@@ -1,6 +1,6 @@
 (in-package #:iup-glcontrols)
 
-(alias 'open   #'iup-glcontrols-cffi::%iup-glcontrols-open)
+(alias 'open #'iup-glcontrols-cffi::%iup-glcontrols-open)
 
 (iup::defattributefun-children canvas-box iup-glcontrols-cffi::%iup-glcontrols-canvas-box)
 
@@ -13,7 +13,6 @@
 (iup::defattributefun button () (iup-glcontrols-cffi::%iup-glcontrols-label nil))
 (iup::defattributefun toggle () (iup-glcontrols-cffi::%iup-glcontrols-toggle nil))
 (iup::defattributefun link () (iup-glcontrols-cffi::%iup-glcontrols-link nil nil))
-
 (iup::defattributefun frame (child) (iup-glcontrols-cffi::%iup-glcontrols-frame child))
 (iup::defattributefun expander (child) (iup-glcontrols-cffi::%iup-glcontrols-expander child))
 (iup::defattributefun scroll-box (child) (iup-glcontrols-cffi::%iup-glcontrols-scroll-box child))
@@ -22,7 +21,7 @@
 (defun draw-text (handle text x y)
   (iup-glcontrols-cffi::%iup-glcontrols-draw-text handle text -1 x y))
 
-(iup-utils:alias 'draw-image #'iup-glcontrols-cffi::%iup-glcontrols-draw-image)
+(alias 'draw-image #'iup-glcontrols-cffi::%iup-glcontrols-draw-image)
 
 (defun get-text-size (handle text)
   (cffi:with-foreign-objects
