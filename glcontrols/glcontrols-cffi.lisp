@@ -38,28 +38,27 @@
 (defcfun (%iup-glcontrols-size-box "IupGLSizeBox") iup-cffi::ihandle (child iup-cffi::ihandle))
 
 (defcfun (%iup-glcontrols-draw-image "IupGLDrawImage") :void
-  (child iup-cffi::ihandle)
+  (handle iup-cffi::ihandle)
   (name :string)
   (x :int)
   (y :int)
-  (active :int))
+  (active-p :boolean))
 
 (defcfun (%iup-glcontrols-draw-text "IupGLDrawText") :void
-  (child iup-cffi::ihandle)
+  (handle iup-cffi::ihandle)
   (string :string)
   (length :int)
   (x :int)
   (y :int))
 
 (defcfun (%iup-glcontrols-draw-get-text-size "IupGLDrawGetTextSize") :void
-  (child iup-cffi::ihandle)
+  (handle iup-cffi::ihandle)
   (string :string)
   (length :int)
   (x (:pointer :int))
   (y (:pointer :int)))
 
 (defcfun (%iup-glcontrols-draw-get-image-info "IupGLDrawGetImageInfo") :void
-  (child iup-cffi::ihandle)
   (name :string)
   (w (:pointer :int))
   (h (:pointer :int))
