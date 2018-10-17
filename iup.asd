@@ -113,6 +113,7 @@
 	       (:file "cells")
 	       (:file "cells-numbered")
 	       (:file "matrix")
+	       (:file "glcontrols")
 	       #+windows (:file "windows"))
   :depends-on (#:alexandria
 	       #:iup

@@ -8,7 +8,7 @@
 
 (defcfun (%iup-glcontrols-open "IupGLControlsOpen") :int)
 
-(defcfun (%iup-glcontrols-canvas-box "IupCanvasBoxv") iup-cffi::ihandle
+(defcfun (%iup-glcontrols-canvas-box "IupGLCanvasBoxv") iup-cffi::ihandle
   (children :pointer))
 
 (defcfun (%iup-glcontrols-sub-canvas "IupGLSubCanvas") iup-cffi::ihandle)

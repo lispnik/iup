@@ -52,7 +52,8 @@
   (iup-cffi::%iup-get-attribute-handle handle name))
 
 (defun (setf attribute-handle) (new-value handle name)
-  (iup-cffi::%iup-set-attribute-handle handle name new-value))
+  (iup-cffi::%iup-set-attribute-handle handle name new-value)
+  new-value)
 
 (defun callback (handle name)
   (iup-cffi::%iup-get-callback handle name))
@@ -63,7 +64,8 @@
    name
    (if new-value
        (cffi:get-callback new-value)
-       (cffi:null-pointer))))
+       (cffi:null-pointer)))
+  new-value)
 
 (deftype attribute-type () '(member :int :float :double :string :pointer))
 
@@ -87,13 +89,14 @@
 	attribute
 	(if new-value
 	    (princ new-value)
-	    (cffi:null-pointer))))))
+	    (cffi:null-pointer)))))
+  new-value)
 
 (defun (setf attributes) (attributes handle)
   (loop for (attribute value) on attributes by #'cddr
         do (progn
              (setf (attribute handle attribute) value))
-        finally (return handle)))
+        finally (return attributes)))
 
 (defun attributes (handle)
 ;;   (iup-cffi::%iup-get-all-attributes)
