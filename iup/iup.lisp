@@ -9,16 +9,17 @@
        (zerop (cffi:mem-ref handle :char 3))))
 
 (defun get-classname-names (classname name-producer)
-  (let* ((max-n (funcall name-producer classname (cffi:null-pointer) 0))
-         (array (cffi:foreign-alloc :pointer :initial-element (cffi:null-pointer) :count max-n :null-terminated-p t)))
-    (unwind-protect
-         (progn
-           (funcall name-producer classname array max-n)
-           (loop for i below max-n
-                 for ref = (cffi:mem-aref array :pointer i)
-                 until (cffi:null-pointer-p ref)
-                 collect (make-keyword (cffi:foreign-string-to-lisp ref))))
-      (foreign-free array))))
+  (let ((max-n (funcall name-producer classname (cffi:null-pointer) 0)))
+    (unless (= max-n -1)
+      (let ((array (cffi:foreign-alloc :pointer :initial-element (cffi:null-pointer) :count max-n :null-terminated-p t)))
+	(unwind-protect
+	     (progn
+	       (funcall name-producer classname array max-n)
+	       (loop for i below max-n
+		     for ref = (cffi:mem-aref array :pointer i)
+		     until (cffi:null-pointer-p ref)
+		     collect (make-keyword (cffi:foreign-string-to-lisp ref))))
+	  (foreign-free array))))))
 
 (defun class-attributes (classname)
   (get-classname-names classname #'iup-cffi::%iup-get-class-attributes))
@@ -242,8 +243,8 @@
 (alias 'map                     #'iup-cffi::%iup-map)
 (alias 'unmap                   #'iup-cffi::%iup-unmap)
 (alias 'reset-attribute         #'iup-cffi::%iup-reset-attribute)
-(alias 'set-gloabl              #'iup-cffi::%iup-set-str-global)
-(alias 'get-gloabl              #'iup-cffi::%iup-get-global)
+(alias 'set-global              #'iup-cffi::%iup-set-str-global)
+(alias 'get-global              #'iup-cffi::%iup-get-global)
 (alias 'set-focus               #'iup-cffi::%iup-set-focus)
 (alias 'get-focus               #'iup-cffi::%iup-get-focus)
 (alias 'previous-field          #'iup-cffi::%iup-previous-field)

@@ -299,9 +299,10 @@
 					      :buffer "DOUBLE"
 					      :margin "10x10"))
 	   (dialog (iup:dialog
-		    (iup:vbox (list (iup-glcontrols:canvas-box (list canvas) :depth-size 16)))
+		    (iup:vbox (list canvas))
 		    :title "IUPGLControls Test"
 		    :rastersize "800x600")))
+      (iup:set-global :globallayoutdlgkey "YES")
       (iup:map dialog)
       (iup-gl:make-current canvas)
       (format t "Version: ~A~%" (gl:gl-version))

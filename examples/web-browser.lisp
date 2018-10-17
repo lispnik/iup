@@ -49,7 +49,7 @@
 
 (defun web-browser ()
   (iup:with-iup ()
-    (iup-web:web-browser-open)
+    (iup-web:open)
     (let* ((btn-back (iup:button :title "Back" :action 'back-cb))
 	   (btn-forward (iup:button :title "Forward" :action 'forward-cb))
 	   (text (iup:text :expand "HORIZONTAL" :value "https://lisp-lang.org"))

@@ -149,7 +149,7 @@
 	   #:config-dialog-closed
 
 	   #:all-classes
-	   #:class-attibutes
+	   #:class-attributes
 	   #:class-callbacks
 	   #:class-name
 	   #:class-type
