@@ -23,6 +23,6 @@
   (iup-scintilla:open)
   (iup-plot:open)
   (iup-web:open)
-  (build-class-db #p "/Users/Matthew/quicklisp/local-projects/iup/classes.lisp-sexp"))
+  (build-class-db #p "/home/mkennedy/Projects/local-projects/lispnik/iup/classes.lisp-sexp2"))
 
 
