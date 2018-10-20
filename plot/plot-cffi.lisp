@@ -1,14 +1,13 @@
 (in-package #:iup-plot-cffi)
 
-(define-foreign-library iupplot
+(define-foreign-library iup-plot
   (:unix "libiup_plot.so")
+  (:windows "iup_plot.dll")
   (t (:default "iup_plot")))
 
-(use-foreign-library iupplot)
+(use-foreign-library iup-plot)
 
 (defcfun (%iup-plot-open "IupPlotOpen") :void)
-
-(defcfun (%iup-plot "IupPlot") iup-cffi::ihandle)
 
 (defcfun (%iup-plot-begin "IupPlotBegin") :void
   (handle iup-cffi::ihandle)

@@ -2,8 +2,6 @@
 
 (alias 'open #'iup-plot-cffi::%iup-plot-open)
 
-(iup::defattributefun plot () (iup-plot-cffi::%iup-plot))
-
 (alias 'begin #'iup-plot-cffi::%iup-plot-begin)
 (alias 'end #'iup-plot-cffi::%iup-plot-end)
 

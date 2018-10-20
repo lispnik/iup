@@ -1,7 +1,5 @@
 (in-package #:iup-gl)
 
-(iup::defattributefun canvas () (iup-gl-cffi::%iup-gl-canvas (cffi:null-pointer)))
-
 (alias 'open            #'iup-gl-cffi::%iup-gl-canvas-open)
 (alias 'make-current    #'iup-gl-cffi::%iup-gl-make-current)
 (alias 'current-p       #'iup-gl-cffi::%iup-gl-is-current)

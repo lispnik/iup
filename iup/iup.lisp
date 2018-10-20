@@ -250,35 +250,9 @@
 (alias 'previous-field          #'iup-cffi::%iup-previous-field)
 (alias 'next-field              #'iup-cffi::%iup-next-field)
 
-(defattributefun fill () (iup-cffi::%iup-fill))
-(defattributefun space () (iup-cffi::%iup-space))
-(defattributefun radio (child) (iup-cffi::%iup-radio child))
 
-(defmacro defattributefun-children (name func)
-  `(defattributefun ,name (children)
-     (let ((array (foreign-alloc 'iup-cffi::ihandle :initial-contents children :null-terminated-p t)))
-       (unwind-protect
-            (,func array)
-         (foreign-free array)))))
 
-(defattributefun-children vbox          iup-cffi::%iup-vbox-v)
-(defattributefun-children zbox          iup-cffi::%iup-zbox-v)
-(defattributefun-children hbox          iup-cffi::%iup-hbox-v)
-(defattributefun-children normalizer    iup-cffi::%iup-normalizer-v)
-(defattributefun-children cbox          iup-cffi::%iup-cbox-v)
-
-(defattributefun sbox                   (child) (iup-cffi::%iup-sbox child))
-(defattributefun split                  (child1 child2) (iup-cffi::%iup-split child1 child2))
-(defattributefun scroll-box             (child) (iup-cffi::%iup-scroll-box child))
-(defattributefun flat-scroll-box        (child) (iup-cffi::%iup-flat-scroll-box child))
-
-(defattributefun-children grid-box      iup-cffi::%iup-gridbox-v)
-
-(defattributefun expander       (child) (iup-cffi::%iup-expander child))
-(defattributefun detach-box     (child) (iup-cffi::%iup-detach-box child))
-(defattributefun background-box (child) (iup-cffi::%iup-background-box child))
-(defattributefun frame          (child) (iup-cffi::%iup-frame child))
-(defattributefun flat-frame     (child) (iup-cffi::%iup-flat-frame child))
+;;;  IMAGES?
 
 (defattributefun image (width height pixels)
   (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height))))

@@ -1,15 +1,13 @@
 (in-package #:iup-gl-cffi)
 
-(define-foreign-library iupgl
+(define-foreign-library iup-gl
   (:unix "libiupgl.so")
+  (:windows "iupgl.dll")
   (t (:default "iupgl")))
 
-(use-foreign-library iupgl)
+(use-foreign-library iup-gl)
 
 (defcfun (%iup-gl-canvas-open "IupGLCanvasOpen") :void)
-
-(defcfun (%iup-gl-canvas "IupGLCanvas") iup-cffi::ihandle
-  (action :string))
 
 (defcfun (%iup-gl-make-current "IupGLMakeCurrent") :void
   (handle iup-cffi::ihandle))

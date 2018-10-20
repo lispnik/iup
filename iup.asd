@@ -7,7 +7,6 @@
   :serial t
   :pathname "iup/"
   :components ((:file "packages")
-	       (:file "reload")
 	       (:file "iup-cffi")
 	       (:file "iup"))
   :depends-on (#:alexandria
@@ -18,7 +17,8 @@
   :serial t
   :pathname "utils/"
   :components ((:file "packages")
-	       (:file "utils"))
+	       (:file "utils")
+	       (:file "classes"))
   :depends-on (#:alexandria
 	       #:cffi))
 
@@ -82,7 +82,8 @@
 (defsystem #:iup/mglplot
   :serial t
   :pathname "mglplot/"
-  :components ((:file "mglplot-cffi")
+  :components ((:file "packages")
+	       (:file "mglplot-cffi")
 	       (:file "mglplot"))
   :depends-on (#:alexandria
 	       #:cffi

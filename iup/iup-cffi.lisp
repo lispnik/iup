@@ -1,5 +1,18 @@
 (in-package #:iup-cffi)
 
+(define-foreign-library iup
+  (:unix "libiup.so")
+  (:windows "iup.dll")
+  (t (:default "iup")))
+
+(define-foreign-library iup-imglib
+  (:unix "libiupimglib.so")
+  (:windows "iupimglib.dll")
+  (t (:default "iupimglib")))
+
+(use-foreign-library iup)
+(use-foreign-library iup-imglib)
+
 (define-foreign-type ihandle ()
   ()
   (:actual-type :pointer)
@@ -344,160 +357,6 @@
 ;; Ihandle*  IupCreate (const char *classname);
 ;; Ihandle*  IupCreatev(const char *classname, void* *params);
 ;; Ihandle*  IupCreatep(const char *classname, void* first, ...);
-
-(defcfun (%iup-fill "IupFill") ihandle)
-(defcfun (%iup-space "IupSpace") ihandle)
-
-(defcfun (%iup-radio "IupRadio") ihandle
-  (child ihandle))
-
-(defcfun (%iup-vbox-v "IupVboxv") ihandle
-  (children :pointer))
-
-(defcfun (%iup-zbox-v "IupZboxv") ihandle
-  (children :pointer))
-
-(defcfun (%iup-hbox-v "IupHboxv") ihandle
-  (children :pointer))
-
-(defcfun (%iup-normalizer-v "IupNormalizerv") ihandle
-  (children :pointer))
-
-(defcfun (%iup-cbox-v "IupCboxv") ihandle
-  (children :pointer))
-
-(defcfun (%iup-sbox "IupSbox") ihandle
-  (child ihandle))
-
-(defcfun (%iup-split "IupSplit") ihandle
-  (child1 ihandle)
-  (child2 ihandle))
-
-(defcfun (%iup-scroll-box "IupScrollBox") ihandle
-  (child ihandle))
-
-(defcfun (%iup-flat-scroll-box "IupFlatScrollBox") ihandle
-  (child ihandle))
-
-(defcfun (%iup-gridbox-v "IupGridBoxv") ihandle
-  (children :pointer))
-
-(defcfun (%iup-expander "IupExpander") ihandle
-  (child ihandle))
-
-(defcfun (%iup-detach-box "IupDetachBox") ihandle
-  (child ihandle))
-
-(defcfun (%iup-background-box "IupBackgroundBox") ihandle
-  (child ihandle))
-
-(defcfun (%iup-frame "IupFrame") ihandle
-  (child ihandle))
-
-(defcfun (%iup-flat-frame "IupFlatFrame") ihandle
-  (child ihandle))
-
-(defcfun (%iup-image "IupImage") ihandle
-  (width :int)
-  (height :int)
-  (pixmap :pointer))
-
-(defcfun (%iup-image-rgb "IupImageRGB") ihandle
-  (width :int)
-  (height :int)
-  (pixmap :pointer))
-
-(defcfun (%iup-image-rgba "IupImageRGBA") ihandle
-  (width :int)
-  (height :int)
-  (pixmap :pointer))
-
-(defcfun (%iup-item "IupItem") ihandle
-  (title :string)
-  (action :string))
-
-(defcfun (%iup-separator "IupSeparator") ihandle)
-
-(defcfun (%iup-submenu "IupSubmenu") ihandle
-  (title :string)
-  (menu ihandle))
-
-(defcfun (%iup-menu-v "IupMenuv") ihandle
-  (children :pointer))
-
-(defcfun (%iup-button "IupButton") ihandle
-  (title :string)
-  (action :string))
-
-(defcfun (%iup-flat-button "IupFlatButton") ihandle
-  (title :string))
-
-(defcfun (%iup-flat-toggle "IupFlatToggle") ihandle
-  (title :string))
-
-(defcfun (%iup-drop-button "IupDropButton") ihandle
-  (drop-child ihandle))
-
-(defcfun (%iup-flat-label "IupFlatLabel") ihandle
-  (title :string))
-
-(defcfun (%iup-flat-separator "IupFlatSeparator") ihandle)
-
-(defcfun (%iup-canvas "IupCanvas") ihandle
-  (action :string))
-
-(defcfun (%iup-dialog "IupDialog") ihandle
-  (child ihandle))
-
-(defcfun (%iup-user "IupUser") ihandle)
-
-(defcfun (%iup-label "IupLabel") ihandle
-  (title :string))
-
-(defcfun (%iup-list "IupList") ihandle
-  (action :string))
-
-(defcfun (%iup-text "IupText") ihandle
-  (action :string))
-
-(defcfun (%iup-multi-line "IupMultiLine") ihandle
-  (action :string))
-
-(defcfun (%iup-toggle "IupToggle") ihandle
-  (title :string)
-  (action :string))
-
-(defcfun (%iup-timer "IupTimer") ihandle)
-(defcfun (%iup-clipboard "IupClipboard") ihandle)
-(defcfun (%iup-progress-bar "IupProgressBar") ihandle)
-
-(defcfun (%iup-val "IupVal") ihandle
-  (type :string))
-
-(defcfun (%iup-tabs-v "IupTabsv") ihandle
-  (children :pointer))
-
-(defcfun (%iup-flat-tabs-v "IupFlatTabsv") ihandle
-  (children :pointer))
-
-(defcfun (%iup-tree "IupTree") ihandle)
-
-(defcfun (%iup-link "IupLink") ihandle
-  (url :string)
-  (title :string))
-
-(defcfun (%iup-animated-label "IupAnimatedLabel") ihandle
-  (animation ihandle))
-
-(defcfun (%iup-date-pick "IupDatePick") ihandle)
-(defcfun (%iup-calendar "IupCalendar") ihandle)
-(defcfun (%iup-colorbar "IupColorbar") ihandle)
-(defcfun (%iup-gauge "IupGauge") ihandle)
-
-(defcfun (%iup-dial "IupDial") ihandle
-  (orientation :string))
-
-(defcfun (%iup-color-browser "IupColorBrowser") ihandle)
 
 ;; /* String compare utility */
 ;; int IupStringCompare(const char* str1, const char* str2, int casesensitive, int lexicographic);
