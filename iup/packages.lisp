@@ -162,7 +162,8 @@
 	   #:attribute-id-2
 	   #:attributes
 	   #:callback
-	   #:handle)
+	   #:handle
+	   #:platform)
   (:shadow #:open
 	   #:close
 	   #:map

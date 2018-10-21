@@ -21,12 +21,6 @@
 introspection. This describes the static metadata that is augmented
 with IUP metadata upon introspection.")
 
-(defun platform ()
-  "Mapping from trivial-features -provided features to classesdb platform keywords."
-  #+windows :windows
-  #+linux :linux
-  #+(and unix (not linux)) :unix)
-
 (defun create-classesdb ()
   "Create a printable representaion of IUP metadata containing enough
 information to create the Lisp API at compilation time."

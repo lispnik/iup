@@ -1,5 +1,11 @@
 (in-package #:iup)
 
+(defun platform ()
+  "Mapping from trivial-features -provided features to classesdb platform keywords."
+  #+windows :windows
+  #+linux :linux
+  #+(and unix (not linux)) :unix)
+
 (defun handle-p (handle)
   (and (cffi:pointerp handle)
        (not (cffi:null-pointer-p handle))
