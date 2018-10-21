@@ -1,6 +1,6 @@
-(in-package #:iup)
+(in-package #:iup-utils)
 
-(defun build-class-db (pathname)
+(defun build-classesdb (pathname)
   (with-open-file (stream pathname :direction :output :if-exists :supersede)
     (write 
      (mapcar #'(lambda (classname)
@@ -16,7 +16,6 @@
      :pretty t
      :right-margin 80))
   (values))
-
 
 (defparameter *metadata*
   '((:init iup-controls:open)

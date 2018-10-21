@@ -36,7 +36,8 @@
            (loop for i below max-n
                  for ref = (cffi:mem-aref array :pointer i)
                  until (cffi:null-pointer-p ref)
-                 collect (cffi:foreign-string-to-lisp ref)))
+                 collect (cffi:foreign-string-to-lisp ref) into result
+		 finally (return (sort result #'string<))))
       (cffi:foreign-free array))))
 
 (defun class-name (handle)
@@ -271,51 +272,6 @@
     (unwind-protect
 	 (iup-cffi::%iup-image-rgba width height array)
       (cffi:foreign-free array))))
-
-(defattributefun item () (iup-cffi::%iup-item (cffi:null-pointer) (cffi:null-pointer)))
-
-(alias 'separator #'iup-cffi::%iup-separator)
-
-(defattributefun submenu (menu) (iup-cffi::%iup-submenu (cffi:null-pointer) menu))
-
-(defattributefun-children menu iup-cffi::%iup-menu-v)
-
-(defattributefun button         () (iup-cffi::%iup-button (cffi:null-pointer) (cffi:null-pointer)))
-(defattributefun flat-button    () (iup-cffi::%iup-flat-button (cffi:null-pointer)))
-(defattributefun flat-toggle    () (iup-cffi::%iup-flat-toggle (cffi:null-pointer)))
-(defattributefun drop-button    () (iup-cffi::%iup-drop-button (cffi:null-pointer)))
-(defattributefun flat-label     () (iup-cffi::%iup-flat-label (cffi:null-pointer)))
-(defattributefun flat-separator () (iup-cffi::%iup-flat-separator))
-(defattributefun canvas         () (iup-cffi::%iup-canvas (cffi:null-pointer)))
-(defattributefun dialog         (child) (iup-cffi::%iup-dialog child))
-(defattributefun user           () (iup-cffi::%iup-user))
-(defattributefun label          () (iup-cffi::%iup-label (cffi:null-pointer)))
-(defattributefun list           () (iup-cffi::%iup-list (cffi:null-pointer)))
-(defattributefun text           () (iup-cffi::%iup-text (cffi:null-pointer)))
-(defattributefun multi-line     () (iup-cffi::%iup-multi-line (cffi:null-pointer)))
-(defattributefun toggle         () (iup-cffi::%iup-toggle (cffi:null-pointer) (cffi:null-pointer)))
-(defattributefun timer          () (iup-cffi::%iup-timer))
-(defattributefun clipboard      () (iup-cffi::%iup-clipboard))
-(defattributefun progress-bar   () (iup-cffi::%iup-progress-bar))
-(defattributefun val            () (iup-cffi::%iup-val (cffi:null-pointer)))
-
-(defattributefun-children tabs      iup-cffi::%iup-tabs-v)
-(defattributefun-children flat-tabs iup-cffi::%iup-flat-tabs-v)
-
-(defattributefun tree            () (iup-cffi::%iup-tree))
-(defattributefun link            () (iup-cffi::%iup-link (cffi:null-pointer) (cffi:null-pointer)))
-(defattributefun animated-label  () (iup-cffi::%iup-animated-label (cffi:null-pointer)))
-(defattributefun date-pick       () (iup-cffi::%iup-date-pick))
-(defattributefun calendar        () (iup-cffi::%iup-calendar))
-(defattributefun colorbar        () (iup-cffi::%iup-colorbar))
-(defattributefun gauge           () (iup-cffi::%iup-gauge))
-(defattributefun dial            () (iup-cffi::%iup-dial (cffi:null-pointer)))
-(defattributefun color-browser   () (iup-cffi::%iup-color-browser))
-(defattributefun file-dialog     () (iup-cffi::%iup-file-dlg))
-(defattributefun message-dialog  () (iup-cffi::%iup-message-dlg))
-(defattributefun color-dialog    () (iup-cffi::%iup-color-dlg))
-(defattributefun font-dialog     () (iup-cffi::%iup-font-dlg))
-(defattributefun progress-dialog () (iup-cffi::%iup-progress-dlg))
 
 (alias 'message       #'iup-cffi::%iup-message)
 (alias 'message-error #'iup-cffi::%iup-message-error)

@@ -17,8 +17,7 @@
   :serial t
   :pathname "utils/"
   :components ((:file "packages")
-	       (:file "utils")
-	       (:file "classes"))
+	       (:file "utils"))
   :depends-on (#:alexandria
 	       #:cffi))
 
@@ -100,6 +99,23 @@
 	       #:iup
 	       #:iup/utils))
 
+(defsystem #:iup/all
+  :depends-on (#:iup
+	       #:iup/controls
+	       #:iup/plot
+	       #:iup/mglplot
+	       #:iup/gl
+	       #:iup/glcontrols
+	       #:iup/scintilla
+	       #:iup/web))
+
+(defsystem #:iup/classesdb
+  :serial t
+  :pathname "classesdb/"
+  :components ((:file "packages")
+	       (:file "classesdb"))
+  :depends-on (#:iup/all))
+
 (defsystem #:iup/examples
   :serial t
   :pathname "examples/"
@@ -127,3 +143,4 @@
 	       #:cl-opengl
 	       #:cl-glut
 	       #:cl-glu))
+
