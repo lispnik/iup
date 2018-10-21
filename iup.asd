@@ -99,11 +99,23 @@
 	       #:iup
 	       #:iup/utils))
 
+#+windows
+(defsystem #:iup/olecontrol
+  :serial t
+  :pathname "olecontrol/"
+  :components ((:file "packages")
+	       (:file "olecontrol-cffi")
+	       (:file "olecontrol"))
+  :depends-on (#:alexandria
+	       #:iup
+	       #:iup/utils))
+
 (defsystem #:iup/all
   :depends-on (#:iup
 	       #:iup/controls
 	       #:iup/plot
 	       #:iup/mglplot
+	       #+windows #:iup/olecontrol
 	       #:iup/gl
 	       #:iup/glcontrols
 	       #:iup/scintilla
