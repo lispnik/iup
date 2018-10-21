@@ -7,6 +7,7 @@
   :serial t
   :pathname "iup/"
   :components ((:file "packages")
+	       (:file "reload")
 	       (:file "iup-cffi")
 	       (:file "iup"))
   :depends-on (#:alexandria
@@ -126,7 +127,8 @@
   :pathname "classesdb/"
   :components ((:file "packages")
 	       (:file "classesdb"))
-  :depends-on (#:iup/all))
+  :depends-on (#:iup/all
+	       #:trivial-features))
 
 (defsystem #:iup/examples
   :serial t
