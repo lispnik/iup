@@ -6,7 +6,8 @@
   #+linux :linux
   #+(and unix (not linux)) :unix)
 
-(let* ((class-metadata '(:CLASSNAME "animatedlabel" :CHILD-P t :CHILDREN-P NIL :OVERRIDE-P NIL :ATTRIBUTES
+(let* ((class-metadata '(:CLASSNAME "animatedlabel" :CHILD-P t :CHILDREN-P NIL :OVERRIDE-P NIL :VANITY-CLASSNAME "ANIMATED-LABEL"
+			 :ATTRIBUTES
 			 (:ACTIVE :ALIGNMENT :ANIMATION :ANIMATION_HANDLE :BGCOLOR :CANFOCUS :CHARSIZE :DRAGCURSOR
 			  :DRAGCURSORCOPY :DRAGDROP :DRAGSOURCE :DRAGSOURCEMOVE :DRAGTYPES :DROPFILESTARGET :DROPTARGET
 				  :DROPTYPES :ELLIPSIS :EXPAND :EXPANDWEIGHT :FGCOLOR :FLOATING :FONT :FONTFACE :FONTSIZE
@@ -25,12 +26,16 @@
 				      (intern (symbol-name keyword)))
 				  (cl:append (getf class-metadata :attributes)
 					     (getf class-metadata :callbacks))))
-       (classname (getf class-metadata :classname)))
+       (classname (getf class-metadata :classname))
+       (vanity-classname (getf class-metadata :vanity-classname)))
   (with-gensyms (children children-pointer handle child i)
-    `(defun foo (,@(cond (child-p '(child))
-			 (children-p '(children))
-			 (t nil))
-		 &rest rest &key ,@keyword-arguments)
+    `(defun ,(intern (if vanity-classname
+			 vanity-classname
+			 (string-upcase classname)))
+	 (,@(cond (child-p '(child))
+		  (children-p '(children))
+		  (t nil))
+	  &rest rest &key ,@keyword-arguments)
        (let ((,handle
 	       ,(if (or child-p children-p)
 		    `(let ((,children ,(cond (child-p '(list child))
@@ -48,7 +53,6 @@
 			    ,children-pointer))))
 		    `(iup-cffi::%iup-create ,classname (cffi:null-pointer)))))
 	 ,handle))))
-
 
 (defun handle-p (handle)
   (and (cffi:pointerp handle)
