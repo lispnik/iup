@@ -341,9 +341,9 @@
 
 ;; int       IupClassMatch(Ihandle* ih, const char* classname);
 
-;; Ihandle*  IupCreate (const char *classname);
-;; Ihandle*  IupCreatev(const char *classname, void* *params);
-;; Ihandle*  IupCreatep(const char *classname, void* first, ...);
+(defcfun (%iup-create "IupCreatev") iup-cffi::ihandle
+  (classname :string)
+  (params :pointer))
 
 ;; /* String compare utility */
 ;; int IupStringCompare(const char* str1, const char* str2, int casesensitive, int lexicographic);
