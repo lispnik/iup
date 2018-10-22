@@ -1,5 +1,38 @@
 (in-package #:iup-classesdb)
 
+(defparameter *globally-readonly-attributes*
+  '(:wid :hwnd :xwindow :xdisplay
+    :modal :activewindow :maximized :minimized :mdiactive :mdinext
+    :drawdriver))
+
+(defparameter *classname-readonly-attributes-alist*
+  '(("filedlg" (:fileexist :status :value :multivaluecount))
+    ("colordlg" (:status))
+    ("fontdg" (:status))
+    ("fill" (:expand))
+    ("gridbox" (:numcol :numlin))
+    ("flatframe" (:decoration :decoroffset :decorsize))
+    ("tabs" (:count))
+    ("flattabs" (:count :hasfocus :buttonexpandpos))
+    ("flatscrollbox" (:scrollbar))
+    ("animatedlabel" (:running :framecount))
+    ("flatbutton" (:hasfocus :highlighted :pressed :radio))
+    ("dropbutton" (:hasfocus :highlighted :pressed))
+    ("calendar" (:today))
+    ("colorbar" (:count))
+    ("datepick" (:today))
+    ("list" (:count))
+    ("text" (:count :linecount :linevalue))
+    ("toggle" (:radio))
+    ("flattoggle" (:hasfocus :highlighted :pressed :radio))
+    ("tree" (:count :rootcount))
+    ("cells" (:canvas :first_col :first_line :image_canvas))
+    ("matrix" (:editing :edittext :editvalue :editcell))
+    ("matrixex" (:editing :edittext :editvalue :editcell :lasterror))
+    ("matrixlist" (:colorcol :imagecol :labelcol))
+    ;; TODO ...
+    )
+
 (defparameter *static-metadata*
   (list (list :initializer 'iup:open
 	      :child-p '("submenu" "spinbox" "radio" "backgroundbox" "scrollbox" "flatscrollbox"
