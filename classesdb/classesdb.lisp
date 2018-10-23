@@ -5,6 +5,30 @@
     :modal :activewindow :maximized :minimized :mdiactive :mdinext
     :drawdriver))
 
+(defparameter *libraries*
+  (list (list :initializer 'iup:open)
+	(list :initializer 'iup-controls:open)
+	(list :initializer 'iup-glcontrols:open)
+	(list :initializer 'iup-gl:open)
+	(list :initializer 'iup-scintilla:open)
+	(list :initializer 'iup-plot:open)
+	(list :initializer 'iup-mglplot:open)
+	#+windows (list :initializer 'iup-olecontrol:open)
+	(list :initializer 'iup-web:open :classname-excludes '("iupolecontrol"))
+	#+windows (list :initializer 'iup-olecontrol:open)))
+
+(loop with base-classnames = (iup:with-iup () (iup:all-classes))
+      for module-metadata in *libraries*
+      for initializer = (getf module-metadata :initializer)
+      for classes = (iup:with-iup () (funcall initializer) (iup:all-classes))
+      for classname-excludes = (getf module-metadata :classname-excludes)
+      for difference = (remove-if #'(lambda (classname)
+				      (find classname classname-excludes :test #'string=))
+				  (if (eq initializer 'iup:open)
+				      base-classnames
+				      (set-difference classes base-classnames :test #'string=)))
+      collect (list* :initializer initializer :classnames difference))
+
 (defparameter *classname-readonly-attributes-alist*
   '(("filedlg" (:fileexist :status :value :multivaluecount))
     ("colordlg" (:status))
@@ -31,7 +55,7 @@
     ("matrixex" (:editing :edittext :editvalue :editcell :lasterror))
     ("matrixlist" (:colorcol :imagecol :labelcol))
     ;; TODO ...
-    )
+    ))
 
 (defparameter *static-metadata*
   (list (list :initializer 'iup:open

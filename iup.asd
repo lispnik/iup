@@ -125,10 +125,14 @@
 (defsystem #:iup/classesdb
   :serial t
   :pathname "classesdb/"
-  :components ((:file "packages")
+  :components ((:module :spec
+		:pathname "spec/")
+	       (:file "packages")
+	       (:file "autowrap")
 	       (:file "classesdb"))
   :depends-on (#:iup/all
-	       #:trivial-features))
+	       #:trivial-features
+	       #:cl-autowrap))
 
 (defsystem #:iup/examples
   :serial t
