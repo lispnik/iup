@@ -1,5 +1,39 @@
 (in-package #:iup-classesdb)
 
+(iup:with-iup ()
+  (let* ((class (iup-classesdb-cffi.functions:iup-register-find-class "button"))
+	 (table (iup-classesdb-cffi.accessors:iclass-.attrib-func class)))
+    (iup-classesdb-cffi.functions:iup-table-count table)
+    (loop for attrib = (iup-classesdb-cffi.functions:iup-table-first table)
+	    then (iup-classesdb-cffi.functions:iup-table-next table)
+	  while attrib
+	  collect (cons attrib 
+			(cffi:with-foreign-objects
+			    ((get :pointer)
+			     (set :pointer)
+			     (default-value :pointer)
+			     (system-default :pointer)
+			     (flags :int))
+			  (iup-classesdb-cffi.functions:iup-class-register-get-attribute
+			   class
+			   attrib
+			   get
+			   set
+			   default-value
+			   system-default
+			   flags)
+			  (list
+			   :type (iup-classesdb-cffi.functions:iup-table-get-curr-type table)
+			   :get (cffi:mem-ref get :pointer)
+			   :set (cffi:mem-ref set :pointer)
+			   :default-value (cffi:foreign-string-to-lisp (cffi:mem-aref default-value :pointer))
+			   :system-default (cffi:foreign-string-to-lisp (cffi:mem-aref system-default :pointer))
+			   :flags (cffi:mem-ref flags :int)))))))
+
+;; iupClassRegisterGetAttribute (Iclass *ic, const char *name, IattribGetFunc *get, IattribSetFunc *set, const char **default_value, const char **system_default, int *flags)
+
+
+
 (defparameter *globally-readonly-attributes*
   '(:wid :hwnd :xwindow :xdisplay
     :modal :activewindow :maximized :minimized :mdiactive :mdinext
