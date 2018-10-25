@@ -132,7 +132,8 @@
 	       (:file "classesdb"))
   :depends-on (#:iup/all
 	       #:trivial-features
-	       #:cl-autowrap))
+	       #:cl-autowrap
+	       #:local-time))
 
 (defsystem #:iup/examples
   :serial t

@@ -106,7 +106,7 @@
     (:initializer iup-scintilla:open
      :vanity-alist (("scintilladlg" . "scintilla-dialog")))
     (:initializer iup-web:open
-     :classname-excludes '("olecontrol")
+     :classname-excludes ("olecontrol")
      :vality-alist (("webbrowser" . "web-browser"))))
   "Not everything about the IUP APIs can be extracted by
 introspection. This describes the static metadata that is augmented
@@ -115,8 +115,9 @@ with IUP metadata upon introspection.")
 (defun create-classesdb ()
   "Create a printable representaion of IUP metadata containing enough
 information to create the Lisp API at compilation time."
-  (flet ((sort-keywords (keywords)
-	   (sort keywords #'string< :key #'symbol-name)))
+  (flet ((vanity-name (vanity-alist classname)
+	   (if-let (vanity-name (assoc-value vanity-alist classname :test #'string=))
+	     (string-upcase vanity-name))))
     (loop with base-classnames = (iup:with-iup () (iup:all-classes))
 	  for metadata in *static-metadata*
 	  for initializer = (getf metadata :initializer)
@@ -131,52 +132,21 @@ information to create the Lisp API at compilation time."
 	  for child-p = (getf metadata :child-p)
 	  for override-p = (getf metadata :override-p)
 	  for vanity-alist = (getf metadata :vanity-alist)
-	  collect (iup:with-iup ()
-		    (funcall initializer)
-		    (list :package (package-name (symbol-package initializer))
-			  :classnames
-			  (loop for classname in difference
-				collect (list :classname classname
-					      :child-p (and (find classname child-p :test #'string=) t)
-					      :children-p (and (find classname children-p :test #'string=) t)
-					      :override-p (and (find classname override-p :test #'string=) t)
-					      :vanity-classname (if-let (vanity-name (assoc-value vanity-alist classname :test #'string=))
-								  (string-upcase vanity-name))
-					      :attributes (sort-keywords (iup:class-attributes classname))
-					      :callbacks (sort-keywords (iup:class-callbacks classname))))))
+	  collect
+	  (iup:with-iup ()
+	    (funcall initializer)
+	    (list :package (package-name (symbol-package initializer))
+		  :classnames
+		  (loop for classname in difference
+			collect
+			(list :classname classname
+			      :child-p (and (find classname child-p :test #'string=) t)
+			      :children-p (and (find classname children-p :test #'string=) t)
+			      :override-p (and (find classname override-p :test #'string=) t)
+			      :vanity-classname (vanity-name vanity-alist classname)
+			      :attributes (class-metadata classname)))))
 	    into result
-	  finally (return (list* :platform (platform) :metadata result)))))
-
-(iup:with-iup ()
-  (print (classes-metadata)))
-
-(defparameter *libraries*
-  (list (list :initializer 'iup:open)
-	(list :initializer 'iup-controls:open)
-	(list :initializer 'iup-glcontrols:open)
-	(list :initializer 'iup-gl:open)
-	(list :initializer 'iup-scintilla:open)
-	(list :initializer 'iup-plot:open)
-	(list :initializer 'iup-mglplot:open)
-	#+windows (list :initializer 'iup-olecontrol:open)
-	(list :initializer 'iup-web:open :classname-excludes '("iupolecontrol"))
-	#+windows (list :initializer 'iup-olecontrol:open)))
-
-(loop with base-classnames = (iup:with-iup () (iup:all-classes))
-      for module-metadata in *libraries*
-      for initializer = (getf module-metadata :initializer)
-      for classes = (iup:with-iup () (funcall initializer) (iup:all-classes))
-      for classname-excludes = (getf module-metadata :classname-excludes)
-      for difference = (remove-if #'(lambda (classname)
-				      (find classname classname-excludes :test #'string=))
-				  (if (eq initializer 'iup:open)
-				      base-classnames
-				      (set-difference classes base-classnames :test #'string=)))
-      collect (list* :initializer initializer :classnames difference))
-
-
-
-
+	  finally (return (list* :platform (iup:platform) :metadata result)))))
 
 (defun classesdb-pathname ()
   (asdf:system-relative-pathname "iup" "classesdb" :type "lisp-sexp"))
@@ -192,7 +162,7 @@ information to create the Lisp API at compilation time."
 	  (:platform :unix)))))
 
 (defun update-classesdbs (current-classesdbs classesdb)
-  (let ((our-platform (platform)))
+  (let ((our-platform (iup:platform)))
     (mapcar #'(lambda (existing-classesdb)
 		(if (eq (getf existing-classesdb :platform) our-platform)
 		    classesdb
@@ -201,10 +171,15 @@ information to create the Lisp API at compilation time."
 
 (defun write-classesdbs (classesdbs)
   (with-open-file (stream (classesdb-pathname) :direction :output :if-exists :supersede)
+    (format stream ";;; generated at ~A for IUP ~A -*-lisp-*-~%~%"
+	    (local-time:format-timestring nil (local-time:universal-to-timestamp (get-universal-time))
+					  :timezone local-time:+utc-zone+)
+	    (iup:with-iup () (iup:version)))
     (write classesdbs :stream stream :pretty t :right-margin 100)))
 
 (defun regenerate ()
   (let* ((current-classesdbs (read-classesdbs))
 	 (new-classesdb (create-classesdb))
-	 (updated-classesdbs (update-classesdb current-classesdbs new-classesdb)))
-    (write-classesdbs updated-classesdbs)))
+	 (updated-classesdbs (update-classesdbs current-classesdbs new-classesdb)))
+    (write-classesdbs updated-classesdbs)
+    nil))

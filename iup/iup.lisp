@@ -6,54 +6,6 @@
   #+linux :linux
   #+(and unix (not linux)) :unix)
 
-(let* ((class-metadata '(:CLASSNAME "animatedlabel" :CHILD-P t :CHILDREN-P NIL :OVERRIDE-P NIL :VANITY-CLASSNAME "ANIMATED-LABEL"
-			 :ATTRIBUTES
-			 (:ACTIVE :ALIGNMENT :ANIMATION :ANIMATION_HANDLE :BGCOLOR :CANFOCUS :CHARSIZE :DRAGCURSOR
-			  :DRAGCURSORCOPY :DRAGDROP :DRAGSOURCE :DRAGSOURCEMOVE :DRAGTYPES :DROPFILESTARGET :DROPTARGET
-				  :DROPTYPES :ELLIPSIS :EXPAND :EXPANDWEIGHT :FGCOLOR :FLOATING :FONT :FONTFACE :FONTSIZE
-			  :FONTSTYLE :FRAMECOUNT :FRAMETIME :HANDLENAME :HFONT :HTTRANSPARENT :IMAGE :MARKUP :MAXSIZE
-				  :MINSIZE :NAME :NATURALSIZE :NORMALIZERGROUP :PADDING :POSITION :PROPAGATEFOCUS :RASTERSIZE
-				  :RUNNING :SCREENPOSITION :SEPARATOR :SIZE :START :STOP :STOPWHENHIDDEN :TIP :TIPBALLOON
-			  :TIPBALLOONTITLE :TIPBALLOONTITLEICON :TIPBGCOLOR :TIPDELAY :TIPFGCOLOR :TIPRECT :TIPVISIBLE
-				  :TITLE :TOUCH :USERSIZE :VISIBLE :WID :WORDWRAP :X :Y :ZORDER)
-			 :CALLBACKS
-			 (:BUTTON_CB :DRAGBEGIN_CB :DRAGDATASIZE_CB :DRAGDATA_CB :DRAGEND_CB :DROPDATA_CB :DROPFILES_CB
-				     :DROPMOTION_CB :ENTERWINDOW_CB :LEAVEWINDOW_CB :MAP_CB :MOTION_CB :MULTITOUCH_CB :TOUCH_CB
-			  :UNMAP_CB)))
-       (child-p (getf class-metadata :child-p))
-       (children-p (getf class-metadata :children-p))
-       (keyword-arguments (mapcar #'(lambda (keyword)
-				      (intern (symbol-name keyword)))
-				  (cl:append (getf class-metadata :attributes)
-					     (getf class-metadata :callbacks))))
-       (classname (getf class-metadata :classname))
-       (vanity-classname (getf class-metadata :vanity-classname)))
-  (with-gensyms (children children-pointer handle child i)
-    `(defun ,(intern (if vanity-classname
-			 vanity-classname
-			 (string-upcase classname)))
-	 (,@(cond (child-p '(child))
-		  (children-p '(children))
-		  (t nil))
-	  &rest rest &key ,@keyword-arguments)
-       (let ((,handle
-	       ,(if (or child-p children-p)
-		    `(let ((,children ,(cond (child-p '(list child))
-					     (children-p 'children))))
-		       (let ((,children-pointer (cffi:foreign-alloc :pointer :initial-element (cffi:null-pointer)
-									     :count (length ,children)
-									     :null-terminated-p t)))
-			 (unwind-protect
-			      (cffi:foreign-free ptr)
-			   (loop for ,child in ,children
-				 for ,i from 0
-				 do (setf (cffi:mem-aref ,children-pointer 'iup-cffi::ihandle ,i) ,child))
-			   (iup-cffi::%iup-create
-			    ,classname
-			    ,children-pointer))))
-		    `(iup-cffi::%iup-create ,classname (cffi:null-pointer)))))
-	 ,handle))))
-
 (defun handle-p (handle)
   (and (cffi:pointerp handle)
        (not (cffi:null-pointer-p handle))
