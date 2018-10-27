@@ -15,7 +15,9 @@
     (let* ((all-attributes (sort-attributes (getf class :attributes)))
 	   (attributes (remove-if #'(lambda (attribute)
 				      (or (has-flag-p attribute :readonly)
-					  (has-flag-p attribute :callback)))
+					  (has-flag-p attribute :callback)
+					  (has-flag-p attribute :has-id)
+					  (has-flag-p attribute :has-id2)))
 				  all-attributes))
 	   (callbacks (remove-if-not #'(lambda (attribute)
 					 (has-flag-p attribute :callback))
@@ -45,14 +47,23 @@
 			    callbacks))
 	     (let ((,handle (iup-cffi::%iup-create ,classname)))
 	       (loop for (attribute value) on attributes by #'cddr
-		     do (setf (attribute ,handle attribute) value))))
+		     do (setf (attribute ,handle attribute) value))
+	       (loop for c in ,(cond (children-p `children)
+				     (child-p `(list child))
+				     (t nil))
+		     do (iup:append ,handle c))))
 	   (export '(,classname-symbol) (find-package ,package)))))))
 
+(defparameter *classesdb-pathname*
+  (asdf:system-relative-pathname "iup" "classesdb" :type "lisp-sexp"))
+
 (defmacro defiupclasses ()
-  (let* ((classesdb (with-open-file (stream (asdf:system-relative-pathname "iup" "classesdb" :type "lisp-sexp"))
+  (let* ((classesdb (with-open-file (stream *classesdb-pathname*)
 		      (let ((*read-eval* nil))
 			(read stream))))
-	 (platform-classes (getf (find (platform) classesdb :key #'(lambda (platform) (getf platform :platform))) :metadata))
+	 (platform-classes (getf (find (platform) classesdb
+				       :key #'(lambda (platform) (getf platform :platform)))
+				 :metadata))
 	 (package (getf platform-classes :package))
 	 (classes (getf platform-classes :classnames)))
     `(progn ,@(mapcar #'(lambda (class)
