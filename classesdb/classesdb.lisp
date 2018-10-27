@@ -44,10 +44,8 @@
 
 (defparameter *static-metadata*
   '((:initializer iup:open
-     :child-p ("submenu" "spinbox" "radio" "backgroundbox" "scrollbox" "flatscrollbox"
-	       "detachbox" "expander" "sbox")
-     :children-p ("menu" "cbox" "gridbox" "hbox" "vbox" "zbox" "normalizer" "frame"
-		  "flatframe" "tabs" "flattabs" "split")
+     :child-p ("submenu" "spinbox" "radio" "backgroundbox" "scrollbox" "flatscrollbox" "detachbox" "expander" "sbox" "dialog")
+     :children-p ("menu" "cbox" "gridbox" "hbox" "vbox" "zbox" "normalizer" "frame" "flatframe" "tabs" "flattabs" "split")
      :override-p ("image" "imagergb" "imagergba")
      :vanity-alist (("gridbox" . "grid-box")
 		    ("flatframe" . "flat-frame")

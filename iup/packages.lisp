@@ -72,67 +72,9 @@
 	   ;; get-all-dialogs
 	   ;; get-name
 	   
-	   #:fill
-	   #:space
-	   #:radio	
-	   #:vbox 
-	   #:zbox 
-	   #:hbox
-	   #:normalizer
-	   #:cbox
-	   #:sbox
-	   #:split
-	   #:scroll-box
-	   #:flat-scroll-box
-	   #:grid-box
-	   #:multi-box
-	   #:expander
-	   #:detach-box
-	   #:background-box
-	   #:frame
-	   #:flat-frame
-
 	   #:image
 	   #:image-rgb
 	   #:image-rgba
-
-	   #:item
-	   #:submenu
-	   #:separator
-	   #:menu
-
-	   #:button
-	   #:flat-button
-	   #:flat-toggle
-	   #:drop-button
-	   #:flat-label
-	   #:flat-separator
-	   #:canvas
-	   #:dialog
-	   #:user
-	   #:label
-	   #:list
-	   #:text
-	   #:multi-line
-	   #:toggle
-	   #:timer
-	   #:clipboard
-	   #:progress-bar
-	   #:val
-	   #:tabs
-	   #:flat-tabs
-	   #:tree
-	   #:link
-	   #:animated-label
-	   #:date-pick
-	   #:calendar
-	   #:colorbar
-	   #:gauge
-	   #:dial
-	   #:color-browser
-
-	   #:spin
-	   #:spin-box
 
 	   #:file-dialog
 	   #:message-dialog

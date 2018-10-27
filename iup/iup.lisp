@@ -1,76 +1,15 @@
 (in-package #:iup)
 
-(defun platform ()
-  "Mapping from trivial-features -provided features to classesdb platform keywords."
-  #+windows :windows
-  #+linux :linux
-  #+(and unix (not linux)) :unix)
-
-(defmacro defiupclass (class package)
-  (flet ((sort-attributes (attributes)
-	   (sort (copy-seq attributes) #'string<
-		 :key #'(lambda (attribute) (getf attribute :name))))
-	 (has-flag-p (attribute flag)
-	   (member flag (getf attribute :flags))))
-    (let* ((all-attributes (sort-attributes (getf class :attributes)))
-	   (attributes (remove-if #'(lambda (attribute)
-				      (or (has-flag-p attribute :readonly)
-					  (has-flag-p attribute :callback)
-					  (has-flag-p attribute :has-id)
-					  (has-flag-p attribute :has-id2)))
-				  all-attributes))
-	   (callbacks (remove-if-not #'(lambda (attribute)
-					 (has-flag-p attribute :callback))
-				     all-attributes))
-	   (classname (getf class :classname))
-	   (vanity-classname (getf class :vanity-classname))
-	   (classname-symbol (intern (if vanity-classname vanity-classname (string-upcase classname))
-				     (find-package package)))
-	   (children-p (getf class :children-p))
-	   (child-p (getf class :children-p)))
-      (with-gensyms (handle)
-	`(progn
-	   (defun ,classname-symbol
-	       (,@(cond (children-p '(children))
-			(child-p '(child))
-			(t nil))
-		&rest attributes
-		&key ,@(mapcar #'(lambda (attribute)
-				   (let ((symbol (intern (getf attribute :name) (find-package package))))
-				     (if (or (has-flag-p attribute :no-defaultvalue)
-					     (not (getf attribute :default-value)))
-					 symbol
-					 (cl:list symbol (getf attribute :default-value)))))
-			       attributes)
-		  ,@(mapcar #'(lambda (attribute)
-				(intern (getf attribute :name)))
-			    callbacks))
-	     (let ((,handle (iup-cffi::%iup-create ,classname)))
-	       (loop for (attribute value) on attributes by #'cddr
-		     do (setf (attribute ,handle attribute) value))
-	       (loop for c in ,(cond (children-p `children)
-				     (child-p `(list child))
-				     (t nil))
-		     do (iup:append ,handle c))))
-	   (export '(,classname-symbol) (find-package ,package)))))))
-
-(defparameter *classesdb-pathname*
-  (asdf:system-relative-pathname "iup" "classesdb" :type "lisp-sexp"))
-
-(defmacro defiupclasses ()
-  (let* ((classesdb (with-open-file (stream *classesdb-pathname*)
-		      (let ((*read-eval* nil))
-			(read stream))))
-	 (platform-classes (getf (find (platform) classesdb
-				       :key #'(lambda (platform) (getf platform :platform)))
-				 :metadata))
-	 (package (getf platform-classes :package))
-	 (classes (getf platform-classes :classnames)))
-    `(progn ,@(mapcar #'(lambda (class)
-			  `(defiupclass ,class ,package))
-		      classes))))
-
 (defiupclasses)
+
+#+null
+(iup:with-iup ()
+  (let* ((button (iup:button :title "Press Me"))
+	 (hbox (iup:vbox (list button)))
+	 (dialog (iup:dialog hbox)))
+    (iup:show dialog)
+    (iup:main-loop)))
+
 
 (defun handle-p (handle)
   (and (cffi:pointerp handle)

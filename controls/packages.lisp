@@ -6,9 +6,5 @@
   (:use #:common-lisp
 	#:cffi
 	#:iup-utils)
-  (:export #:open
-	   #:cells
-	   #:matrix
-	   #:matrix-ex
-	   #:matrix-list)
+  (:export #:open)
   (:shadow #:open))
