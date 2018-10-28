@@ -21,7 +21,7 @@
 	   (classname-symbol (intern (if vanity-classname vanity-classname (string-upcase classname))
 				     (find-package package)))
 	   (children-p (getf class :children-p))
-	   (child-p (getf class :children-p)))
+	   (child-p (getf class :child-p)))
       (with-gensyms (handle)
 	`(progn
 	   (defun ,classname-symbol
@@ -39,13 +39,15 @@
 		  ,@(mapcar #'(lambda (attribute)
 				(intern (getf attribute :name)))
 			    callbacks))
-	     (let ((,handle (iup-cffi::%iup-create ,classname (cffi:null-pointer))))
+	     (let ((,handle (iup-cffi::%iup-create ,classname)))
 	       (loop for (attribute value) on attributes by #'cddr
-		     do (setf (attribute ,handle attribute) value))
+;;;		     do (print (setf (attribute ,handle attribute) value))
+		     do (iup-cffi::%iup-set-str-attribute ,handle attribute value
+							  ))
 	       (loop for c in ,(cond (children-p `children)
-				     (child-p `(list child))
+				     (child-p `(cl:list child))
 				     (t nil))
-		     do (iup:append ,handle c))))
+		     do (print (iup:append ,handle c)))))
 	   (export '(,classname-symbol) (find-package ,package)))))))
 
 (eval-when (:load-toplevel :compile-toplevel :execute)
