@@ -131,8 +131,8 @@
 	       (:file "packages")
 	       (:file "autowrap")
 	       (:file "classesdb"))
-  :depends-on (#:iup/all
-	       #:trivial-features
+  :depends-on (#:trivial-features
+	       #:cffi
 	       #:cl-autowrap
 	       #:local-time))
 
