@@ -148,8 +148,10 @@
 introspection. This describes the static metadata that is augmented
 with IUP metadata upon introspection.")
 
-(defun %platform ()
-  #+windows :windows #+linux :linux #+(and unix (not linux)) :unix)
+(defun platform ()
+  #+windows :windows
+  #+linux :linux
+  #+(and unix (not linux)) :unix)
 
 (defun create-classesdb ()
   "Create a printable representaion of IUP metadata containing enough
@@ -173,7 +175,7 @@ information to create the Lisp API at compilation time."
 	  for vanity-alist = (getf metadata :vanity-alist)
 	  collect
 	  (with-iup 
-	      (funcall initializer)
+	    (funcall initializer)
 	    (list :package (package-name (symbol-package initializer))
 		  :classnames
 		  (loop for classname in difference
@@ -186,7 +188,7 @@ information to create the Lisp API at compilation time."
 			      :attributes (class-metadata classname)))))
 	    into result
 	  finally (return (list* :platform
-				 (%platform)
+				 (platform)
 				 :metadata result)))))
 
 (defun classesdb-pathname ()
@@ -203,7 +205,7 @@ information to create the Lisp API at compilation time."
 	  (:platform :unix)))))
 
 (defun update-classesdbs (current-classesdbs classesdb)
-  (let ((our-platform (%platform)))
+  (let ((our-platform (platform)))
     (mapcar #'(lambda (existing-classesdb)
 		(if (eq (getf existing-classesdb :platform) our-platform)
 		    classesdb
