@@ -1,7 +1,3 @@
-(defpackage #:iup-cffi
-  (:use #:common-lisp
-	#:cffi))
-
 (defpackage #:iup
   (:use #:common-lisp
 	#:cffi

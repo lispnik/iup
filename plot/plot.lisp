@@ -1,3 +1,30 @@
+(defpackage #:iup-plot
+  (:use #:common-lisp)
+  (:export #:open
+	   #:plot
+	   #:begin
+	   #:end
+	   #:with-plot
+	   #:add
+	   #:add-segment
+	   #:add-string
+	   #:load-data
+	   #:insert
+	   #:insert-string
+	   #:insert-segment
+	   #:insert-samples
+	   #:sample
+	   #:sample-string
+	   #:sample-selection
+	   #:sample-extra
+
+	   #:transform
+	   #:transform-to
+	   #:paint-to)
+  (:import-from #:iup-utils
+		#:alias)
+  (:shadow #:open))
+
 (in-package #:iup-plot)
 
 (alias 'open #'iup-plot-cffi::%iup-plot-open)

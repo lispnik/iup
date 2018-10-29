@@ -1,3 +1,14 @@
+(defpackage #:iup-glcontrols
+  (:use #:common-lisp)
+  (:export #:open
+	   #:draw-image
+	   #:draw-text
+	   #:draw-get-text-size
+	   #:draw-get-image-info)
+  (:import-from #:iup-utils
+		#:alias)
+  (:shadow #:open))
+
 (in-package #:iup-glcontrols)
 
 (alias 'open #'iup-glcontrols-cffi::%iup-glcontrols-open)

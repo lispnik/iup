@@ -1,18 +1,3 @@
-(defpackage #:iup-gl
-  (:use #:common-lisp)
-  (:export #:open
-	   #:canvas
-	   #:background-box
-	   #:make-current
-	   #:current-p
-	   #:swap-buffers
-	   #:palette
-	   #:use-font
-	   #:wait)
-  (:import-from #:iup-utils
-		#:alias)
-  (:shadow #:open))
-
 (in-package #:iup-gl)
 
 (alias 'open            #'iup-gl-cffi::%iup-gl-canvas-open)

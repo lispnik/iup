@@ -1,4 +1,186 @@
+(defpackage #:iup
+  (:use #:common-lisp
+	#:cffi
+	#:alexandria)
+  (:export #:+center+
+	   #:+left+
+	   #:+right+
+	   #:+mousepos+
+	   #:+current+
+	   #:+centerparent+
+	   #:+top+
+	   #:+bottom+
+	   #:open
+	   #:close
+	   #:image-lib-open
+	   #:main-loop
+	   #:loop-step
+	   #:loop-step-wait
+	   #:main-loop-level
+	   #:flush
+	   #:exit-loop
+	   #:record-input
+	   #:play-input
+	   #:update
+	   #:update-children
+	   #:redraw
+	   #:refresh
+	   #:refresh-children
+	   #:version
+	   #:version-date
+	   #:version-number
+	   #:destroy
+	   #:detach
+	   #:append
+	   #:insert
+	   #:get-child
+	   #:get-child-pos
+	   #:get-child-count
+	   #:get-next-child
+	   #:get-brother
+	   #:get-parent
+	   #:get-dialog
+	   #:get-dialog-child
+	   #:reparent
+	   #:popup
+	   #:show
+	   #:show-xy
+	   #:hide
+	   #:map
+	   #:unmap
+	   #:attribute-handle
+	   #:reset-attribute
+	   #:set-global
+	   #:get-global
+	   #:set-focus
+	   #:get-focus
+	   #:previous-field
+	   #:next-field
+
+	   ;; TODO
+	   ;; set-callback
+	   ;; get-callback
+	   ;; set-function
+	   ;; get-function
+	   ;; get-handle
+	   ;; set-handle
+	   ;; get-all-names
+	   ;; get-all-dialogs
+	   ;; get-name
+	   
+	   #:image
+	   #:image-rgb
+	   #:image-rgba
+
+	   #:file-dialog
+	   #:message-dialog
+	   #:color-dialog
+	   #:font-dialog
+	   #:message
+	   #:message-error
+	   #:message-alarm
+	   #:alarm
+	   #:config
+	   #:config-load
+	   #:config-save
+	   #:config-dialog-show
+	   #:config-dialog-closed
+
+	   #:all-classes
+	   #:class-attributes
+	   #:class-callbacks
+	   #:class-name
+	   #:class-type
+	   #:save-class-attributes
+	   #:copy-class-attributes
+	   
+	   #:with-iup
+	   #:attribute
+	   #:attribute-id
+	   #:attribute-id-2
+	   #:attributes
+	   #:callback
+	   #:handle
+	   #:platform)
+  (:shadow #:open
+	   #:close
+	   #:map
+	   #:append
+	   #:list
+	   #:fill
+	   #:space
+	   #:class-name)
+  (:import-from #:iup-utils
+		#:alias))
+
 (in-package #:iup)
+
+(defmacro defiupclass (class package)
+  (flet ((sort-attributes (attributes)
+	   (sort (copy-seq attributes) #'string<
+		 :key #'(lambda (attribute) (getf attribute :name))))
+	 (has-flag-p (attribute flag)
+	   (member flag (getf attribute :flags))))
+    (let* ((all-attributes (sort-attributes (getf class :attributes)))
+	   (attributes (remove-if #'(lambda (attribute)
+				      (or (has-flag-p attribute :readonly)
+					  (has-flag-p attribute :callback)
+					  (has-flag-p attribute :has-id)
+					  (has-flag-p attribute :has-id2)))
+				  all-attributes))
+	   (callbacks (remove-if-not #'(lambda (attribute)
+					 (has-flag-p attribute :callback))
+				     all-attributes))
+	   (classname (getf class :classname))
+	   (vanity-classname (getf class :vanity-classname))
+	   (classname-symbol (intern (if vanity-classname vanity-classname (string-upcase classname))
+				     (find-package package)))
+	   (children-p (getf class :children-p))
+	   (child-p (getf class :child-p)))
+      (with-gensyms (handle)
+	`(progn
+	   (defun ,classname-symbol
+	       (,@(cond (children-p '(children))
+			(child-p '(child))
+			(t nil))
+		&rest attributes
+		&key ,@(mapcar #'(lambda (attribute)
+				   (let ((symbol (intern (getf attribute :name) (find-package package))))
+				     (if (or (has-flag-p attribute :no-defaultvalue)
+					     (not (getf attribute :default-value)))
+					 symbol
+					 (cl:list symbol (getf attribute :default-value)))))
+			       attributes)
+		  ,@(mapcar #'(lambda (attribute)
+				(intern (getf attribute :name)))
+			    callbacks))
+	     (let ((,handle (iup-cffi::%iup-create ,classname)))
+	       (loop for (attribute value) on attributes by #'cddr
+;;;		     do (print (setf (attribute ,handle attribute) value))
+		     do (iup-cffi::%iup-set-str-attribute ,handle attribute value
+							  ))
+	       (loop for c in ,(cond (children-p `children)
+				     (child-p `(cl:list child))
+				     (t nil))
+		     do (print (iup:append ,handle c)))))
+	   (export '(,classname-symbol) (find-package ,package)))))))
+
+(eval-when (:load-toplevel :compile-toplevel :execute)
+  (defparameter *classesdb-pathname*
+    (asdf:system-relative-pathname "iup" "classesdb" :type "lisp-sexp"))
+
+  (defmacro defiupclasses ()
+    (let* ((classesdb (with-open-file (stream *classesdb-pathname*)
+			(let ((*read-eval* nil))
+			  (read stream))))
+	   (platform-classes (getf (find (iup-utils:platform) classesdb
+					 :key #'(lambda (platform) (getf platform :platform)))
+				   :metadata))
+	   (package (getf platform-classes :package))
+	   (classes (getf platform-classes :classnames)))
+      `(progn ,@(mapcar #'(lambda (class)
+			    `(defiupclass ,class ,package))
+			classes)))))
 
 (defiupclasses)
 
