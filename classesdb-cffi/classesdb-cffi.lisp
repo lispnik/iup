@@ -18,25 +18,11 @@
   :iup-type-image
   :iup-type-menu)
 
-;; /** Possible number of children.
-;; * \ingroup iclass */
-;; typedef enum _IchildType {
-;; IUP_CHILDNONE,  /**< can not add children using Append/Insert */
-;; IUP_CHILDMANY   /**< can add any number of children. /n
-;; IUP_CHILDMANY+n can add n children. */ TODO <--- use that!
-;; } IchildType;
-
-(cffi:defcenum child-type
-  :iup-child-none
-  :iup-child-many
-  ;; iup-child-many + n = at most N children
-  )
-
 (cffi:defcstruct iclass
   (name :string)
   (format :string)
   (native-format native-format)
-  (child-type child-type)
+  (child-type :int) 			;0 = none, 1 = many, 1+n = n children
   (interactive-p :boolean)
   (has-attrib-id-p :int)
   (parent :pointer)

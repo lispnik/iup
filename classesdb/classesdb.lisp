@@ -81,7 +81,8 @@
 ;;; iup/classesdb that write our own simple wrappers here.
 
 (defparameter *static-metadata*
-  '((:initializer (%libiup "IupOpen")
+  '((:initializer iup-cffi::%iup-open
+     :package "IUP"
      :child-p ("submenu" "spinbox" "radio" "backgroundbox" "scrollbox" "flatscrollbox" "detachbox" "expander" "sbox" "dialog")
      :children-p ("menu" "cbox" "gridbox" "hbox" "vbox" "zbox" "normalizer" "frame" "flatframe" "tabs" "flattabs" "split")
      :override-p ("image" "imagergb" "imagergba")
@@ -109,14 +110,17 @@
 		    ("messagedlg" . "message-dialog")
 		    ("progressdlg" . "progress-dialog")
 		    ("parambox" . "param-box")))
-    (:initializer (%libiup-controls"IupControlsOpen")
+    (:initializer iup-controls-cffi::%iup-controls-open
+     :package "IUP-CONTROLS"
      :vanity-alist (("matrixex" . "matrix-ex")
 		    ("matrixlist" . "matrix-list")))
-    (:initializer (%libiup-gl "IupGLCanvasOpen")
+    (:initializer iup-gl-cffi::%iup-gl-canvas-open
+     :package "IUP-GL"
      :child-p ("glbackgroundbox")
      :vanity-alist (("glcanvas" . "canvas")
 		    ("glsubcanvas" . "sub-canvas")))
-    (:initializer (%libiup-glcontrols "IupGLControlsOpen")
+    (:initializer iup-glcontrols-cffi::%iup-glcontrols-open
+     :package "IUP-GLCONTROLS"
      :child-p ("glexpander" "glframe" "glscrollbox" "glsizebox")
      :children-p ("glcanvasbox")
      :vanity-alist (("glcanvasbox" . "canvas-box")
@@ -134,24 +138,37 @@
 		    ("gllabel" . "label")
 		    ("glseparator" . "separator")
 		    ("glbackgroundbox" . "background-box")))
-    (:initializer (%libiup-plot "IupPlotOpen"))
-    (:initializer (%libiup-mglplot "IupMglPlotOpen")
+    (:initializer iup-plot-cffi::%iup-plot-open
+     :package "IUP-PLOT")
+    (:initializer iup-mglplot-cffi::%iup-mglplot-open
+     :package "IUP-MGLPLOT"
      :vanity-alist (("mglplot" . "plot")
 		    ("mgllabel" . "label")))
-    #+windows (:initializer (%libiup-olecontrol "IupOleControlOpen"))
-    (:initializer (%libiup-scintilla "IupScintillaOpen")
+    #+windows (:initializer iup-olecontrol-cffi::%iup-olecontrol-open
+	       :package "IUP-OLECONTROL")
+    (:initializer iup-scintilla-cffi::%iup-scintilla-open
+     :package "IUP-SCINTILLA"
      :vanity-alist (("scintilladlg" . "scintilla-dialog")))
-    (:initializer (%libiup-web "IupWebBrowserOpen")
+    (:initializer iup-web-cffi::%iup-web-browser-open
+     :package "IUP-WEB"
      :classname-excludes ("olecontrol")
-     :vality-alist (("webbrowser" . "web-browser"))))
-  "Not everything about the IUP APIs can be extracted by
-introspection. This describes the static metadata that is augmented
-with IUP metadata upon introspection.")
+     :vality-alist (("webbrowser" . "web-browser")))))
 
-(defun platform ()
+(defparameter *platform* 
   #+windows :windows
   #+linux :linux
   #+(and unix (not linux)) :unix)
+
+(defun class-format (class)
+  (cffi:with-foreign-slots ((iup-classesdb-cffi::format) class (:struct iup-classesdb-cffi::iclass))
+    iup-classesdb-cffi::format))
+
+(defun class-child-type (class)
+  (cffi:with-foreign-slots ((iup-classesdb-cffi::child-type) class (:struct iup-classesdb-cffi::iclass))
+    (switch (iup-classesdb-cffi::child-type :test #'=)
+      (0 0)				;none
+      (1 -1)				;many
+      (t (1- iup-classesdb-cffi::child-type))))) ;n
 
 (defun create-classesdb ()
   "Create a printable representaion of IUP metadata containing enough
@@ -162,7 +179,10 @@ information to create the Lisp API at compilation time."
     (loop with base-classnames = (with-iup (all-classes))
 	  for metadata in *static-metadata*
 	  for initializer = (getf metadata :initializer)
-	  for classes = (with-iup (funcall initializer) (all-classes))
+	  for classes = (with-iup (if (eq initializer 'iup-cffi::%iup-open)
+				      (funcall initializer (cffi:null-pointer) (cffi:null-pointer))
+				      (funcall initializer))
+			  (all-classes))
 	  for classname-excludes = (getf metadata :classname-excludes)
 	  for difference = (remove-if #'(lambda (classname)
 					  (find classname classname-excludes :test #'string=))
@@ -173,14 +193,23 @@ information to create the Lisp API at compilation time."
 	  for child-p = (getf metadata :child-p)
 	  for override-p = (getf metadata :override-p)
 	  for vanity-alist = (getf metadata :vanity-alist)
+	  for package = (getf metadata :package)
 	  collect
 	  (with-iup 
-	    (funcall initializer)
-	    (list :package (package-name (symbol-package initializer))
+	    (if (eq initializer 'iup-cffi::%iup-open)
+		(funcall initializer (cffi:null-pointer) (cffi:null-pointer))
+		(funcall initializer))
+	    (list :package package
 		  :classnames
 		  (loop for classname in difference
+			for class = (iup-classesdb-cffi::%iup-register-find-class classname)
+			for class-format = (class-format class)
+			for class-child-type = (class-child-type class)
 			collect
-			(list :classname classname
+			(list :classname (print classname)
+			      :format (print class-format)
+			      :children class-child-type
+			      ;; TODO potentially remove the next two
 			      :child-p (and (find classname child-p :test #'string=) t)
 			      :children-p (and (find classname children-p :test #'string=) t)
 			      :override-p (and (find classname override-p :test #'string=) t)
@@ -188,7 +217,7 @@ information to create the Lisp API at compilation time."
 			      :attributes (class-metadata classname)))))
 	    into result
 	  finally (return (list* :platform
-				 (platform)
+				 *platform*
 				 :metadata result)))))
 
 (defun classesdb-pathname ()
@@ -205,7 +234,7 @@ information to create the Lisp API at compilation time."
 	  (:platform :unix)))))
 
 (defun update-classesdbs (current-classesdbs classesdb)
-  (let ((our-platform (platform)))
+  (let ((our-platform *platform*))
     (mapcar #'(lambda (existing-classesdb)
 		(if (eq (getf existing-classesdb :platform) our-platform)
 		    classesdb
