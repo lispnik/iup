@@ -31,7 +31,7 @@
 (cffi:defbitfield attrib-flags
   (:iupaf-default 0)
   :iupaf-no-inherit
-  :iupaf-defaultvalue
+  :iupaf-no-defaultvalue
   :iupaf-no-string
   :iupaf-not-mapped
   :iupaf-has-id
