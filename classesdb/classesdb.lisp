@@ -75,16 +75,9 @@
 	      :attributes 	      
 	      (class-metadata classname))))
 
-;;; iup/classesdb depends on IUP FFI, but can't use the one provided by the iup system
-;;; because that creates a circular dependency. We don't break IUP's FFI into a seperate
-;;; system because it provides too much of the API. Lastly, we us so little of the FFI in
-;;; iup/classesdb that write our own simple wrappers here.
-
 (defparameter *static-metadata*
   '((:initializer iup-cffi::%iup-open
      :package "IUP"
-     :child-p ("submenu" "spinbox" "radio" "backgroundbox" "scrollbox" "flatscrollbox" "detachbox" "expander" "sbox" "dialog")
-     :children-p ("menu" "cbox" "gridbox" "hbox" "vbox" "zbox" "normalizer" "frame" "flatframe" "tabs" "flattabs" "split")
      :override-p ("image" "imagergb" "imagergba")
      :vanity-alist (("gridbox" . "grid-box")
 		    ("flatframe" . "flat-frame")
@@ -116,13 +109,10 @@
 		    ("matrixlist" . "matrix-list")))
     (:initializer iup-gl-cffi::%iup-gl-canvas-open
      :package "IUP-GL"
-     :child-p ("glbackgroundbox")
      :vanity-alist (("glcanvas" . "canvas")
 		    ("glsubcanvas" . "sub-canvas")))
     (:initializer iup-glcontrols-cffi::%iup-glcontrols-open
      :package "IUP-GLCONTROLS"
-     :child-p ("glexpander" "glframe" "glscrollbox" "glsizebox")
-     :children-p ("glcanvasbox")
      :vanity-alist (("glcanvasbox" . "canvas-box")
 		    ("glsubcanvas" . "sub-canvas")
 		    ("glprogressbar" . "progress-bar")
@@ -152,7 +142,22 @@
     (:initializer iup-web-cffi::%iup-web-browser-open
      :package "IUP-WEB"
      :classname-excludes ("olecontrol")
-     :vality-alist (("webbrowser" . "web-browser")))))
+     :vanity-alist (("webbrowser" . "web-browser")))
+    (:initializer iup-tuio-cffi::%iup-tuio-open
+     :package "IUP-TUIO"
+     :override-p ("tuioclient")
+     :vanity-alist (("tuioclient" . "client"))))
+  "Information on how to create the Lisp bindings.
+
+:INITIALIZER function to call which initializes a specific IUP library
+:PACKAGE the name of a package from which the Lisp bindings should be export
+:CLASSNAME-EXCLUDES a list of IUP class names to exclude
+
+:OVERRIDE-P list of IUP class names which should not be created
+automatically (e.g. because they require a specific argument lists at
+creation)
+
+:VANITY-ALIST a mapping between IUP names and Lisp names")
 
 (defparameter *platform* 
   #+windows :windows
@@ -165,10 +170,15 @@
 
 (defun class-child-type (class)
   (cffi:with-foreign-slots ((iup-classesdb-cffi::child-type) class (:struct iup-classesdb-cffi::iclass))
-    (switch (iup-classesdb-cffi::child-type :test #'=)
-      (0 0)				;none
-      (1 -1)				;many
-      (t (1- iup-classesdb-cffi::child-type))))) ;n
+    iup-classesdb-cffi::child-type))
+
+(defun child-spec-from-format (format)
+  "Returns :CHILD-NONE, :CHILD-MANY or an integer count of children."
+  (cond ((find #\g format)
+	 :child-many)
+	((find #\h format)
+	 (count #\h format))
+	(t :child-none)))
 
 (defun create-classesdb ()
   "Create a printable representaion of IUP metadata containing enough
@@ -194,11 +204,12 @@ information to create the Lisp API at compilation time."
 	  for override-p = (getf metadata :override-p)
 	  for vanity-alist = (getf metadata :vanity-alist)
 	  for package = (getf metadata :package)
+	  do (format t "Processing for pacakge ~A~%" package)
 	  collect
 	  (with-iup 
-	    (if (eq initializer 'iup-cffi::%iup-open)
-		(funcall initializer (cffi:null-pointer) (cffi:null-pointer))
-		(funcall initializer))
+	      (if (eq initializer 'iup-cffi::%iup-open)
+		  (funcall initializer (cffi:null-pointer) (cffi:null-pointer))
+		  (funcall initializer))
 	    (list :package package
 		  :classnames
 		  (loop for classname in difference
@@ -206,12 +217,9 @@ information to create the Lisp API at compilation time."
 			for class-format = (class-format class)
 			for class-child-type = (class-child-type class)
 			collect
-			(list :classname (print classname)
-			      :format (print class-format)
-			      :children class-child-type
-			      ;; TODO potentially remove the next two
-			      :child-p (and (find classname child-p :test #'string=) t)
-			      :children-p (and (find classname children-p :test #'string=) t)
+			(list :classname classname
+			      :format class-format
+			      :children (child-spec-from-format class-format)
 			      :override-p (and (find classname override-p :test #'string=) t)
 			      :vanity-classname (vanity-name vanity-alist classname)
 			      :attributes (class-metadata classname)))))

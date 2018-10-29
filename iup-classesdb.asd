@@ -14,5 +14,6 @@
 	       #+windows #:iup-olecontrol-cffi
 	       #:iup-scintilla-cffi
 	       #:iup-web-cffi
+	       #:iup-tuio-cffi
 	       #:trivial-features
 	       #:local-time))
