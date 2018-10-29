@@ -7,4 +7,4 @@
 
 (cffi:use-foreign-library iup-olecontrol)
 
-(cffi:defcfun (%iup-ole-control-open "IupOleControlOpen") :int)
+(cffi:defcfun (%iup-olecontrol-open "IupOleControlOpen") :int)

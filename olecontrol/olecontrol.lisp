@@ -8,4 +8,4 @@
 
 (in-package #:iup-olecontrol)
 
-(alias 'open #'iup-olecontrol-cffi::%iup-ole-control-open)
+(alias 'open #'iup-olecontrol-cffi::%iup-olecontrol-open)
