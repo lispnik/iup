@@ -165,24 +165,20 @@
 		     do (print (iup:append ,handle c)))))
 	   (export '(,classname-symbol) (find-package ,package)))))))
 
-(eval-when (:load-toplevel :compile-toplevel :execute)
-  (defparameter *classesdb-pathname*
-    (asdf:system-relative-pathname "iup" "classesdb" :type "lisp-sexp"))
+(defmacro defiupclasses (export-package)
+  (let* ((classesdb (with-open-file (stream (asdf:system-relative-pathname "iup" "classesdb" :type "lisp-sexp"))
+		      (let ((*read-eval* nil))
+			(read stream))))
+	 (platform-classes (getf (find (iup-utils:platform) classesdb
+				       :key #'(lambda (platform) (getf platform :platform)))
+				 :metadata))
+	 (package (getf platform-classes :package))
+	 (classes (getf platform-classes :classnames)))
+    `(progn ,@(mapcar #'(lambda (class)
+			  `(defiupclass ,class ,package))
+		      classes))))
 
-  (defmacro defiupclasses ()
-    (let* ((classesdb (with-open-file (stream *classesdb-pathname*)
-			(let ((*read-eval* nil))
-			  (read stream))))
-	   (platform-classes (getf (find (iup-utils:platform) classesdb
-					 :key #'(lambda (platform) (getf platform :platform)))
-				   :metadata))
-	   (package (getf platform-classes :package))
-	   (classes (getf platform-classes :classnames)))
-      `(progn ,@(mapcar #'(lambda (class)
-			    `(defiupclass ,class ,package))
-			classes)))))
-
-(defiupclasses)
+(defiupclasses "IUP")
 
 #+null
 (iup:with-iup ()
