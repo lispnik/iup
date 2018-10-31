@@ -1,3 +1,4 @@
+(defpackage #:iup-cffi (:use #:common-lisp))
 (in-package #:iup-cffi)
 
 (define-foreign-type ihandle ()
@@ -32,7 +33,6 @@
   (argc :pointer))
 
 (defcfun (%iup-close "IupClose") :void)
-(defcfun (%iup-image-lib-open "IupImageLibOpen" :library iup-imglib) :void)
 (defcfun (%iup-main-loop "IupMainLoop") :int)
 (defcfun (%iup-loop-step "IupLoopStep") :int)
 (defcfun (%iup-loop-step-wait "IupLoopStepWait") :int)

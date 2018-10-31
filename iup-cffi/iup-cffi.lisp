@@ -13,11 +13,11 @@
   (:actual-type :pointer)
   (:simple-parser ihandle))
 
-(defmethod translate-from-foreign (value (type ihandle))
+(defmethod cffi:translate-from-foreign (value (type ihandle))
   (unless (cffi:null-pointer-p value)
     value))
 
-(defmethod translate-to-foreign (value (type ihandle))
+(defmethod cffi:translate-to-foreign (value (type ihandle))
   (or value (cffi:null-pointer)))
 
 (defun attr-name-from-c (value)
