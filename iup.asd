@@ -8,7 +8,9 @@
   :version (:read-file-line "version.txt")
   :serial t
   :pathname "iup/"
-  :components ((:file "iup"))
+  :components ((:file "packages")
+	       (:file "classes")
+	       (:file "iup"))
   :depends-on (#:iup-cffi
 	       #:iup-utils
 	       #:cffi))
