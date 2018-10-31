@@ -135,14 +135,17 @@
 	   (vanity-classname (getf class :vanity-classname))
 	   (classname-symbol (intern (if vanity-classname vanity-classname (string-upcase classname))
 				     (find-package package)))
-	   (children-p (getf class :children-p))
-	   (child-p (getf class :child-p)))
+	   (children (getf class :children)))
       (with-gensyms (handle)
 	`(progn
 	   (defun ,classname-symbol
-	       (,@(cond (children-p '(children))
-			(child-p '(child))
-			(t nil))
+	       (,@(case children
+		    (:child-many '(children))
+		    (:child-none nil)
+		    (otherwise (if (= 1 children)
+				   '(child)
+				   (loop for i from 0 below children
+					 collect (intern (format nil "CHILD~A" (1+ i)))))))
 		&rest attributes
 		&key ,@(mapcar #'(lambda (attribute)
 				   (let ((symbol (intern (getf attribute :name) (find-package package))))
@@ -156,13 +159,13 @@
 			    callbacks))
 	     (let ((,handle (iup-cffi::%iup-create ,classname)))
 	       (loop for (attribute value) on attributes by #'cddr
-;;;		     do (print (setf (attribute ,handle attribute) value))
-		     do (iup-cffi::%iup-set-str-attribute ,handle attribute value
-							  ))
-	       (loop for c in ,(cond (children-p `children)
-				     (child-p `(cl:list child))
-				     (t nil))
-		     do (print (iup:append ,handle c)))))
+		     do (iup-cffi::%iup-set-str-attribute ,handle attribute value))
+	       (loop for c in ,(case children
+				 (:child-many 'children)
+				 (:child-none nil)
+				 (otherwise '(cl:list child)))
+		     do (iup-cffi::%iup-append ,handle c))
+	       ,handle))
 	   (export '(,classname-symbol) (find-package ,package)))))))
 
 (defmacro defiupclasses (export-package)
@@ -183,7 +186,7 @@
 #+null
 (iup:with-iup ()
   (let* ((button (iup:button :title "Press Me"))
-	 (hbox (iup:vbox (list button)))
+	 (hbox (iup:vbox (cl:list button)))
 	 (dialog (iup:dialog hbox)))
     (iup:show dialog)
     (iup:main-loop)))
