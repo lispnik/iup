@@ -1,5 +1,57 @@
 (in-package #:iup)
 
+
+
+(iup:canvas :k_any
+	    #'(lambda (handle code)
+		(format t "oh my, keyboard code ~S pressed on ~S" handle code)
+		iup:+iup-default+)
+	    :resize_cb
+	    #'(lambda (handle width height)))
+
+
+(defun my-resize-callback (handle width height)
+  iup::+iup-default+)
+
+(cffi:defcallback randomsymbol :int ((arg1 :pointer) (arg2 :int) (arg3 :int))
+  (apply #'my-resize-callback (list arg1) (list arg2) (list arg3) ))
+
+(cffi:get-callback 'randomsymbol)
+
+(defun callback-spec-to-callback-arglist (callback-spec)
+  )
+(let ((func #'(lambda (handle width height)))
+      (callback-spec "Iii")
+      (return-type :int)))
+(defun convert-lisp-function-to-callback (func callback-spec)
+  `(cffi:defcallback ,(gensym) .return-type ,(callback-spec-to-callback-arglist callback-spec)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ;;; use case 1: define a top level function
 ;;; use case 2: define an anonymous function
 
