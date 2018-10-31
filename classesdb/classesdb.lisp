@@ -199,8 +199,6 @@ information to create the Lisp API at compilation time."
 				      (if (eq initializer 'iup-cffi::%iup-open)
 					  base-classnames
 					  (set-difference classes base-classnames :test #'string=)))
-	  for children-p = (getf metadata :children-p)
-	  for child-p = (getf metadata :child-p)
 	  for override-p = (getf metadata :override-p)
 	  for vanity-alist = (getf metadata :vanity-alist)
 	  for package = (getf metadata :package)

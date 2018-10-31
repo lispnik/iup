@@ -395,7 +395,6 @@
            ,@body)
        (iup:close))))
 
-(alias 'image-lib-open          #'iup-cffi::%iup-image-lib-open)
 (alias 'main-loop               #'iup-cffi::%iup-main-loop)
 (alias 'loop-step               #'iup-cffi::%iup-loop-step)
 (alias 'loop-step-wait          #'iup-cffi::%iup-loop-step-wait)
