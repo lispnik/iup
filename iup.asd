@@ -13,4 +13,5 @@
 	       (:file "iup"))
   :depends-on (#:iup-cffi
 	       #:iup-utils
-	       #:cffi))
+	       #:cffi
+	       #:genhash))
