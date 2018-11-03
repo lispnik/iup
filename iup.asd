@@ -14,4 +14,5 @@
   :depends-on (#:iup-cffi
 	       #:iup-utils
 	       #:cffi
+	       #:alexandria
 	       #:genhash))

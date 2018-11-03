@@ -65,3 +65,56 @@
     `(progn ,@(mapcar #'(lambda (class)
 			  `(defiupclass ,class ,package))
 		      classes))))
+
+(defparameter *spec-code-cffi-type*
+  '((#\c . :unsigned-char)
+    (#\I . :pointer)	;*int
+    (#\i . :int)
+    (#\f . :float)
+    (#\d . :double)
+    (#\s . :string)
+    (#\V . :pointer)    ;*void
+    (#\C . :pointer)	;*cdCanvas
+    (#\n . :pointer))) 	;*Ihandle
+
+(defun create-callback (name spec)
+  (let* ((return-type (or (and (find #\= spec)
+			       (assoc-value *spec-code-cffi-type*
+					    (elt spec (1- (length spec)))
+					    :test #'char=))
+			  :int))
+	 (return-and-arg-list 
+	   (loop for i from 1
+		 for c across spec
+		 until (char= c #\=)
+		 for s = (assoc-value *spec-code-cffi-type* c :test #'char=)
+		 for arg = (intern (format nil "ARG~A" i))
+		 collect (cl:list arg s) into arg-list
+		 finally (return (cl:list return-type (list* '(arg0 :pointer) arg-list))))))
+    `(cffi:defcallback ,@return-and-arg-list
+	 (push (make-event :name ,name :handle arg0) *event-list*)
+	 iup::+ignore+)))
+
+(let ((name :dragbegin_cb)
+      (spec "ii=s"))
+  (create-callback name spec))
+
+;; /** Register the parameters of a callback. \n
+;; * Format follows the \ref iupcbs.h header definitions. \n
+;; * Notice that these definitions are similar to the class registration
+;; * but have several differences and conflicts, for backward compatibility reasons. \n
+;; * It can have none, one or more of the following. \n
+;; * - "c" = (unsigned char) - byte
+;; * - "i" = (int) - integer
+;; * - "I" = (int*) - array of integers or pointer to integer
+;; * - "f" = (float) - real
+;; * - "d" = (double) - real
+;; * - "s" = (char*) - string 
+;; * - "V" = (void*) - generic pointer 
+;; * - "C" = (struct _cdCanvas*) - cdCanvas* structure, used along with the CD library
+;; * - "n" = (Ihandle*) - element handle
+;; * The default return value for all callbacks is "i" (int), 
+;; * but a different return value can be specified using one of the above parameters, 
+;; * after all parameters using "=" to separate it from them.
+;; * \ingroup iclass */
+;; void iupClassRegisterCallback(Iclass* ic, const char* name, const char* format);
