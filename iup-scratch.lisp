@@ -8,7 +8,27 @@
   event
   handle)
 
-(defvar *event-mappings*  (make-hash-table :test #'equalp))
+(genhash:register-test-designator
+ 'event-mapping=
+ (lambda (event-mapping)
+   (sxhash (list (event-mapping-event event-mapping)
+		 (event-mapping-handle event-mapping))))
+ (lambda (a b)
+   (and (eq (event-mapping-event a)
+	    (event-mapping-event b))
+	(cffi:pointer-eq (event-mapping-handle a)
+			 (event-mapping-handle b)))))
+
+(defvar *registered-events* (genhash:make-generic-hash-table :test 'event-mapping=))
+
+(defun register-event (handle event action)
+  (check-type handle cffi:foreign-pointer)
+  (setf (genhash:hashref (make-event-mapping :handle handle :event event) *registered-events*)
+	action))
+
+(defun unregister-event (handle event)
+  (check-type handle cffi:foreign-pointer)
+  (genhash:hashrem (make-event-mapping :handle handle :event event) *registered-events*))
 
 (defvar *event-queue* '())
 
@@ -17,11 +37,13 @@
 	   *event-queue*)
   iup::+default+)
 
+
+
 (defun button (&key title action)
   (let ((handle (iup-cffi::%iup-create "button")))
     (iup-cffi::%iup-set-str-attribute handle "TITLE" title)
-    (setf (gethash (make-event-mapping :event :action :handle (cffi:pointer-address handle)) *event-mappings*)
-	  action)
+    (register-event (cffi:pointer-address handle) :action)
+
     (iup-cffi::%iup-set-callback handle "ACTION" (cffi:get-callback 'action-callback))
     handle))
 
@@ -51,3 +73,5 @@
 	  (process-events)
 	  (iup:loop-step-wait))))))
 
+
+(ql:quickload "genhash")
