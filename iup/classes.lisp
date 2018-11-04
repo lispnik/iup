@@ -1,6 +1,6 @@
 (in-package #:iup)
 
-(defparameter *spec-code-cffi-type*
+(defparameter *iup-callback-encoding*
   '((#\c . :unsigned-char)
     (#\I . :pointer)	;*int
     (#\i . :int)
@@ -11,21 +11,24 @@
     (#\C . :pointer)	;*cdCanvas
     (#\n . :pointer))) 	;*Ihandle
 
+(defun class-callback-name (classname callback-name)
+  (format nil "~:@(~A-~A~)" classname callback-name))
+
 (defmacro defclasscallback (classname name spec)
   (let* ((return-type (or (and (find #\= spec)
-			       (assoc-value *spec-code-cffi-type*
+			       (assoc-value *iup-callback-encoding*
 					    (elt spec (1- (length spec)))
 					    :test #'char=))
 			  :int))
 	 (arg-list (loop for i from 1
 			 for c across spec
 			 until (char= c #\=)
-			 for s = (assoc-value *spec-code-cffi-type* c :test #'char=)
+			 for s = (assoc-value *iup-callback-encoding* c :test #'char=)
 			 for arg = (intern (format nil "ARG~A" i))
 			 collect (cl:list arg s) into arg-list
 			 finally (return (list* '(arg0 :pointer) arg-list))))
 	 (return-and-arg-list (cl:list return-type arg-list))
-	 (callback-name (intern (format nil "~:@(~A-~A~)" classname name))))
+	 (callback-name (intern (class-callback-name classname name))))
     `(cffi:defcallback ,callback-name ,@return-and-arg-list
 	 (push (make-event :name ,name
 			   :handle arg0
@@ -49,6 +52,9 @@
 	   (callbacks (remove-if-not #'(lambda (attribute)
 					 (has-flag-p attribute :iupaf-callback))
 				     all-attributes))
+	   (callback-names (mapcar #'(lambda (attribute)
+				       (intern (getf attribute :name)))
+				   callbacks))
 	   (classname (getf class :classname))
 	   (vanity-classname (getf class :vanity-classname))
 	   (classname-symbol (intern (if vanity-classname vanity-classname (string-upcase classname))
@@ -72,12 +78,19 @@
 					 symbol
 					 (cl:list symbol (getf attribute :default-value)))))
 			       attributes)
-		  ,@(mapcar #'(lambda (attribute)
-				(intern (getf attribute :name)))
-			    callbacks))
+		  ,@callback-names)
 	     (let ((,handle (iup-cffi::%iup-create ,classname)))
 	       (loop for (attribute value) on attributes by #'cddr
-		     do (iup-cffi::%iup-set-str-attribute ,handle attribute value))
+		     do (if (member attribute ',(mapcar #'(lambda (attribute)
+							    (make-keyword (getf attribute :name)))
+							callbacks))
+			    (progn
+			      ;; (iup-cffi::%iup-set-callback
+			      ;;  ,handle
+			      ;;  (symbol-name attribute)
+			      ;;  (cffi:get-callback (intern (class-callback-name ,classname attribute) (find-package ,package))))
+			      (register-callback attribute ,handle value))
+			    (iup-cffi::%iup-set-str-attribute ,handle attribute value)))
 	       (loop for c in ,(case children
 				 (:child-many 'children)
 				 (:child-none nil)
@@ -85,16 +98,14 @@
 		     do (iup-cffi::%iup-append ,handle c))
 	       ,handle))
 	   (export '(,classname-symbol) (find-package ,package))
-
-	   (progn
-	     ,@(let ((callback-attributes (remove-if-not #'(lambda (attribute)
-							     (has-flag-p attribute :iupaf-callback))
-							 all-attributes)))
-		 (loop for attribute in callback-attributes
-		       for spec = (getf attribute :default-value)
-		       for name = (make-keyword (getf attribute :name))
-		       collect
-		       `(defclasscallback ,classname ,name ,spec)))))))))
+	   ,@(let ((callback-attributes (remove-if-not #'(lambda (attribute)
+							   (has-flag-p attribute :iupaf-callback))
+						       all-attributes)))
+	       (loop for attribute in callback-attributes
+		     for spec = (getf attribute :default-value)
+		     for name = (make-keyword (getf attribute :name))
+		     collect
+		     `(defclasscallback ,classname ,name ,spec))))))))
 
 
 (defmacro defiupclasses (export-package)
@@ -110,4 +121,3 @@
     `(progn ,@(mapcar #'(lambda (class)
 			  `(defiupclass ,class ,package))
 		      classes))))
-

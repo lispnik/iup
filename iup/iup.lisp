@@ -10,7 +10,6 @@
     (iup:show dialog)
     (iup:main-loop)))
 
-
 (defun handle-p (handle)
   (and (cffi:pointerp handle)
        (not (cffi:null-pointer-p handle))
