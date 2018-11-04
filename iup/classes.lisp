@@ -85,10 +85,10 @@
 							    (make-keyword (getf attribute :name)))
 							callbacks))
 			    (progn
-			      ;; (iup-cffi::%iup-set-callback
-			      ;;  ,handle
-			      ;;  (symbol-name attribute)
-			      ;;  (cffi:get-callback (intern (class-callback-name ,classname attribute) (find-package ,package))))
+			      (iup-cffi::%iup-set-callback
+			       ,handle
+			       (symbol-name attribute)
+			       (cffi:get-callback (intern (class-callback-name ,classname attribute) (find-package ,package))))
 			      (register-callback attribute ,handle value))
 			    (iup-cffi::%iup-set-str-attribute ,handle attribute value)))
 	       (loop for c in ,(case children
