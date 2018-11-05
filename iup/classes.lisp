@@ -14,6 +14,11 @@
 (defun class-callback-name (classname callback-name)
   (format nil "~:@(~A-~A~)" classname callback-name))
 
+(defun check-callback-args (action args-list)
+  (declare (ignore action args-list))
+  ;; FIXME
+  t)
+
 (defmacro defclasscallback (classname name spec)
   (let* ((return-type (or (and (find #\= spec)
 			       (assoc-value *iup-callback-encoding*
@@ -30,11 +35,18 @@
 	 (return-and-arg-list (cl:list return-type arg-list))
 	 (callback-name (intern (class-callback-name classname name))))
     `(cffi:defcallback ,callback-name ,@return-and-arg-list
-	 (push (make-event :name ,name
-			   :handle arg0
-			   :args (cl:list ,@(mapcar #'car arg-list)))
-	       *event-queue*)
-       iup::+ignore+)))
+	 (let ((action (genhash:hashref (make-callback :name ',callback-name :handle arg0)
+					*registered-callbacks*))
+	       (args-list-names (cl:list ,@(mapcar #'car arg-list))))
+	   (if (check-callback-args action args-list-names)
+	       (funcall action ,@(mapcar #'car arg-list))
+	       (restart-case 
+		   (error "Callback arguments list does not conform to to expected arguments list")
+		 (:continue ()
+		  :report "Continue without invoking the callback")
+		 (:danger-zone ()
+		  :report "Call it anyway"
+		   (funcall action args-list))))))))
 
 (defmacro defiupclass (class package)
   (flet ((sort-attributes (attributes)
@@ -88,10 +100,14 @@
 			      (iup-cffi::%iup-set-callback
 			       ,handle
 			       (symbol-name attribute)
+			       ;; FIXME extract repeated form in the following two
 			       (cffi:get-callback
 				(intern (class-callback-name ,classname attribute)
 					(find-package ,package))))
-			      (register-callback attribute ,handle value))
+			      (register-callback (intern (class-callback-name ,classname attribute)
+							 (find-package ,package))
+						 ,handle
+						 value))
 			    (iup-cffi::%iup-set-str-attribute ,handle attribute value)))
 	       (loop for c in ,(case children
 				 (:child-many 'children)

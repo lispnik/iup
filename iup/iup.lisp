@@ -2,13 +2,19 @@
 
 (defiupclasses "IUP")
 
-#+null
-(iup:with-iup ()
-  (let* ((button (iup:button :title "Press Me"))
-	 (hbox (iup:vbox (cl:list button)))
-	 (dialog (iup:dialog hbox)))
-    (iup:show dialog)
-    (iup:main-loop)))
+#+nil
+(sb-int:with-float-traps-masked
+    (:divide-by-zero :invalid)
+  (iup:with-iup ()
+    (let* ((button (iup:button :title "Press Me"
+			       :action #'(lambda (&rest args)
+					   (declare (ignore args))
+					   (format t "Hi This is a message~%")
+					   iup::+default+)))
+	   (hbox (iup:vbox (cl:list button)))
+	   (dialog (iup:dialog hbox)))
+      (iup:show dialog)
+      (iup:main-loop))))
 
 (defun handle-p (handle)
   (and (cffi:pointerp handle)

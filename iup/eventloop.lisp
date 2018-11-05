@@ -1,10 +1,5 @@
 (in-package #:iup)
 
-(defstruct event
-  name
-  handle 
-  args)
-
 (defstruct callback
   name
   handle)
