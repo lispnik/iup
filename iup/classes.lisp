@@ -108,7 +108,7 @@
 							 (find-package ,package))
 						 ,handle
 						 value))
-			    (iup-cffi::%iup-set-str-attribute ,handle attribute value)))
+			    (iup-cffi::%iup-set-str-attribute ,handle attribute (princ-to-string value))))
 	       (loop for c in ,(case children
 				 (:child-many 'children)
 				 (:child-none nil)

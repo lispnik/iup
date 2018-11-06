@@ -1,10 +1,7 @@
 (in-package #:iup-examples.buttons)
 
-;;; Demonstrate setting a button action at creation time (via keyword paremeter
-;;; and at post creation, using (setf callback).
-
-(cffi:defcallback button-cb :int ((handle iup-cffi::ihandle))
-  (iup:message "Button Callback " (format nil "Callback from ~A" (iup:attribute handle :title)))
+(defun button-cb (&rest rest)
+  (iup:message "Test" (format nil "~A on ~A" (lisp-implementation-type) (cl:lisp-implementation-version)))
   iup::+default+)
 
 (defun buttons ()
