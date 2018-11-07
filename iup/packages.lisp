@@ -103,6 +103,10 @@
 	   #:handle
 	   #:platform
 
+	   #:+ignore+
+	   #:+default+
+	   #:+close+
+	   #:+continue+
 	   #:+mask-float+
 	   #:+mask-ufloat+
 	   #:+mask-efloat+

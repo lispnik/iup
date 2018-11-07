@@ -30,7 +30,8 @@
   (if value
       (etypecase value
 	(symbol (symbol-name value))
-	(string value))
+	(string value)
+	(integer (write-to-string value)))
       (cffi:null-pointer)))
 
 (cffi:defctype attr-name
