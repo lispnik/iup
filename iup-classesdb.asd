@@ -1,5 +1,3 @@
-(in-package #:asdf-user)
-
 (defsystem #:iup-classesdb
   :serial t
   :pathname "classesdb/"

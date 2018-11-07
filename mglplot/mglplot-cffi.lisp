@@ -1,4 +1,6 @@
-(defpackage #:iup-mglplot-cffi (:use #:common-lisp))
+(defpackage #:iup-mglplot-cffi
+  (:use #:common-lisp))
+
 (in-package #:iup-mglplot-cffi)
 
 (cffi:define-foreign-library iup-mglplot

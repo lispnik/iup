@@ -1,4 +1,6 @@
-(defpackage #:iup-glcontrols-cffi (:use #:common-lisp))
+(defpackage #:iup-glcontrols-cffi
+  (:use #:common-lisp))
+
 (in-package #:iup-glcontrols-cffi)
 
 (cffi:define-foreign-library iup-glcontrols

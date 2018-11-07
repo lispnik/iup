@@ -1,5 +1,3 @@
-(in-package #:asdf-user)
-
 (defsystem #:iup
   :description "CFFI bindings to the IUP Portable User Interface library"
   :author "Matthew Kennedy <burnsidemk@gmail.com>"

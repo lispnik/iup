@@ -1,7 +1,5 @@
-(in-package #:asdf-user)
-
 (defsystem #:iup-controls-cffi
-  :pathname "controls-cffi/"
+  :pathname "controls/"
   :components ((:file "controls-cffi"))
-  :depends-on (#:cffi
-	       #:iup-cffi))
+  :depends-on (#:iup-cffi
+	       #:cffi))

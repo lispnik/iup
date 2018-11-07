@@ -1,5 +1,3 @@
-(in-package #:asdf-user)
-
 (defsystem #:iup-plot
   :serial t
   :pathname "plot/"

@@ -1,5 +1,3 @@
-(in-package #:asdf-user)
-
 (defsystem #:iup-olecontrol
   :serial t
   :pathname "olecontrol/"

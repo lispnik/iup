@@ -1,10 +1,8 @@
-(in-package #:asdf-user)
-
 (defsystem #:iup-gl
   :serial t
   :pathname "gl/"
   :components ((:file "gl"))
-  :depends-on (#:cffi
+  :depends-on (#:iup-gl-cffi
+	       #:iup-utils
 	       #:iup
-	       #:iup-gl-cffi
-	       #:iup-utils))
+	       #:cffi))

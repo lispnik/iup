@@ -1,4 +1,6 @@
-(defpackage #:iup-tuio-cffi (:use #:common-lisp))
+(defpackage #:iup-tuio-cffi
+  (:use #:common-lisp))
+
 (in-package #:iup-tuio-cffi)
 
 (cffi:define-foreign-library iup-tuio

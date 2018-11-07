@@ -1,7 +1,5 @@
-(in-package #:asdf-user)
-
 (defsystem #:iup-glcontrols-cffi
-  :pathname "glcontrols-cffi/"
+  :pathname "glcontrols"
   :components ((:file "glcontrols-cffi"))
-  :depends-on (#:cffi
-	       #:iup-cffi))
+  :depends-on (#:iup-cffi
+	       #:cffi))

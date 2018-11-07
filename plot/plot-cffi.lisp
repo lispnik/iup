@@ -1,4 +1,6 @@
-(defpackage #:iup-plot-cffi (:use #:common-lisp))
+(defpackage #:iup-plot-cffi
+  (:use #:common-lisp))
+
 (in-package #:iup-plot-cffi)
 
 (cffi:define-foreign-library iup-plot

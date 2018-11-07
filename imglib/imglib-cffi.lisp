@@ -1,4 +1,6 @@
-(defpackage #:iup-imglib-cffi (:use #:common-lisp))
+(defpackage #:iup-imglib-cffi
+  (:use #:common-lisp))
+
 (in-package #:iup-imglib-cffi)
 
 (cffi:define-foreign-library iup-imglib

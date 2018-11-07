@@ -1,289 +1,298 @@
-(defpackage #:iup-cffi (:use #:common-lisp))
+(defpackage #:iup-cffi
+  (:use #:common-lisp))
+
 (in-package #:iup-cffi)
 
-(define-foreign-type ihandle ()
+(cffi:define-foreign-library iup
+  (:unix "libiup.so")
+  (:windows "iup.dll")
+  (t (:default "iup")))
+
+(cffi:use-foreign-library iup)
+
+(cffi:define-foreign-type ihandle ()
   ()
   (:actual-type :pointer)
   (:simple-parser ihandle))
 
-(defmethod translate-from-foreign (value (type ihandle))
-  (unless (null-pointer-p value)
+(defmethod cffi:translate-from-foreign (value (type ihandle))
+  (unless (cffi:null-pointer-p value)
     value))
 
-(defmethod translate-to-foreign (value (type ihandle))
-  (or value (null-pointer)))
+(defmethod cffi:translate-to-foreign (value (type ihandle))
+  (or value (cffi:null-pointer)))
 
 (defun attr-name-from-c (value)
-  (if (null-pointer-p value) nil value))
+  (if (cffi:null-pointer-p value) nil value))
 
 (defun attr-name-to-c (value)
   (if value
       (etypecase value
 	(symbol (symbol-name value))
 	(string value))
-      (null-pointer)))
+      (cffi:null-pointer)))
 
-(defctype attr-name
+(cffi:defctype attr-name
     (:wrapper :string
      :from-c attr-name-from-c
      :to-c attr-name-to-c))
 
-(defcfun (%iup-open "IupOpen") :int
+(cffI:defcfun (%iup-open "IupOpen") :int
   (argv :pointer)
   (argc :pointer))
 
-(defcfun (%iup-close "IupClose") :void)
-(defcfun (%iup-main-loop "IupMainLoop") :int)
-(defcfun (%iup-loop-step "IupLoopStep") :int)
-(defcfun (%iup-loop-step-wait "IupLoopStepWait") :int)
-(defcfun (%iup-main-loop-level "IupMainLoopLevel") :int)
-(defcfun (%iup-flush "IupFlush") :void)
-(defcfun (%iup-exit-loop "IupExitLoop") :void)
+(cffi:defcfun (%iup-close "IupClose") :void)
+(cffi:defcfun (%iup-main-loop "IupMainLoop") :int)
+(cffi:defcfun (%iup-loop-step "IupLoopStep") :int)
+(cffi:defcfun (%iup-loop-step-wait "IupLoopStepWait") :int)
+(cffi:defcfun (%iup-main-loop-level "IupMainLoopLevel") :int)
+(cffi:defcfun (%iup-flush "IupFlush") :void)
+(cffi:defcfun (%iup-exit-loop "IupExitLoop") :void)
 
-(defcfun (%iup-record-input "IupRecordInput") :int
+(cffi:defcfun (%iup-record-input "IupRecordInput") :int
   (filename :string)
   (mode :int))
 
-(defcfun (%iup-play-input "IupPlayInput") :int
+(cffi:defcfun (%iup-play-input "IupPlayInput") :int
   (filename :string))
 
-(defcfun (%iup-update "IupUpdate") :void
+(cffi:defcfun (%iup-update "IupUpdate") :void
   (handle ihandle))
 
-(defcfun (%iup-update-children "IupUpdateChildren") :void
+(cffi:defcfun (%iup-update-children "IupUpdateChildren") :void
   (handle ihandle))
 
-(defcfun (%iup-redraw "IupRedraw") :void
+(cffi:defcfun (%iup-redraw "IupRedraw") :void
   (handle ihandle)
   (children :int))
 
-(defcfun (%iup-refresh "IupRefresh") :void
+(cffi:defcfun (%iup-refresh "IupRefresh") :void
   (handle ihandle))
 
-(defcfun (%iup-refresh-children "IupRefreshChildren") :void
+(cffi:defcfun (%iup-refresh-children "IupRefreshChildren") :void
   (handle ihandle))
 
-(defcfun (%iup-version "IupVersion") :string)
-(defcfun (%iup-version-date "IupVersionDate") :string)
-(defcfun (%iup-version-number "IupVersionNumber") :int)
+(cffi:defcfun (%iup-version "IupVersion") :string)
+(cffi:defcfun (%iup-version-date "IupVersionDate") :string)
+(cffi:defcfun (%iup-version-number "IupVersionNumber") :int)
 
-(defcfun (%iup-destroy "IupDestroy") :void
+(cffi:defcfun (%iup-destroy "IupDestroy") :void
   (handle ihandle))
 
-(defcfun (%iup-detach "IupDetach") :void
+(cffi:defcfun (%iup-detach "IupDetach") :void
   (handle ihandle))
 
-(defcfun (%iup-append "IupAppend") ihandle
+(cffi:defcfun (%iup-append "IupAppend") ihandle
   (handle ihandle)
   (child ihandle))
 
-(defcfun (%iup-insert "IupInsert") ihandle
+(cffi:defcfun (%iup-insert "IupInsert") ihandle
   (handle ihandle)
   (ref-child ihandle)
   (child ihandle))
 
-(defcfun (%iup-get-child "IupGetChild") ihandle
+(cffi:defcfun (%iup-get-child "IupGetChild") ihandle
   (handle ihandle)
   (pos :int))
 
-(defcfun (%iup-get-child-pos "IupGetChildPos") :int
+(cffi:defcfun (%iup-get-child-pos "IupGetChildPos") :int
   (handle ihandle)
   (child ihandle))
 
-(defcfun (%iup-get-child-count "IupGetChildCount") :int
+(cffi:defcfun (%iup-get-child-count "IupGetChildCount") :int
   (handle ihandle))
 
-(defcfun (%iup-get-next-child "IupGetNextChild")  ihandle
+(cffi:defcfun (%iup-get-next-child "IupGetNextChild")  ihandle
   (handle ihandle)
   (child ihandle))
 
-(defcfun (%iup-get-brother "IupGetBrother") ihandle
+(cffi:defcfun (%iup-get-brother "IupGetBrother") ihandle
   (handle ihandle))
 
-(defcfun (%iup-get-parent "IupGetParent") ihandle
+(cffi:defcfun (%iup-get-parent "IupGetParent") ihandle
   (handle ihandle))
 
-(defcfun (%iup-get-dialog "IupGetDialog") ihandle
+(cffi:defcfun (%iup-get-dialog "IupGetDialog") ihandle
   (handle ihandle))
 
-(defcfun (%iup-get-dialog-child "IupGetDialogChild") ihandle
+(cffi:defcfun (%iup-get-dialog-child "IupGetDialogChild") ihandle
   (handle ihandle)
   (name :string))
 
-(defcfun (%iup-reparent "IupReparent") :int
+(cffi:defcfun (%iup-reparent "IupReparent") :int
   (handle ihandle)
   (new-parent ihandle)
   (ref-child ihandle))
 
-(defcfun (%iup-popup "IupPopup") :int
+(cffi:defcfun (%iup-popup "IupPopup") :int
   (handle ihandle)
   (x :int)
   (y :int))
 
-(defcfun (%iup-show "IupShow") :int
+(cffi:defcfun (%iup-show "IupShow") :int
   (handle ihandle))
 
-(defcfun (%iup-show-xy "IupShowXY") :int
+(cffi:defcfun (%iup-show-xy "IupShowXY") :int
   (handle ihandle)
   (x :int)
   (y :int))
 
-(defcfun (%iup-hide "IupHide") :int
+(cffi:defcfun (%iup-hide "IupHide") :int
   (handle ihandle))
 
-(defcfun (%iup-map "IupMap") :int
+(cffi:defcfun (%iup-map "IupMap") :int
   (handle ihandle))
 
-(defcfun (%iup-unmap "IupUnmap") :void
+(cffi:defcfun (%iup-unmap "IupUnmap") :void
   (handle ihandle))
 
-(defcfun (%iup-reset-attribute "IupResetAttribute") :void
+(cffi:defcfun (%iup-reset-attribute "IupResetAttribute") :void
   (handle ihandle)
   (name attr-name))
 
-(defcfun (%iup-get-all-attributes "IupGetAllAttributes") :int
+(cffi:defcfun (%iup-get-all-attributes "IupGetAllAttributes") :int
   (handle ihandle)
   (names :pointer)
   (n :int))
 
-(defcfun (%iup-set-str-attribute "IupSetStrAttribute") :void
+(cffi:defcfun (%iup-set-str-attribute "IupSetStrAttribute") :void
   (handle ihandle)
   (name attr-name)
   (value :string))
 
-(defcfun (%iup-get-attribute "IupGetAttribute") :string
+(cffi:defcfun (%iup-get-attribute "IupGetAttribute") :string
   (handle ihandle)
   (name attr-name))
 
-(defcfun (%iup-get-pointer-attribute "IupGetAttribute") :pointer
+(cffi:defcfun (%iup-get-pointer-attribute "IupGetAttribute") :pointer
   ;; same thing, no conversion
   (handle ihandle)
   (name attr-name))
 
-(defcfun (%iup-set-str-attribute-id "IupSetStrAttributeId") :void
+(cffi:defcfun (%iup-set-str-attribute-id "IupSetStrAttributeId") :void
   (handle ihandle)
   (name attr-name)
   (id :int)
   (value :string))
 
-(defcfun (%iup-get-attribute-id-2 "IupGetAttributeId2") :string
+(cffi:defcfun (%iup-get-attribute-id-2 "IupGetAttributeId2") :string
   (handle ihandle)
   (name attr-name)
   (line :int)
   (column :int))
 
-(defcfun (%iup-set-str-attribute-id-2 "IupSetStrAttributeId2") :void
+(cffi:defcfun (%iup-set-str-attribute-id-2 "IupSetStrAttributeId2") :void
   (handle ihandle)
   (name attr-name)
   (line :int)
   (column :int)
   (value :string))
 
-(defcfun (%iup-set-int-attribute "IupSetInt") :void
+(cffi:defcfun (%iup-set-int-attribute "IupSetInt") :void
   (handle ihandle)
   (name attr-name)
   (value :int))
 
-(defcfun (%iup-set-float-attribute "IupSetFloat") :void
+(cffi:defcfun (%iup-set-float-attribute "IupSetFloat") :void
   (handle ihandle)
   (name attr-name)
   (value :float))
 
-(defcfun (%iup-set-double-attribute "IupSetDouble") :void
+(cffi:defcfun (%iup-set-double-attribute "IupSetDouble") :void
   (handle ihandle)
   (name attr-name)
   (value :double))
 
-(defcfun (%iup-get-int-attribute "IupGetInt") :int
+(cffi:defcfun (%iup-get-int-attribute "IupGetInt") :int
   (handle ihandle)
   (name attr-name))
 
-(defcfun (%iup-get-float-attribute "IupGetFloat") :float
+(cffi:defcfun (%iup-get-float-attribute "IupGetFloat") :float
   (handle ihandle)
   (name attr-name))
 
-(defcfun (%iup-get-double-attribute "IupGetDouble") :double
+(cffi:defcfun (%iup-get-double-attribute "IupGetDouble") :double
   (handle ihandle)
   (name attr-name))
 
-(defcfun (%iup-set-int-attribute-id-2 "IupSetIntId2") :void
+(cffi:defcfun (%iup-set-int-attribute-id-2 "IupSetIntId2") :void
   (handle ihandle)
   (name attr-name)
   (line :int)
   (column :int)
   (value :int))
 
-(defcfun (%iup-set-float-attribute-id-2 "IupSetFloat") :void
+(cffi:defcfun (%iup-set-float-attribute-id-2 "IupSetFloat") :void
   (handle ihandle)
   (name attr-name)
   (line :int)
   (column :int)
   (value :float))
 
-(defcfun (%iup-set-double-attribute-id-2 "IupSetDouble") :void
+(cffi:defcfun (%iup-set-double-attribute-id-2 "IupSetDouble") :void
   (handle ihandle)
   (name attr-name)
   (line :int)
   (column :int)
   (value :double))
 
-(defcfun (%iup-get-int-attribute-id-2 "IupGetInt") :int
+(cffi:defcfun (%iup-get-int-attribute-id-2 "IupGetInt") :int
   (handle ihandle)
   (name attr-name)
   (line :int)
   (column :int))
 
-(defcfun (%iup-get-float-attribute-id-2  "IupGetFloat") :float
+(cffi:defcfun (%iup-get-float-attribute-id-2  "IupGetFloat") :float
   (handle ihandle)
   (name attr-name)
   (line :int)
   (column :int))
 
-(defcfun (%iup-get-double-attribute-id-2 "IupGetDouble") :double
+(cffi:defcfun (%iup-get-double-attribute-id-2 "IupGetDouble") :double
   (handle ihandle)
   (name attr-name)
   (line :int)
   (column :int))
 
-(defcfun (%iup-set-str-global "IupSetStrGlobal") :void
+(cffi:defcfun (%iup-set-str-global "IupSetStrGlobal") :void
   (name attr-name)
   (value :string))
 
-(defcfun (%iup-get-global "IupGetGlobal") :string
+(cffi:defcfun (%iup-get-global "IupGetGlobal") :string
   (name attr-name))
 
-(defcfun (%iup-set-focus "IupSetFocus") ihandle
+(cffi:defcfun (%iup-set-focus "IupSetFocus") ihandle
   (handle ihandle))
 
-(defcfun (%iup-get-focus "IupGetFocus") ihandle)
+(cffi:defcfun (%iup-get-focus "IupGetFocus") ihandle)
 
-(defcfun (%iup-previous-field "IupPreviousField") ihandle
+(cffi:defcfun (%iup-previous-field "IupPreviousField") ihandle
   (handle ihandle))
 
-(defcfun (%iup-next-field "IupNextField") ihandle
+(cffi:defcfun (%iup-next-field "IupNextField") ihandle
   (handle ihandle))
 
-(defcfun (%iup-set-callback "IupSetCallback") :pointer
+(cffi:defcfun (%iup-set-callback "IupSetCallback") :pointer
   (handle ihandle)
   (name attr-name)
   (func :pointer))
 
-(defcfun (%iup-get-callback "IupGetCallback") :pointer
+(cffi:defcfun (%iup-get-callback "IupGetCallback") :pointer
   (handle ihandle)
   (name attr-name))
 
 
-(defcfun (%iup-get-function "IupGetFunction") :pointer
+(cffi:defcfun (%iup-get-function "IupGetFunction") :pointer
   (name attr-name))
 
-(defcfun (%iup-set-function "IupSetFunction") :pointer
+(cffi:defcfun (%iup-set-function "IupSetFunction") :pointer
   (name attr-name)
   (func :pointer))
 
-(defcfun (%iup-get-handle "IupGetHandle") ihandle
+(cffi:defcfun (%iup-get-handle "IupGetHandle") ihandle
   (name :string))
 
-(defcfun (%iup-set-handle "IupSetHandle") ihandle
+(cffi:defcfun (%iup-set-handle "IupSetHandle") ihandle
   (name :string)
   (handle ihandle))
 
@@ -291,12 +300,12 @@
 ;; int       IupGetAllDialogs(char** names, int n);
 ;; char*     IupGetName      (Ihandle* ih);
 
-(defcfun (%iup-set-attribute-handle "IupSetAttributeHandle") :void
+(cffi:defcfun (%iup-set-attribute-handle "IupSetAttributeHandle") :void
   (handle ihandle)
   (name attr-name)
   (other-handle ihandle))
 
-(defcfun (%iup-get-attribute-handle "IupGetAttributeHandle") ihandle
+(cffi:defcfun (%iup-get-attribute-handle "IupGetAttributeHandle") ihandle
   (handle ihandle)
   (name attr-name))
 
@@ -306,42 +315,42 @@
 ;; void      IupSetAttributeHandleId2(Ihandle* ih, const char* name, int lin, int col, Ihandle* ih_named);
 ;; Ihandle*  IupGetAttributeHandleId2(Ihandle* ih, const char* name, int lin, int col);
 
-(defcfun (%iup-get-class-name "IupGetClassName") :string
+(cffi:defcfun (%iup-get-class-name "IupGetClassName") :string
   (handle ihandle))
 
-(defcfun (%iup-get-class-type "IupGetClassType") :string
+(cffi:defcfun (%iup-get-class-type "IupGetClassType") :string
   (handle ihandle))
 
-(defcfun (%iup-get-all-classes "IupGetAllClasses") :int
+(cffi:defcfun (%iup-get-all-classes "IupGetAllClasses") :int
   (names :pointer)
   (n :int))
 
-(defcfun (%iup-get-class-attributes "IupGetClassAttributes") :int
+(cffi:defcfun (%iup-get-class-attributes "IupGetClassAttributes") :int
   (classname :string)
   (names :pointer)
   (n :int))
 
-(defcfun (%iup-get-class-callbacks "IupGetClassCallbacks") :int
+(cffi:defcfun (%iup-get-class-callbacks "IupGetClassCallbacks") :int
   (classname :string)
   (names :pointer)
   (n :int))
 
-(defcfun (%iup-save-class-attributes "IupSaveClassAttributes") :void
+(cffi:defcfun (%iup-save-class-attributes "IupSaveClassAttributes") :void
   (handle ihandle))
 
 
-(defcfun (%iup-copy-class-attributes "IupCopyClassAttributes") :void
+(cffi:defcfun (%iup-copy-class-attributes "IupCopyClassAttributes") :void
   (source-handle ihandle)
   (destination-handle ihandle))
 
-(defcfun (%iup-set-class-default-attribute "IupSetClassDefaultAttribute") :void
+(cffi:defcfun (%iup-set-class-default-attribute "IupSetClassDefaultAttribute") :void
   (classname :string)
   (name attr-name)
   (value :string))
 
 ;; int       IupClassMatch(Ihandle* ih, const char* classname);
 
-(defcfun (%iup-create "IupCreate") iup-cffi::ihandle
+(cffi:defcfun (%iup-create "IupCreate") iup-cffi::ihandle
   (classname :string))
 
 ;; /* String compare utility */
@@ -363,27 +372,27 @@
 ;; int   IupTreeGetId(Ihandle* ih, void *userid);
 ;; void  IupTreeSetAttributeHandle(Ihandle* ih, const char* name, int id, Ihandle* ih_named); /* deprecated, use IupSetA
 
-(defcfun (%iup-file-dlg "IupFileDlg") ihandle)
-(defcfun (%iup-message-dlg "IupMessageDlg") ihandle)
-(defcfun (%iup-color-dlg "IupColorDlg") ihandle)
-(defcfun (%iup-font-dlg "IupFontDlg") ihandle)
-(defcfun (%iup-progress-dlg "IupProgressDlg") ihandle)
+(cffi:defcfun (%iup-file-dlg "IupFileDlg") ihandle)
+(cffi:defcfun (%iup-message-dlg "IupMessageDlg") ihandle)
+(cffi:defcfun (%iup-color-dlg "IupColorDlg") ihandle)
+(cffi:defcfun (%iup-font-dlg "IupFontDlg") ihandle)
+(cffi:defcfun (%iup-progress-dlg "IupProgressDlg") ihandle)
 
-(defcfun (%iup-message "IupMessage") :void
+(cffi:defcfun (%iup-message "IupMessage") :void
   (title :string)
   (message :string))
 
-(defcfun (%iup-message-error "IupMessageError") :void
+(cffi:defcfun (%iup-message-error "IupMessageError") :void
   (parent ihandle)
   (message :string))
 
-(defcfun (%iup-message-alarm "IupMessageAlarm") :int
+(cffi:defcfun (%iup-message-alarm "IupMessageAlarm") :int
   (parent ihandle)
   (title :string)
   (message :string)
   (buttons :string))
 
-(defcfun (%iup-alarm "IupAlarm") :int
+(cffi:defcfun (%iup-alarm "IupAlarm") :int
   (title :string)
   (message :string)
   (button1 :string)
@@ -464,12 +473,12 @@
 
 ;;; iup_config.h
 
-(defcfun (%iup-config "IupConfig") ihandle)
+(cffi:defcfun (%iup-config "IupConfig") ihandle)
 
-(defcfun (%iup-config-load "IupConfigLoad") :int
+(cffi:defcfun (%iup-config-load "IupConfigLoad") :int
   (handle ihandle))
 
-(defcfun (%iup-config-save "IupConfigSave") :int
+(cffi:defcfun (%iup-config-save "IupConfigSave") :int
   (handle ihandle))
 
 ;; /****************************************************************/
@@ -504,12 +513,12 @@
 ;; void IupConfigRecentInit(Ihandle* ih, Ihandle* menu, Icallback recent_cb, int max_recent);
 ;; void IupConfigRecentUpdate(Ihandle* ih, const char* filename);
 
-(defcfun (%iup-config-dialog-show "IupConfigDialogShow") :void
+(cffi:defcfun (%iup-config-dialog-show "IupConfigDialogShow") :void
   (handle ihandle)
   (dialog-handle ihandle)
   (name :string))
 
-(defcfun (%iup-config-dialog-closed "IupConfigDialogClosed") :void
+(cffi:defcfun (%iup-config-dialog-closed "IupConfigDialogClosed") :void
   (handle ihandle)
   (dialog-handle ihandle)
   (name :string))

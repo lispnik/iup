@@ -1,5 +1,3 @@
-(in-package #:asdf-user)
-
 (defsystem #:iup-scintilla
   :serial t
   :pathname "scintilla/"

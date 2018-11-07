@@ -1,4 +1,6 @@
-(defpackage #:iup-gl-cffi (:use #:common-lisp))
+(defpackage #:iup-gl-cffi
+  (:use #:common-lisp))
+
 (in-package #:iup-gl-cffi)
 
 (cffi:define-foreign-library iup-gl
