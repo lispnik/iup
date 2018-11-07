@@ -7,7 +7,7 @@
   :serial t
   :pathname "iup/"
   :components ((:file "packages")
-	       (:file "eventloop")
+	       (:file "callback")
 	       (:file "classes")
 	       (:file "iup"))
   :depends-on (#:iup-cffi

@@ -74,15 +74,18 @@
   new-value)
 
 (defun callback (handle name)
+  ;; FIXME
   (iup-cffi::%iup-get-callback handle name))
 
 (defun (setf callback) (new-value handle name)
-  (iup-cffi::%iup-set-callback
-   handle
-   name
-   (if new-value
-       (cffi:get-callback new-value)
-       (cffi:null-pointer)))
+  (if new-value
+      (progn
+	(let* ((callback (class-callback-name (class-name handle) name (find-package "IUP")))
+	       (cffi-callback (cffi:get-callback callback))
+	       (callback-name (symbol-name name)))
+	  (register-callback callback handle new-value)
+	  (iup-cffi::%iup-set-callback handle callback-name cffi-callback)))
+      (unregister-callback name handle))
   new-value)
 
 (deftype attribute-type () '(member :int :float :double :string :pointer))
@@ -299,3 +302,12 @@
 (alias 'config-save          #'iup-cffi::%iup-config-save)
 (alias 'config-dialog-show   #'iup-cffi::%iup-config-dialog-show)
 (alias 'config-dialog-closed #'iup-cffi::%iup-config-dialog-closed)
+
+(define-constant +mask-float+ "[+/-]?(/d+/.?/d*|/./d+)" :test #'string=)
+(define-constant +mask-ufloat+ "(/d+/.?/d*|/./d+)" :test #'string=)
+(define-constant +mask-efloat+ "[+/-]?(/d+/.?/d*|/./d+)([eE][+/-]?/d+)?" :test #'string=)
+(define-constant +mask-uefloat+ "(/d+/.?/d*|/./d+)([eE][+/-]?/d+)?" :test #'string=)
+(define-constant +mask-float-comma+ "[+/-]?(/d+/,?/d*|/,/d+)" :test #'string=)
+(define-constant +mask-ufloat-comma+ "(/d+/,?/d*|/,/d+)" :test #'string=)
+(define-constant +mask-int+ "[+/-]?/d+" :test #'string=)
+(define-constant +mask-uint+ "/d+" :test #'string=)

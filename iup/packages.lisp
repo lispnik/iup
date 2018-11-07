@@ -101,7 +101,16 @@
 	   #:attributes
 	   #:callback
 	   #:handle
-	   #:platform)
+	   #:platform
+
+	   #:+mask-float+
+	   #:+mask-ufloat+
+	   #:+mask-efloat+
+	   #:+mask-uefloat+
+	   #:+mask-float-comma+
+	   #:+mask-ufloat-comma+
+	   #:+mask-int+
+	   #:+mask-uint+)
   (:shadow #:open
 	   #:close
 	   #:map

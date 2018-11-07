@@ -1,8 +1,3 @@
-(defpackage #:iup-examples.buttons
-  (:use #:common-lisp
-	#:alexandria)
-  (:export #:buttons))
-
 (defpackage #:iup-examples.simple-notepad
   (:use #:common-lisp
 	#:alexandria)

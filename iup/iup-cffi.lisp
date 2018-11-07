@@ -1,5 +1,6 @@
 (defpackage #:iup-cffi
-  (:use #:common-lisp))
+  (:use #:common-lisp
+	#:alexandria))
 
 (in-package #:iup-cffi)
 
@@ -444,19 +445,6 @@
 ;; #define iup_issys(_s)      (_s[7]=='Y')
 ;; #define iup_isbutton4(_s)  (_s[8]=='4')
 ;; #define iup_isbutton5(_s)  (_s[9]=='5')
-
-;; /************************************************************************/
-;; /*                      Pre-Defined Masks                               */
-;; /************************************************************************/
-;; #define IUP_MASK_FLOAT       "[+/-]?(/d+/.?/d*|/./d+)"
-;; #define IUP_MASK_UFLOAT            "(/d+/.?/d*|/./d+)"
-;; #define IUP_MASK_EFLOAT      "[+/-]?(/d+/.?/d*|/./d+)([eE][+/-]?/d+)?"
-;; #define IUP_MASK_UEFLOAT           "(/d+/.?/d*|/./d+)([eE][+/-]?/d+)?"
-;; #define IUP_MASK_FLOATCOMMA  "[+/-]?(/d+/,?/d*|/,/d+)"
-;; #define IUP_MASK_UFLOATCOMMA       "(/d+/,?/d*|/,/d+)"
-;; #define IUP_MASK_INT          "[+/-]?/d+"
-;; #define IUP_MASK_UINT               "/d+"
-
 
 ;; /************************************************************************/
 ;; /*                   IupGetParam Callback situations                    */

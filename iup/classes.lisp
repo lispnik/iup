@@ -11,15 +11,15 @@
     (#\C . :pointer)	;*cdCanvas
     (#\n . :pointer))) 	;*Ihandle
 
-(defun class-callback-name (classname callback-name)
-  (format nil "~:@(~A-~A~)" classname callback-name))
+(defun class-callback-name (classname callback-name package)
+  (intern (format nil "~:@(~A-~A~)" classname callback-name) package))
 
 (defun check-callback-args (action args-list)
   (declare (ignore action args-list))
   ;; FIXME
   t)
 
-(defmacro defclasscallback (classname name spec)
+(defmacro defclasscallback (classname name spec package)
   (let* ((return-type (or (and (find #\= spec)
 			       (assoc-value *iup-callback-encoding*
 					    (elt spec (1- (length spec)))
@@ -33,7 +33,7 @@
 			 collect (cl:list arg s) into arg-list
 			 finally (return (list* '(arg0 :pointer) arg-list))))
 	 (return-and-arg-list (cl:list return-type arg-list))
-	 (callback-name (intern (class-callback-name classname name))))
+	 (callback-name (class-callback-name classname name package)))
     `(cffi:defcallback ,callback-name ,@return-and-arg-list
 	 (let ((action (genhash:hashref (make-callback :name ',callback-name :handle arg0)
 					*registered-callbacks*))
@@ -102,10 +102,8 @@
 			       (symbol-name attribute)
 			       ;; FIXME extract repeated form in the following two
 			       (cffi:get-callback
-				(intern (class-callback-name ,classname attribute)
-					(find-package ,package))))
-			      (register-callback (intern (class-callback-name ,classname attribute)
-							 (find-package ,package))
+				(class-callback-name ,classname attribute (find-package ,package))))
+			      (register-callback (class-callback-name ,classname attribute (find-package ,package))
 						 ,handle
 						 value))
 			    (iup-cffi::%iup-set-str-attribute ,handle attribute (princ-to-string value))))
@@ -123,7 +121,7 @@
 		     for spec = (getf attribute :default-value)
 		     for name = (make-keyword (getf attribute :name))
 		     collect
-		     `(defclasscallback ,classname ,name ,spec))))))))
+		     `(defclasscallback ,classname ,name ,spec ,package))))))))
 
 
 (defmacro defiupclasses (export-package)
