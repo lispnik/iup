@@ -45,4 +45,4 @@
 #+nil
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)
-  (flight-booker))
+  (sb-thread:make-thread 'flight-booker))
