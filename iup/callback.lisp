@@ -26,3 +26,7 @@
 (defun unregister-callback (name handle)
   (check-type handle cffi:foreign-pointer)
   (genhash:hashrem (make-callback :name name :handle handle) *registered-callbacks*))
+
+(defun find-callback (name handle)
+  (check-type handle cffi:foreign-pointer)
+  (genhash:hashref (make-callback :name name :handle handle) *registered-callbacks*))

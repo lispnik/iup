@@ -2,20 +2,6 @@
 
 (defiupclasses "IUP")
 
-#+nil
-(sb-int:with-float-traps-masked
-    (:divide-by-zero :invalid)
-  (iup:with-iup ()
-    (let* ((button (iup:button :title "Press Me"
-			       :action #'(lambda (&rest args)
-					   (declare (ignore args))
-					   (format t "Hi This is a message~%")
-					   iup::+default+)))
-	   (hbox (iup:vbox (cl:list button)))
-	   (dialog (iup:dialog hbox)))
-      (iup:show dialog)
-      (iup:main-loop))))
-
 (defun handle-p (handle)
   (and (cffi:pointerp handle)
        (not (cffi:null-pointer-p handle))
@@ -24,7 +10,7 @@
        (= (char-code #\P) (cffi:mem-ref handle :char 2))
        (zerop (cffi:mem-ref handle :char 3))))
 
-(defun get-classname-names (classname name-producer)
+(defun classname-names (classname name-producer)
   (let ((max-n (funcall name-producer classname (cffi:null-pointer) 0)))
     (unless (= max-n -1)
       (let ((array (cffi:foreign-alloc :pointer :initial-element (cffi:null-pointer) :count max-n :null-terminated-p t)))
@@ -38,10 +24,10 @@
 	  (foreign-free array))))))
 
 (defun class-attributes (classname)
-  (get-classname-names classname #'iup-cffi::%iup-get-class-attributes))
+  (classname-names classname #'iup-cffi::%iup-get-class-attributes))
 
 (defun class-callbacks (classname)
-  (get-classname-names classname #'iup-cffi::%iup-get-class-callbacks))
+  (classname-names classname #'iup-cffi::%iup-get-class-callbacks))
 
 (defun all-classes ()
   (let* ((max-n (iup-cffi::%iup-get-all-classes (cffi:null-pointer) 0))
@@ -74,8 +60,7 @@
   new-value)
 
 (defun callback (handle name)
-  ;; FIXME
-  (iup-cffi::%iup-get-callback handle name))
+  (find-callback name handle))
 
 (defun (setf callback) (new-value handle name)
   (if new-value
@@ -88,16 +73,23 @@
       (unregister-callback name handle))
   new-value)
 
-(deftype attribute-type () '(member :int :float :double :string :pointer))
+(defun (setf handle) (new-value name)
+  (iup-cffi::%iup-set-handle name new-value))
 
-(defun attribute (handle attribute &optional (type :string))
+(defun handle (name)
+  (iup-cffi::%iup-get-handle name))
+
+(deftype attribute-type ()
+  '(member integer single-float double-float string cffi:foreign-pointer))
+
+(defun attribute (handle attribute &optional (type 'string))
   (declare (type attribute-type type))
-  (case type
-    (:int (iup-cffi::%iup-get-int-attribute handle attribute))
-    (:float (iup-cffi::%iup-get-float-attribute handle attribute))
-    (:double (iup-cffi::%iup-get-double-attribute handle attribute))
-    (:string (iup-cffi::%iup-get-attribute handle attribute))
-    (:pointer (iup-cffi::%iup-get-pointer-attribute handle attribute))))
+  (ecase type
+    (integer (iup-cffi::%iup-get-int-attribute handle attribute))
+    (single-float (iup-cffi::%iup-get-float-attribute handle attribute))
+    (double-float (iup-cffi::%iup-get-double-attribute handle attribute))
+    (string (iup-cffi::%iup-get-attribute handle attribute))
+    (cffi:foreign-pointer (iup-cffi::%iup-get-pointer-attribute handle attribute))))
 
 (defun (setf attribute) (new-value handle attribute)
   (typecase new-value
@@ -105,84 +97,77 @@
     (integer (iup-cffi::%iup-set-int-attribute handle attribute new-value))
     (single-float (iup-cffi::%iup-set-float-attribute handle attribute new-value))
     (double-float (iup-cffi::%iup-set-double-attribute handle attribute new-value))
+    (cffi:foreign-pointer (iup-cffi::%iup-set-attribute handle attribute new-value))
     (t (iup-cffi::%iup-set-str-attribute
 	handle
 	attribute
 	(if new-value
-	    (princ new-value)
+	    (write-to-string new-value)
 	    (cffi:null-pointer)))))
   new-value)
 
-(defun (setf attributes) (attributes handle)
-  (loop for (attribute value) on attributes by #'cddr
-        do (progn
-             (setf (attribute handle attribute) value))
-        finally (return attributes)))
+;; (defun (setf attributes) (attributes handle)
+;;   (loop for (attribute value) on attributes by #'cddr
+;;         do (progn
+;;              (setf (attribute handle attribute) value))
+;;         finally (return attributes)))
 
-(defun attributes (handle)
-;;   (iup-cffi::%iup-get-all-attributes)
-  ;; FIXME implement
-  (error "not implemented")
-  )
+;; (defun attributes (handle)
+;; ;;   (iup-cffi::%iup-get-all-attributes)
+;;   ;; FIXME implement
+;;   (error "not implemented")
+;;   )
 
-(defun (setf attribute-id) (new-value handle attribute id)
-  ;; FIXME implement
-  )
+;; (defun (setf attribute-id) (new-value handle attribute id)
+;;   ;; FIXME implement
+;;   )
 
-(defun attribute-id-2 (handle attribute line column &optional (type :string))
-  (declare (type attribute-type type))
-  (case type
-    (:int (iup-cffi::%iup-get-int-attribute-id-2 handle attribute line column))
-    (:float (iup-cffi::%iup-get-float-attribute-id-2 handle attribute line column))
-    (:double (iup-cffi::%iup-get-double-attribute-id-2 handle attribute line column))
-    (:string (iup-cffi::%iup-get-attribute-id-2 handle attribute line column))))
-  
-(defun (setf attribute-id-2) (new-value handle attribute line column)
-  (typecase new-value
-    (string (iup-cffi::%iup-set-str-attribute-id-2 handle attribute line column (or new-value (cffi:null-pointer))))
-    (integer (iup-cffi::%iup-set-int-attribute-id-2 handle attribute line column new-value))
-    (single-float (iup-cffi::%iup-set-float-attribute-id-2 handle attribute line column new-value))
-    (double-float (iup-cffi::%iup-set-double-attribute-id-2 handle attribute line column new-value))
-    (t (iup-cffi::%iup-set-str-attribute-id-2
-	handle
-	attribute
-	line
-	column
-	(if new-value
-	    (princ new-value)
-	    (cffi:null-pointer))))))
+;; (defun attribute-id-2 (handle attribute line column &optional (type :string))
+;;   (declare (type attribute-type type))
+;;   (case type
+;;     (:int (iup-cffi::%iup-get-int-attribute-id-2 handle attribute line column))
+;;     (:float (iup-cffi::%iup-get-float-attribute-id-2 handle attribute line column))
+;;     (:double (iup-cffi::%iup-get-double-attribute-id-2 handle attribute line column))
+;;     (:string (iup-cffi::%iup-get-attribute-id-2 handle attribute line column))))
 
-(defun (setf attribute-callback-handle-dwim) (new-value handle name)
-  (let ((name-string (symbol-name name)))
-    (cond
-      ((or (string= "ACTION" name-string)
-	   (ends-with-subseq "_CB" name-string)
-           (starts-with-subseq "K_" name-string))
-       (setf (callback handle name) new-value))
-      ((handle-p new-value)
-       (setf (attribute-handle handle name) new-value))
-      (t
-       (setf (attribute handle name) new-value)))))
+;; (defun (setf attribute-id-2) (new-value handle attribute line column)
+;;   (typecase new-value
+;;     (string (iup-cffi::%iup-set-str-attribute-id-2 handle attribute line column (or new-value (cffi:null-pointer))))
+;;     (integer (iup-cffi::%iup-set-int-attribute-id-2 handle attribute line column new-value))
+;;     (single-float (iup-cffi::%iup-set-float-attribute-id-2 handle attribute line column new-value))
+;;     (double-float (iup-cffi::%iup-set-double-attribute-id-2 handle attribute line column new-value))
+;;     (t (iup-cffi::%iup-set-str-attribute-id-2
+;; 	handle
+;; 	attribute
+;; 	line
+;; 	column
+;; 	(if new-value
+;; 	    (princ new-value)
+;; 	    (cffi:null-pointer))))))
 
-(defun (setf attribute-callback-handles-dwim) (names handle)
-  (loop for (name value) on names by #'cddr
-        do (progn
-             (setf (attribute-callback-handle-dwim handle name) value))
-        finally (return handle)))
+;; (defun (setf attribute-callback-handle-dwim) (new-value handle name)
+;;   (let ((name-string (symbol-name name)))
+;;     (cond
+;;       ((or (string= "ACTION" name-string)
+;; 	   (ends-with-subseq "_CB" name-string)
+;;            (starts-with-subseq "K_" name-string))
+;;        (setf (callback handle name) new-value))
+;;       ((handle-p new-value)
+;;        (setf (attribute-handle handle name) new-value))
+;;       (t
+;;        (setf (attribute handle name) new-value)))))
 
-(defun (setf handle) (new-value name)
-  (iup-cffi::%iup-set-handle name new-value))
+;; (defun (setf attribute-callback-handles-dwim) (names handle)
+;;   (loop for (name value) on names by #'cddr
+;;         do (progn
+;;              (setf (attribute-callback-handle-dwim handle name) value))
+;;         finally (return handle)))
 
-(defun handle (name)
-  (iup-cffi::%iup-get-handle name))
 
+;;; FIXME this not needed any more?
 (defmacro defattributefun (name args &rest body)
   `(defun ,name (,@args &rest attributes &key &allow-other-keys)
      (setf (attribute-callback-handles-dwim (progn ,@body)) attributes)))
-
-;; (defmacro defattributefun (name args &rest body)
-;;   `(defun ,name (,@args &rest attributes &key &allow-other-keys)
-;;      (setf (attributes (progn ,@body)) attributes)))
 
 (defconstant +error+      1)
 (defconstant +noerror+    0)
@@ -273,30 +258,30 @@
 
 ;;;  IMAGES?
 
-(defattributefun image (width height pixels)
-  (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height))))
-    (unwind-protect
-	 (iup-cffi::%iup-image width height array)
-      (cffi:foreign-free array))))
+;; (defattributefun image (width height pixels)
+;;   (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height))))
+;;     (unwind-protect
+;; 	 (iup-cffi::%iup-image width height array)
+;;       (cffi:foreign-free array))))
 
-(defattributefun image-rgb (width height pixels)
-  (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height 3))))
-    (unwind-protect
-	 (iup-cffi::%iup-image-rgb width height array)
-      (cffi:foreign-free array))))
+;; (defattributefun image-rgb (width height pixels)
+;;   (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height 3))))
+;;     (unwind-protect
+;; 	 (iup-cffi::%iup-image-rgb width height array)
+;;       (cffi:foreign-free array))))
 
-(defattributefun image-rgba (width height pixels)
-  (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height 4))))
-    (unwind-protect
-	 (iup-cffi::%iup-image-rgba width height array)
-      (cffi:foreign-free array))))
+;; (defattributefun image-rgba (width height pixels)
+;;   (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height 4))))
+;;     (unwind-protect
+;; 	 (iup-cffi::%iup-image-rgba width height array)
+;;       (cffi:foreign-free array))))
 
 (alias 'message       #'iup-cffi::%iup-message)
 (alias 'message-error #'iup-cffi::%iup-message-error)
 (alias 'message-alarm #'iup-cffi::%iup-message-alarm)
 (alias 'alarm         #'iup-cffi::%iup-alarm)
 
-(defattributefun config () (iup-cffi::%iup-config))
+;; (defattributefun config () (iup-cffi::%iup-config))
 
 (alias 'config-load          #'iup-cffi::%iup-config-load)
 (alias 'config-save          #'iup-cffi::%iup-config-save)

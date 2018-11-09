@@ -166,6 +166,11 @@
   (handle ihandle)
   (name attr-name))
 
+(cffi:defcfun (%iup-set-attribute "IupSetAttribute") :void
+  (handle ihandle)
+  (name attr-name)
+  (value :pointer))
+
 (cffi:defcfun (%iup-get-pointer-attribute "IupGetAttribute") :pointer
   ;; same thing, no conversion
   (handle ihandle)

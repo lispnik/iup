@@ -86,9 +86,9 @@
 	   #:config-dialog-show
 	   #:config-dialog-closed
 
-	   #:all-classes
 	   #:class-attributes
 	   #:class-callbacks
+	   #:all-classes
 	   #:class-name
 	   #:class-type
 	   #:save-class-attributes
