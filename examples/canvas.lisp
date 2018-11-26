@@ -8,8 +8,9 @@
 (defparameter *levels* 0)
 (defparameter *canvas* nil)
 
-(defun sierpinski-change (handle c new-value)
-  (setf *levels* (parse-integer new-value))
+(defun sierpinski-spin (handle pos)
+  (declare (ignore pos))
+  (setf *levels* (iup:attribute handle "VALUE" 'integer))
   iup:+default+)
 
 (defun sierpinski-redraw (handle x y)
@@ -32,7 +33,7 @@
 	   (dialog (iup:dialog vbox)))
       (setf (iup:callback canvas :map_cb) 'sierpinski-map
 	    (iup:callback canvas :action) 'sierpinski-redraw
-	    (iup:callback spin :action) 'sierpinski-change)
+	    (iup:callback spin :spin_cb) 'sierpinski-spin)
       (cd-context-plus:initialize)
       (cd:use-context-plus t)
       (iup:show-xy dialog iup:+center+ iup:+center+)
@@ -42,3 +43,4 @@
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)
   (sierpinski))
+
