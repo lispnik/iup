@@ -27,7 +27,7 @@
 
 (defun sierpinski ()
   (iup:with-iup ()
-    (let* ((canvas (iup:canvas :size "200x200"))
+    (let* ((canvas (iup:canvas :rastersize "200x200"))
 	   (spin (iup:text :spin "YES" :spinmin 0 :spinmax 5))
 	   (vbox (iup:vbox (list canvas spin) :alignment "ACENTER"))
 	   (dialog (iup:dialog vbox)))
@@ -43,4 +43,7 @@
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)
   (sierpinski))
+
+
+
 
