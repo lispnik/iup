@@ -35,11 +35,6 @@
   (:use #:common-lisp)
   (:export #:matrix))
 
-(defpackage #:iup-examples.cells
-  (:use #:common-lisp)
-  (:export #:checkerboard
-	   #:numbered))
-
 #+windows
 (defpackage #:iup-examples.flashbar
   (:use #:common-lisp)
