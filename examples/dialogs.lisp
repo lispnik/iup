@@ -40,7 +40,6 @@
 					 (iup:attribute dialog :value)
 					 (iup:attribute dialog :valuehsi)
 					 (iup:attribute dialog :valuehex))))))
-
   iup:+default+)
 
 (defun font-dialog (handle)
