@@ -1,26 +1,32 @@
+(defpackage #:iup-examples.dialogs
+  (:use #:common-lisp)
+  (:export #:dialogs))
+
 (in-package #:iup-examples.dialogs)
 
-(cffi:defcallback file-dialog-cb :int ((handle iup-cffi::ihandle))
+(defun file-dialog (handle)
+  (declare (ignore handle))
   (let ((dialog (iup:file-dialog)))
     (unwind-protect
 	 (iup:popup dialog iup:+center+ iup:+center+)
       (iup:destroy dialog)))
-  iup::+default+)
+  iup:+default+)
 
-(cffi:defcallback message-dialog-cb :int ((handle iup-cffi::ihandle))
-  (let ((dialog (iup:message-dialog
+(defun message-dialog (handle)
+  (let ((dialog (iup:message-dialog 
 		 :title "IupMessageDlg"
-		 :value "IupMessageDlg Example Text"
+		 ;;		 :value "IupMessageDlg test"
 		 :dialogtype "INFORMATION"
 		 :buttons "YESNOCANCEL")))
     (unwind-protect
 	 (progn
 	   (iup:popup dialog iup:+center+ iup:+center+)
-	   (iup:message "Result" (format nil "Got button response ~S" (iup:attribute dialog :buttonresponse))))
+	   (iup:message "Result" (format nil "Got button response ~S" (iup:attribute dialog "BUTTONRESPONSE"))))
       (iup:destroy dialog)))
-  iup::+default+)
+  iup:+default+)
 
-(cffi:defcallback color-dialog-cb :int ((handle iup-cffi::ihandle))
+(defun color-dialog (handle)
+  (declare (ignore handle))
   (let ((dialog (iup:color-dialog
 		 :title "IupColorDlg"
 		 :showhex "YES"
@@ -35,41 +41,40 @@
 					 (iup:attribute dialog :valuehsi)
 					 (iup:attribute dialog :valuehex))))))
 
-  iup::+default+)
+  iup:+default+)
 
-(cffi:defcallback font-dialog-cb :int ((handle iup-cffi::ihandle))
+(defun font-dialog (handle)
+  (declare (ignore handle))
   (let ((dialog (iup:font-dialog :title "IupFontDlg")))
     (unwind-protect
 	 (progn
 	   (iup:popup dialog iup:+center+ iup:+center+)
 	   (iup:message "Result" (format nil "Got button response ~S~%Got font ~S"
 					 (iup:attribute dialog :status)
-					 (iup:attribute dialog :value)))))))
+					 (iup:attribute dialog :value))))))
+  iup:+default+)
 
-(cffi:defcallback scintilla-dialog-cb :int ((handle iup-cffi::ihandle))
+(defun scintilla-dialog (handle)
+  (declare (ignore handle))
   (let ((dialog (iup-scintilla:scintilla-dialog :title "IupScintillaDlg")))
     (unwind-protect
 	 (progn
-	   (break)
-	   (iup:popup dialog iup:+center+ iup:+center+)
-	   (iup:message "Result" (format nil "Got button response ~S~%Got font ~S"
-					 (iup:attribute dialog :status)
-					 (iup:attribute dialog :value)))))))
+	   (iup:popup dialog iup:+center+ iup:+center+)))))
 
 (defun dialogs ()
   (iup:with-iup ()
     (iup-scintilla:open)
     (flet ((button (title callback)
 	     (iup:button :title title :action callback :expand "HORIZONTAL")))
-      (let* ((buttons (list (button "IupFileDlg" 'file-dialog-cb)
-			    (button "IupMessageDlg" 'message-dialog-cb)
-			    (button "IupColorDlg" 'color-dialog-cb)
-			    (button "IupFontDlg" 'font-dialog-cb)
-			    (button "IupProgressDlg" nil)
-			    (button "IupScintillaDlg" 'scintilla-dialog-cb)))
-	     (vbox (iup:vbox buttons))
-	     (dialog (iup:dialog vbox :title "Iup Predefined Dialogs")))
-	(iup:show dialog)
+      (let* ((dialog (iup:dialog
+		      (iup:vbox (list (button "IupFileDlg" 'file-dialog)
+				      (button "IupMessageDlg" 'message-dialog)
+				      (button "IupColorDlg" 'color-dialog)
+				      (button "IupFontDlg" 'font-dialog)
+				      ;; (button "IupProgressDlg" nil)
+				      (button "IupScintillaDlg" 'scintilla-dialog)))
+		      :title "Iup Predefined Dialogs")))
+	(iup:show-xy dialog iup:+center+ iup:+center+)
 	(iup:main-loop)))))
 
 #+nil

@@ -14,7 +14,8 @@
 									(lisp-implementation-type)
 									(lisp-implementation-version)))
 					    iup:+default+)))
-	   (dialog (iup:dialog (iup:hbox (list button1 button2) :gap 5 :margin "5x5") :title "IupButtons")))
+	   (dialog (iup:dialog (iup:hbox (list button1 button2) :gap 5 :margin "5x5")
+			       :title "IupButtons")))
       (iup:show dialog)
       (iup:main-loop))))
 

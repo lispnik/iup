@@ -23,10 +23,6 @@
 	#:alexandria)
   (:export #:teapot))
 
-(defpackage #:iup-examples.dialogs
-  (:use #:common-lisp)
-  (:export #:dialogs))
-
 (defpackage #:iup-examples.plottest
   (:use #:common-lisp)
   (:export #:plottest))

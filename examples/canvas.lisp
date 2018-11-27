@@ -17,7 +17,7 @@
   (declare (ignore handle x y))
   (cd:activate *canvas*)
   (cd:clear *canvas*)
-  (setf (cd:foreground *canvas*) cd:+black+)
+  (setf (cd:foreground *canvas*) cd:+red+)
   (cd-examples.sierpinski:sierpinski *canvas* *levels*)
   (cd:flush *canvas*)
   iup:+default+)
