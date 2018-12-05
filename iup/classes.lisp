@@ -132,7 +132,8 @@
 	 (platform-classes (getf (find (iup-utils:platform) classesdb
 				       :key #'(lambda (platform) (getf platform :platform)))
 				 :metadata))
-	 (package (getf platform-classes :package))
+	 (package (find export-package platform-classes :key #'(lambda (package)
+								 (string= package export-package))))
 	 (classes (getf platform-classes :classnames)))
     `(progn ,@(mapcar #'(lambda (class)
 			  `(defiupclass ,class ,package))

@@ -222,9 +222,8 @@ information to create the Lisp API at compilation time."
 			      :vanity-classname (vanity-name vanity-alist classname)
 			      :attributes (class-metadata classname)))))
 	    into result
-	  finally (return (list* :platform
-				 *platform*
-				 :metadata result)))))
+	  finally (return (append (list :platform *platform*)
+				  (list :metadata result))))))
 
 (defun classesdb-pathname ()
   (asdf:system-relative-pathname "iup" "classesdb" :type "lisp-sexp"))
