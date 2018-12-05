@@ -14,8 +14,8 @@
 
 (defun tasks (handle)
   (declare (ignore handle))
-  (let* ((name (iup:text))
-	 (description (iup:text :multiline "YES"))
+  (let* ((name (iup:text :expand "HORIZONTAL"))
+	 (description (iup:text :multiline "YES" :expand "YES"))
 	 (vbox (iup:vbox (list name description)))
 	 (dialog (iup:dialog vbox)))
     (unwind-protect
@@ -29,11 +29,11 @@
 (defun pomodoro ()
   (iup:with-iup ()
     (let* ((time-label (iup:label :title "--:--" :size "x16" :fontsize 32 :alignment "ACENTER:ACENTER" :expand "YES"))
-	   (time-progress (iup:progress-bar  :expand "YES"))
+	   (time-progress (iup:progress-bar  :expand "HORIZONTAL"))
 	   (task-label (iup:label :title "No task description"))
-	   (start-button (iup:button :title "Start" :fgcolor "green"))
-	   (cancel-button (iup:button :title "Cancel" :active "NO"))
-	   (tasks-button (iup:button :title "Tasks..." :action 'tasks))
+	   (start-button (iup:button :title "Start" :fgcolor "green" :expand "HORIZONTAL"))
+	   (cancel-button (iup:button :title "Cancel" :active "NO" :expand "HORIZONTAL"))
+	   (tasks-button (iup:button :title "Tasks..." :action 'tasks :expand "HORIZONTAL"))
 	   (hbox (iup:hbox (list start-button cancel-button tasks-button)))
 	   (vbox (iup:vbox (list time-label time-progress task-label hbox)))
 	   (dialog (iup:dialog vbox :title "Pomodoro"))
@@ -58,6 +58,7 @@
       (iup:show dialog)
       (iup:main-loop))))
 
+(pomodoro)
 #+nil
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)

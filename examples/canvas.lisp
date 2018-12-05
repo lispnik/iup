@@ -11,6 +11,7 @@
 (defun canvas-spin (handle pos)
   (declare (ignore pos))
   (setf *levels* (iup:attribute handle "VALUE" 'integer))
+  ;; FIXME trigger redraw here
   iup:+default+)
 
 (defun canvas-redraw (handle x y)
@@ -34,7 +35,7 @@
 (defun sierpinski ()
   (iup:with-iup ()
     (let* ((canvas (iup:canvas :rastersize "200x200"))
-	   (spin (iup:text :spin "YES" :spinmin 0 :spinmax 6))
+	   (spin (iup:text :spin "YES" :spinmin 0 :spinmax 5))
 	   (vbox (iup:vbox (list canvas spin) :alignment "ACENTER"))
 	   (dialog (iup:dialog vbox)))
       (setf (iup:callback canvas :map_cb) 'canvas-map
