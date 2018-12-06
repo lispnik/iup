@@ -9,6 +9,7 @@
     (#\s . :string)
     (#\V . :pointer)    ;*void
     (#\C . :pointer)	;*cdCanvas
+    (#\v . :pointer)    ;FIXME NOTE asked about this on mailin list...
     (#\n . :pointer))) 	;*Ihandle
 
 (defun class-callback-name (classname callback-name package)
@@ -20,6 +21,7 @@
   t)
 
 (defmacro defclasscallback (classname name spec package)
+  (format t "~A ~A ~A ~A~%" classname name spec package)
   (let* ((return-type (or (and (find #\= spec)
 			       (assoc-value *iup-callback-encoding*
 					    (elt spec (1- (length spec)))
@@ -132,9 +134,12 @@
 	 (platform-classes (getf (find (iup-utils:platform) classesdb
 				       :key #'(lambda (platform) (getf platform :platform)))
 				 :metadata))
-	 (package (find export-package platform-classes :key #'(lambda (package)
-								 (string= package export-package))))
-	 (classes (getf platform-classes :classnames)))
+	 (package (find export-package
+			platform-classes
+			:key #'(lambda (package)
+				 (getf package :package))
+			:test #'string=))
+	 (classes (getf package :classnames)))
     `(progn ,@(mapcar #'(lambda (class)
-			  `(defiupclass ,class ,package))
+			  `(defiupclass ,class ,(getf package :package)))
 		      classes))))
