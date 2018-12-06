@@ -29,6 +29,8 @@
 
 (alias 'open #'iup-plot-cffi::%iup-plot-open)
 
+(iup::defiupclasses "IUP-PLOT")
+
 (alias 'begin #'iup-plot-cffi::%iup-plot-begin)
 (alias 'end #'iup-plot-cffi::%iup-plot-end)
 

@@ -1,6 +1,6 @@
 (defsystem #:iup-olecontrol
   :serial t
-  :pathname "olecontrol/"
+  :pathname "olecontrol"
   :components ((:file "olecontrol"))
   :depends-on (#:cffi
 	       #:iup-olecontrol-cffi

@@ -1,6 +1,6 @@
 (defsystem #:iup-tuio
   :serial t
-  :pathname "tuio/"
+  :pathname "tuio"
   :components ((:file "tuio"))
   :depends-on (#:iup-tuio-cffi
 	       #:iup

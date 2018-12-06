@@ -11,4 +11,7 @@
 (in-package #:iup-scintilla)
 
 (alias 'open #'iup-scintilla-cffi::%iup-scintilla-open)
+
+(iup::defiupclasses "IUP-SCINTILLA")
+
 (alias 'scintilla-send-message #'iup-scintilla-cffi::%iup-scintilla-send-message)

@@ -13,6 +13,8 @@
 
 (alias 'open #'iup-glcontrols-cffi::%iup-glcontrols-open)
 
+(iup::defiupclasses "IUP-GLCONTROLS")
+
 (defun draw-text (handle text x y)
   (iup-glcontrols-cffi::%iup-glcontrols-draw-text handle text -1 x y))
 

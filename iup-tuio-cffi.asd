@@ -1,5 +1,5 @@
 (defsystem #:iup-tuio-cffi
-  :pathname "tuio/"
+  :pathname "tuio"
   :components ((:file "tuio-cffi"))
   :depends-on (#:iup-cffi
 	       #:cffi))

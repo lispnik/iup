@@ -8,3 +8,5 @@
 (in-package #:iup-tuio)
 
 (alias 'open #'iup-tuio-cffi::%iup-tuio-open)
+
+(iup::defiupclasses "IUP-TUIO")

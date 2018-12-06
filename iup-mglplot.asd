@@ -1,7 +1,8 @@
 (defsystem #:iup-mglplot
   :serial t
-  :pathname "mglplot/"
+  :pathname "mglplot"
   :components ((:file "mglplot"))
-  :depends-on (#:iup
+  :depends-on (#:iup-mglplot-cffi
+	       #:iup
 	       #:cffi))
 

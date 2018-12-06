@@ -1,5 +1,5 @@
 (defsystem #:iup-mglplot-cffi
-  :pathname "mglplot/"
+  :pathname "mglplot"
   :components ((:file "mglplot-cffi"))
   :depends-on (#:iup-cffi
 	       #:cffi))

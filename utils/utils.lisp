@@ -5,6 +5,7 @@
 
 (in-package #:iup-utils)
 
+;;; FIXME just use defalias from serapeum
 (defmacro alias (target source) `(setf (fdefinition ,target) ,source))
 
 (defun platform ()

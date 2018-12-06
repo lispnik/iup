@@ -9,3 +9,5 @@
 (in-package #:iup-olecontrol)
 
 (alias 'open #'iup-olecontrol-cffi::%iup-olecontrol-open)
+
+(iup::defiupclasses "IUP-OLECONTROL")

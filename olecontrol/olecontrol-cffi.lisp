@@ -1,4 +1,6 @@
-(defpackage #:iup-olecontrol-cffi (:use #:common-lisp))
+(defpackage #:iup-olecontrol-cffi
+  (:use #:common-lisp))
+
 (in-package #:iup-olecontrol-cffi)
 
 (cffi:define-foreign-library iup-olecontrol
