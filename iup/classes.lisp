@@ -9,7 +9,7 @@
     (#\s . :string)
     (#\V . :pointer)    ;*void
     (#\C . :pointer)	;*cdCanvas
-    (#\v . :pointer)    ;FIXME NOTE asked about this on mailin list...
+    (#\v . :pointer)    ;FIXME NOTE asked about this on mailin list... confirmed, should be "C"
     (#\n . :pointer))) 	;*Ihandle
 
 (defun class-callback-name (classname callback-name package)
@@ -21,7 +21,7 @@
   t)
 
 (defmacro defclasscallback (classname name spec package)
-  (format t "~A ~A ~A ~A~%" classname name spec package)
+  (format t "~&callback: ~A ~A ~A~%" classname name spec)
   (let* ((return-type (or (and (find #\= spec)
 			       (assoc-value *iup-callback-encoding*
 					    (elt spec (1- (length spec)))

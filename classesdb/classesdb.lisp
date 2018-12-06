@@ -22,8 +22,6 @@
      flags)
     (list
      :type (iup-classesdb-cffi::%iup-table-get-curr-type table)
-     :get-func-p (not (cffi:null-pointer-p (cffi:mem-ref get-func :pointer)))
-     :set-func-p (not (cffi:null-pointer-p (cffi:mem-ref set-func :pointer)))
      :default-value (cffi:foreign-string-to-lisp (cffi:mem-aref default-value :pointer))
      :system-default (cffi:foreign-string-to-lisp (cffi:mem-aref system-default :pointer))
      :flags (cffi:foreign-bitfield-symbols 'iup-classesdb-cffi::attrib-flags (cffi:mem-ref flags :int)))))

@@ -10,5 +10,5 @@
 
 (cffi:use-foreign-library iup-imglib)
 
-(cffi:defcfun (%iup-image-lib-open "IupImageLibOpen") :void)
+(cffi:defcfun (%iup-imglib-open "IupImageLibOpen") :void)
 
