@@ -36,7 +36,3 @@
   (:use #:common-lisp)
   (:export #:flashbar))
 
-(defpackage #:iup-examples.glcontrols
-  (:use #:common-lisp
-	#:alexandria)
-  (:export #:glcontrols))

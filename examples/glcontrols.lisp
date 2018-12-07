@@ -1,3 +1,8 @@
+(defpackage #:iup-examples.glcontrols
+  (:use #:common-lisp
+	#:alexandria)
+  (:export #:glcontrols))
+
 (in-package #:iup-examples.glcontrols)
 
 (define-constant +image-close+

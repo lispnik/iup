@@ -1,6 +1,6 @@
 (defsystem #:iup-plot
   :serial t
-  :pathname "plot/"
+  :pathname "plot"
   :components ((:file "plot"))
   :depends-on (#:iup-plot-cffi
 	       #:iup

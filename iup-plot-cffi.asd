@@ -1,5 +1,5 @@
 (defsystem #:iup-plot-cffi
-  :pathname "plot/"
+  :pathname "plot"
   :components ((:file "plot-cffi"))
   :depends-on (#:iup-cffi
 	       #:cd-cffi
