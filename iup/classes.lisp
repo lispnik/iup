@@ -21,7 +21,6 @@
   t)
 
 (defmacro defclasscallback (classname name spec package)
-  (format t "~&callback: ~A ~A ~A~%" classname name spec)
   (let* ((return-type (or (and (find #\= spec)
 			       (assoc-value *iup-callback-encoding*
 					    (elt spec (1- (length spec)))
