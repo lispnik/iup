@@ -11,7 +11,7 @@
 (defun canvas-spin (handle pos)
   (declare (ignore pos))
   (setf *levels* (iup:attribute handle "VALUE" 'integer))
-  ;; FIXME trigger redraw here
+  (canvas-redraw nil nil nil)
   iup:+default+)
 
 (defun canvas-redraw (handle x y)
@@ -35,9 +35,9 @@
 (defun sierpinski ()
   (iup:with-iup ()
     (let* ((canvas (iup:canvas :rastersize "200x200"))
-	   (spin (iup:text :spin "YES" :spinmin 0 :spinmax 5))
+	   (spin (iup:text :spin "YES" :spinmin 0 :spinmax 4))
 	   (vbox (iup:vbox (list canvas spin) :alignment "ACENTER"))
-	   (dialog (iup:dialog vbox)))
+	   (dialog (iup:dialog vbox :title "Sierpinski Carpet")))
       (setf (iup:callback canvas :map_cb) 'canvas-map
 	    (iup:callback canvas :unmap_cb) 'canvas-unmap
 	    (iup:callback canvas :action) 'canvas-redraw
