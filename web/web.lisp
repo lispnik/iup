@@ -1,13 +1,11 @@
 (defpackage #:iup-web
   (:use #:common-lisp)
-  (:export #:open
-	   #:web-browser)
-  (:import-from #:iup-utils
-		#:alias)
+  (:export #:open)
+  (:import-from #:serapeum #:defalias)
   (:shadow #:open))
 
 (in-package #:iup-web)
 
-(alias 'open #'iup-web-cffi::%iup-web-browser-open)
+(defalias open #'iup-web-cffi::%iup-web-browser-open)
 
 (iup::defiupclasses "IUP-WEB")

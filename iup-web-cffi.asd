@@ -2,4 +2,5 @@
   :pathname "web"
   :components ((:file "web-cffi"))
   :depends-on (#:iup-cffi
-	       #:cffi))
+	       #:cffi
+	       #:serapeum))

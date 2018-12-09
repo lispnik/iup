@@ -3,11 +3,6 @@
 	#:alexandria)
   (:export #:simple-notepad))
 
-(defpackage #:iup-examples.web-browser
-  (:use #:common-lisp
-	#:alexandria)
-  (:export #:web-browser))
-
 (defpackage #:iup-examples.sample
   (:use #:common-lisp
 	#:alexandria)
