@@ -9,7 +9,7 @@
     (#\s . :string)
     (#\V . :pointer)    ;*void
     (#\C . :pointer)	;*cdCanvas
-    (#\v . :pointer)    ;FIXME NOTE asked about this on mailin list... confirmed, should be "C"
+    (#\v . :pointer)    ;FIXME Asked about this on mailing list, confirmed it should be "C"
     (#\n . :pointer))) 	;*Ihandle
 
 (defun class-callback-name (classname callback-name package)
@@ -40,7 +40,14 @@
 					*registered-callbacks*))
 	       (args-list-names (cl:list ,@(mapcar #'car arg-list))))
 	   (if (check-callback-args action args-list-names)
-	       (funcall action ,@(mapcar #'car arg-list))
+	       (let ((result (funcall action ,@(mapcar #'car arg-list))))
+		 (if (null result)
+		     (restart-case
+			 (error "Callback returned NIL")
+		       (:use-default ()
+			:report "Continue by returning IUP:+DEFAULT+"
+			 iup:+default+))
+		     result))
 	       (restart-case 
 		   (error "Callback arguments list does not conform to to expected arguments list")
 		 (:continue ()

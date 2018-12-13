@@ -50,6 +50,12 @@
 			       :map_cb 'canvas-map
 			       :unmap_cb 'canvas-unmap
 			       :action 'canvas-redraw))
+	   (timer (iup:timer :run "NO"
+			     :time 20	;ms
+			     :action_cb #'(lambda (handle)
+					    (declare (ignore handle))
+					    (iup:redraw canvas 1)
+					    iup:+default+)))
 	   (progress (iup:progress-bar :min 0 :max 100))
 	   (button1 (iup:button :title "&Step"
 				:action (lambda (handle)
@@ -70,8 +76,16 @@
 					(iup:toggle :title "Pepper")
 					(iup:toggle :title "Salt")))
 			(iup:hbox (list (iup:label :title "&Rotation: ")
-					(iup:button :title "Start")
-					(iup:button :title "Stop")
+					(iup:button :title "Start"
+						    :action #'(lambda (handle)
+								(declare (ignore handle))
+								(setf (iup:attribute timer :run) "YES")
+								iup:+default+))
+					(iup:button :title "Stop"
+						    :action  #'(lambda (handle)
+								 (declare (ignore handle))
+								 (setf (iup:attribute timer :run) "NO")
+								 iup:+default+))
 					(iup:button :title "Hallo")
 					(iup:button :title "Welt!")
 					)))))
@@ -79,3 +93,6 @@
 				    :size "500x320")))
       (iup:show-xy dialog iup:+center+ iup:+center+)
       (iup:main-loop))))
+
+#+nil
+(ltk-demo)

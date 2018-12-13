@@ -1,9 +1,9 @@
-(defpackage #:iup-examples.canvas
+(defpackage #:iup-examples.sierpinski
   (:use #:common-lisp
 	#:alexandria)
-  (:export #:canvas))
+  (:export #:sierpinski))
 
-(in-package #:iup-examples.canvas)
+(in-package #:iup-examples.sierpinski)
 
 (defparameter *levels* 0)
 (defparameter *canvas* nil)

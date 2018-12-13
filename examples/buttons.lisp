@@ -7,7 +7,11 @@
 (defun buttons ()
   (iup:with-iup ()
     (let* ((button1
-	     (iup:button :title "Button 1"))
+	     (iup:button :title "Button 1"
+			 :action #'(lambda (handle)
+				     (declare (ignore handle))
+				     (iup:message "LOL" "We forgot to return a value")
+				     nil)))
 	   (button2
 	     (iup:button :title "Button 2"
 			 :action #'(lambda (handle)
