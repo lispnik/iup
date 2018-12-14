@@ -592,7 +592,10 @@
 ;; void IupConfigSetListVariable(Ihandle* ih, const char *group, const char* key, const char* value, int add);
 
 ;; void IupConfigRecentInit(Ihandle* ih, Ihandle* menu, Icallback recent_cb, int max_recent);
-;; void IupConfigRecentUpdate(Ihandle* ih, const char* filename);
+
+(cffi:defcfun (%iup-config-recent-update "IupConfigRecentUpdate") :void
+  (handle ihandle)
+  (filename :string))
 
 (cffi:defcfun (%iup-config-dialog-show "IupConfigDialogShow") :void
   (handle ihandle)

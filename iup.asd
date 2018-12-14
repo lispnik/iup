@@ -9,7 +9,8 @@
   :components ((:file "packages")
 	       (:file "callback")
 	       (:file "classes")
-	       (:file "iup"))
+	       (:file "iup")
+	       (:file "config"))
   :depends-on (#:iup-cffi
 	       #:iup-utils
 	       #:cffi

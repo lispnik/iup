@@ -279,15 +279,6 @@
 (alias 'message-alarm #'iup-cffi::%iup-message-alarm)
 (alias 'alarm         #'iup-cffi::%iup-alarm)
 
-;;; FIXME other config functions
-
-;; (defattributefun config () (iup-cffi::%iup-config))
-
-(alias 'config-load          #'iup-cffi::%iup-config-load)
-(alias 'config-save          #'iup-cffi::%iup-config-save)
-(alias 'config-dialog-show   #'iup-cffi::%iup-config-dialog-show)
-(alias 'config-dialog-closed #'iup-cffi::%iup-config-dialog-closed)
-
 (define-constant +mask-float+ "[+/-]?(/d+/.?/d*|/./d+)" :test #'string=)
 (define-constant +mask-ufloat+ "(/d+/.?/d*|/./d+)" :test #'string=)
 (define-constant +mask-efloat+ "[+/-]?(/d+/.?/d*|/./d+)([eE][+/-]?/d+)?" :test #'string=)
