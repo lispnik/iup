@@ -465,8 +465,6 @@
 ;; #define IUP_GETPARAM_CANCEL IUP_GETPARAM_BUTTON2
 ;; #define IUP_GETPARAM_HELP   IUP_GETPARAM_BUTTON3
 
-;;; iup_config.h
-
 (cffi:defcfun (%iup-config "IupConfig") ihandle)
 
 (cffi:defcfun (%iup-config-load "IupConfigLoad") :int
@@ -475,32 +473,121 @@
 (cffi:defcfun (%iup-config-save "IupConfigSave") :int
   (handle ihandle))
 
-;; /****************************************************************/
+(cffi:defcfun (%iup-config-set-variable-str "IupConfigSetVariableStr") :void
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (value :string))
 
-;; void IupConfigSetVariableStr(Ihandle* ih, const char* group, const char* key, const char* value);
-;; void IupConfigSetVariableStrId(Ihandle* ih, const char* group, const char* key, int id, const char* value);
-;; void IupConfigSetVariableInt(Ihandle* ih, const char* group, const char* key, int value);
-;; void IupConfigSetVariableIntId(Ihandle* ih, const char* group, const char* key, int id, int value);
-;; void IupConfigSetVariableDouble(Ihandle* ih, const char* group, const char* key, double value);
-;; void IupConfigSetVariableDoubleId(Ihandle* ih, const char* group, const char* key, int id, double value);
+(cffi:defcfun (%iup-config-set-variable-str-id "IupConfigSetVariableStrId") :void
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (id :int)
+  (value :string))
 
-;; const char* IupConfigGetVariableStr(Ihandle* ih, const char* group, const char* key);
-;; const char* IupConfigGetVariableStrId(Ihandle* ih, const char* group, const char* key, int id);
-;; int    IupConfigGetVariableInt(Ihandle* ih, const char* group, const char* key);
-;; int    IupConfigGetVariableIntId(Ihandle* ih, const char* group, const char* key, int id);
-;; double IupConfigGetVariableDouble(Ihandle* ih, const char* group, const char* key);
-;; double IupConfigGetVariableDoubleId(Ihandle* ih, const char* group, const char* key, int id);
+(cffi:defcfun (%iup-config-set-variable-int "IupConfigSetVariableInt") :void
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (value :int))
 
-;; const char* IupConfigGetVariableStrDef(Ihandle* ih, const char* group, const char* key, const char* def);
-;; const char* IupConfigGetVariableStrIdDef(Ihandle* ih, const char* group, const char* key, int id, const char* def);
-;; int    IupConfigGetVariableIntDef(Ihandle* ih, const char* group, const char* key, int def);
-;; int    IupConfigGetVariableIntIdDef(Ihandle* ih, const char* group, const char* key, int id, int def);
-;; double IupConfigGetVariableDoubleDef(Ihandle* ih, const char* group, const char* key, double def);
-;; double IupConfigGetVariableDoubleIdDef(Ihandle* ih, const char* group, const char* key, int id, double def);
+(cffi:defcfun (%iup-config-set-variable-int-id "IupConfigSetVariableIntId") :void
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (id :int)
+  (value :int))
 
-;; void IupConfigCopy(Ihandle* ih1, Ihandle* ih2, const char* exclude_prefix);
+(cffi:defcfun (%iup-config-set-variable-double "IupConfigSetVariableDouble") :void
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (value :double))
 
-;; /****************************************************************/
+(cffi:defcfun (%iup-config-set-variable-double-id "IupConfigSetVariableDoubleId") :void
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (id :int)
+  (value :double))
+
+(cffi:defcfun (%iup-config-get-variable-str "IupConfigGetVariableStr") :string
+  (handle ihandle)
+  (group :string)
+  (key :string))
+
+(cffi:defcfun (%iup-config-get-variable-str-id "IupConfigGetVariableStrId") :string
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (id :int))
+
+(cffi:defcfun (%iup-config-get-variable-int "IupConfigGetVariableInt") :int
+  (handle ihandle)
+  (group :string)
+  (key :string))
+
+(cffi:defcfun (%iup-config-get-variable-int-id "IupConfigGetVariableIntId") :int
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (id :int))
+
+(cffi:defcfun (%iup-config-get-variable-double "IupConfigGetVariableDouble") :double
+  (handle ihandle)
+  (group :string)
+  (key :string))
+
+(cffi:defcfun (%iup-config-get-variable-double-id "IupConfigGetVariableDoubleId") :double
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (id :int))
+
+(cffi:defcfun (%iup-config-get-variable-str-def "IupConfigGetVariableStrDef") :string
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (default :string))
+
+(cffi:defcfun (%iup-config-get-variable-str-id-def "IupConfigGetVariableStrIdDef") :string
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (id :int)
+  (default :string))
+
+(cffi:defcfun (%iup-config-get-variable-int-def "IupConfigGetVariableIntDef") :int
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (default :int))
+
+(cffi:defcfun (%iup-config-get-variable-int-id-def "IupConfigGetVariableIntIdDef") :int
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (id :int)
+  (default :int))
+
+(cffi:defcfun (%iup-config-get-variable-double-def "IupConfigGetVariableDoubleDef") :double
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (default :double))
+
+(cffi:defcfun (%iup-config-get-variable-double-id-def "IupConfigGetVariableDoubleIdDef") :double
+  (handle ihandle)
+  (group :string)
+  (key :string)
+  (id :int)
+  (default :double))
+
+(cffi:defcfun (%iup-config-copy "IupConfigCopy") :void
+  (from-handle ihandle)
+  (to-handle ihandle)
+  (exclude-prefix :pointer))		;FIXME in wrapper, can be nullable
 
 ;; void IupConfigSetListVariable(Ihandle* ih, const char *group, const char* key, const char* value, int add);
 

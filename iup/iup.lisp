@@ -254,8 +254,6 @@
 (alias 'previous-field          #'iup-cffi::%iup-previous-field)
 (alias 'next-field              #'iup-cffi::%iup-next-field)
 
-
-
 ;;;  IMAGES?
 
 ;; (defattributefun image (width height pixels)
@@ -280,6 +278,8 @@
 (alias 'message-error #'iup-cffi::%iup-message-error)
 (alias 'message-alarm #'iup-cffi::%iup-message-alarm)
 (alias 'alarm         #'iup-cffi::%iup-alarm)
+
+;;; FIXME other config functions
 
 ;; (defattributefun config () (iup-cffi::%iup-config))
 
