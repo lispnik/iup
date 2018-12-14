@@ -2,15 +2,7 @@
   (:use #:common-lisp
 	#:cffi
 	#:alexandria)
-  (:export #:+center+
-	   #:+left+
-	   #:+right+
-	   #:+mousepos+
-	   #:+current+
-	   #:+centerparent+
-	   #:+top+
-	   #:+bottom+
-	   #:open
+  (:export #:open
 	   #:close
 	   #:image-lib-open
 	   #:main-loop
@@ -101,20 +93,7 @@
 	   #:attributes
 	   #:callback
 	   #:handle
-	   #:platform
-
-	   #:+ignore+
-	   #:+default+
-	   #:+close+
-	   #:+continue+
-	   #:+mask-float+
-	   #:+mask-ufloat+
-	   #:+mask-efloat+
-	   #:+mask-uefloat+
-	   #:+mask-float-comma+
-	   #:+mask-ufloat-comma+
-	   #:+mask-int+
-	   #:+mask-uint+)
+	   #:platform)
   (:shadow #:open
 	   #:close
 	   #:map

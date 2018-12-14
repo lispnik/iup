@@ -5,12 +5,13 @@
   :licence "MIT"
   :version (:read-file-line "version.txt")
   :serial t
-  :pathname "iup/"
+  :pathname "iup"
   :components ((:file "packages")
 	       (:file "callback")
 	       (:file "classes")
-	       (:file "iup")
-	       (:file "config"))
+	       (:file "constants")
+	       (:file "config")
+	       (:file "iup"))
   :depends-on (#:iup-cffi
 	       #:iup-utils
 	       #:cffi

@@ -2,13 +2,19 @@
 
 (defiupclasses "IUP")
 
-(defun handle-p (handle)
-  (and (cffi:pointerp handle)
-       (not (cffi:null-pointer-p handle))
-       (= (char-code #\I) (cffi:mem-ref handle :char 0))
-       (= (char-code #\U) (cffi:mem-ref handle :char 1))
-       (= (char-code #\P) (cffi:mem-ref handle :char 2))
-       (zerop (cffi:mem-ref handle :char 3))))
+(export '(class-attributes
+	  class-callbacks
+	  all-classes
+	  class-name
+	  class-type
+	  save-class-attributes
+	  copy-class-attributes
+	  ;; set-class-default-attribute
+	  attribute-handle
+	  callback
+	  handle
+	  attribute
+	  ))
 
 (defun classname-names (classname name-producer)
   (let ((max-n (funcall name-producer classname (cffi:null-pointer) 0)))
@@ -163,38 +169,6 @@
 ;;              (setf (attribute-callback-handle-dwim handle name) value))
 ;;         finally (return handle)))
 
-
-;;; FIXME this not needed any more?
-(defmacro defattributefun (name args &rest body)
-  `(defun ,name (,@args &rest attributes &key &allow-other-keys)
-     (setf (attribute-callback-handles-dwim (progn ,@body)) attributes)))
-
-(defconstant +error+      1)
-(defconstant +noerror+    0)
-(defconstant +opened+     -1)
-(defconstant +invalid+    -1)
-(defconstant +invalid-id+ -10)
-
-(defconstant +ignore+   -1)
-(defconstant +default+  -2)
-(defconstant +close+    -3)
-(defconstant +continue+ -4)
-
-(defconstant +center+       #xffff)
-(defconstant +left+         #xfffe)
-(defconstant +right+        #xffd)
-(defconstant +mousepos+     #xfffc)
-(defconstant +current+      #xfffb)
-(defconstant +centerparent+ #xfffa)
-(defconstant +top+          +left+)
-(defconstant +bottom+       +right+)
-
-(defconstant +primary+   -1)
-(defconstant +secondary+ -2)
-
-(defconstant +recbinary+ 0)
-(defconstant +rectext+   1)
-
 (defun open ()
   (let ((ret (iup-cffi::%iup-open (cffi:null-pointer) (cffi:null-pointer))))
     (when (= ret +error+)
@@ -278,12 +252,3 @@
 (alias 'message-error #'iup-cffi::%iup-message-error)
 (alias 'message-alarm #'iup-cffi::%iup-message-alarm)
 (alias 'alarm         #'iup-cffi::%iup-alarm)
-
-(define-constant +mask-float+ "[+/-]?(/d+/.?/d*|/./d+)" :test #'string=)
-(define-constant +mask-ufloat+ "(/d+/.?/d*|/./d+)" :test #'string=)
-(define-constant +mask-efloat+ "[+/-]?(/d+/.?/d*|/./d+)([eE][+/-]?/d+)?" :test #'string=)
-(define-constant +mask-uefloat+ "(/d+/.?/d*|/./d+)([eE][+/-]?/d+)?" :test #'string=)
-(define-constant +mask-float-comma+ "[+/-]?(/d+/,?/d*|/,/d+)" :test #'string=)
-(define-constant +mask-ufloat-comma+ "(/d+/,?/d*|/,/d+)" :test #'string=)
-(define-constant +mask-int+ "[+/-]?/d+" :test #'string=)
-(define-constant +mask-uint+ "/d+" :test #'string=)
