@@ -18,10 +18,6 @@
 	#:alexandria)
   (:export #:teapot))
 
-(defpackage #:iup-examples.plottest
-  (:use #:common-lisp)
-  (:export #:plottest))
-
 (defpackage #:iup-examples.matrix
   (:use #:common-lisp)
   (:export #:matrix))

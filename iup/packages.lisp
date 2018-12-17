@@ -102,6 +102,6 @@
 	   #:fill
 	   #:space
 	   #:class-name)
-  (:import-from #:iup-utils
-		#:alias))
+  (:import-from #:serapeum
+		#:defalias))
 

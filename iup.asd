@@ -7,14 +7,16 @@
   :serial t
   :pathname "iup"
   :components ((:file "packages")
+	       (:file "constants")
 	       (:file "callback")
 	       (:file "classes")
-	       (:file "constants")
 	       (:file "config")
+	       (:file "attributes")
 	       (:file "iup"))
   :depends-on (#:iup-cffi
 	       #:iup-utils
 	       #:cffi
 	       #:alexandria
+	       #:serapeum
 	       #:genhash
 	       #:trivial-arguments))

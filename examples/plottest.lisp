@@ -1,3 +1,7 @@
+(defpackage #:iup-examples.plottest
+  (:use #:common-lisp)
+  (:export #:plottest))
+
 (in-package #:iup-examples.plottest)
 
 (cffi:defcallback action-cb :int ((handle iup-cffi::ihandle))
