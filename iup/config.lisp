@@ -1,10 +1,10 @@
 (in-package #:iup)
 
-(alias 'config #'iup-cffi::%iup-config)
-(alias 'config-load          #'iup-cffi::%iup-config-load)
-(alias 'config-save          #'iup-cffi::%iup-config-save)
-(alias 'config-dialog-show   #'iup-cffi::%iup-config-dialog-show)
-(alias 'config-dialog-closed #'iup-cffi::%iup-config-dialog-closed)
+(defalias config #'iup-cffi::%iup-config)
+(defalias config-load          #'iup-cffi::%iup-config-load)
+(defalias config-save          #'iup-cffi::%iup-config-save)
+(defalias config-dialog-show   #'iup-cffi::%iup-config-dialog-show)
+(defalias config-dialog-closed #'iup-cffi::%iup-config-dialog-closed)
 
 ;;; FIXME other config functions
 

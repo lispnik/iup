@@ -19,4 +19,5 @@
 	       #:alexandria
 	       #:serapeum
 	       #:genhash
-	       #:trivial-arguments))
+	       #:trivial-arguments
+	       #:split-sequence))

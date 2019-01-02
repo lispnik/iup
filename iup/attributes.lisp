@@ -16,6 +16,23 @@
 (deftype attribute-type ()
   '(member integer single-float double-float string cffi:foreign-pointer))
 
+;;; after much gnashing of teeth...
+
+;; (deftype attribute-type ()
+;;   '(member
+;;     :as-integer
+;;     :as-single-float
+;;     :as-double-float
+;;     :as-string
+;;     :as-boolean				;YES, NO
+;;     :as-pointer
+;;     :as-position			;12.2,12
+;;     :as-dimensions			;120x300, x300, 120x
+;;     :as-color-components		;255 255 0
+;;     :as-rectangle			;x1 y1 x2 y2
+;;     :as-date 				;year/month/day OR "TODAY"
+;;     :as-font))				;Monospace, Bold Underline 10
+
 (defun attribute (handle attribute &optional (type 'string))
   (declare (type attribute-type type))
   (ecase type
@@ -136,9 +153,9 @@
 (defun class-type (handle)
   (iup-cffi::%iup-get-class-type handle))
 
-(alias 'save-class-attributes       #'iup-cffi::%iup-save-class-attributes)
-(alias 'copy-class-attributes       #'iup-cffi::%iup-copy-class-attributes)
-(alias 'set-class-default-attribute #'iup-cffi::%iup-set-class-default-attribute)
+(defalias save-class-attributes       #'iup-cffi::%iup-save-class-attributes)
+(defalias copy-class-attributes       #'iup-cffi::%iup-copy-class-attributes)
+(defalias set-class-default-attribute #'iup-cffi::%iup-set-class-default-attribute)
 
 (defun attribute-handle (handle name)
   (iup-cffi::%iup-get-attribute-handle handle name))

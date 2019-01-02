@@ -66,7 +66,7 @@
 
 (cffi:defcfun (%iup-redraw "IupRedraw") :void
   (handle ihandle)
-  (children :int))
+  (children :boolean))
 
 (cffi:defcfun (%iup-refresh "IupRefresh") :void
   (handle ihandle))
