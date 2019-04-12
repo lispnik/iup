@@ -38,3 +38,162 @@
       (iup:show dialog)
       (iup:main-loop)))
 #+end_src
+
+* Canvas
+
+In this example, we'll port the Sierpinski Carpet fractal that
+appeared the chapter on graphics in [[https://www.apress.com/us/book/9781484211779][Common Lisp Recipes: A
+Problem-Solution Approach]].
+
+We need a spinner (an up and down arrow-controlled number field) and a
+canvas to draw on to get started. In this example, rather than specify
+the callbacks inline, as anonymous lamba forms, we will create
+separate functions and set them later using ~(SETF
+IUP:CALLBACK)~. ~*LEVELS*~ will keep track how deep to draw the
+fractal.
+
+#+begin_src lisp :results silent
+  (defparameter ,*levels* 0)
+
+  (defun sierpinski-main ()
+    (iup:with-iup ()
+      (let* ((canvas (iup:canvas :rastersize "200x200"))
+             (spin (iup:text :spin "YES" :spinmin 0 :spinmax 4))
+             (vbox (iup:vbox (list canvas spin) :alignment "ACENTER"))
+             (dialog (iup:dialog vbox :title "Sierpinski Carpet")))
+        (setf (iup:callback canvas :map_cb) 'canvas-map
+              (iup:callback canvas :unmap_cb) 'canvas-unmap
+              (iup:callback canvas :action) 'canvas-redraw
+              (iup:callback spin :spin_cb) 'canvas-spin
+              ,*levels* 0)
+        (iup:show-xy dialog iup:+center+ iup:+center+)
+        (iup:main-loop))))
+#+end_src
+
+** Notes on Callback Naming
+
+Each IUP widget supports a number of callbacks. In IUP, these are
+strings. In the Lisp bindings, they can be specified as keywords. For
+example, ~:UNMAP_CB~. These are rather unlispy names, but do come from
+IUP via its introspection mechanism. In a future version of these
+bindings, it might be possible to have lispier
+names. e.g. ~:UNMAP-CALLBACK~.
+
+** CD, A 2D Graphics Library
+
+IUP has support for CD, a cross platform 2D Graphics Library. We have
+support in Lisp via [[https://github.com/lispnik/cd][CD]] bindings.
+
+#+begin_src lisp :results silent
+  (ql:quickload "cd")
+#+end_src
+
+The following code is entirely CD dependent and can be used in non-IUP
+canvas applications.
+
+#+caption: Adapted from Edi's LTK example in Common Lisp Recipes: A Problem-Solution Approach
+#+begin_src lisp :results silent
+  (defun sierpinski (canvas level)
+    (multiple-value-bind
+          (w h)
+        (cd:size canvas)
+      (labels ((square (x y x-size y-size)
+                 (cd:box canvas x (+ x x-size) y (+ y y-size)))
+               (recurse (x y x-size y-size level)
+                 (let ((x-step (/ x-size 3))
+                       (y-step (/ y-size 3)))
+                   (square (+ x x-step) (+ y y-step) x-step y-step)
+                   (when (plusp level)
+                     (dolist (x-next (list x (+ x x-step) (+ x x-step x-step)))
+                       (dolist (y-next (list y (+ y y-step) (+ y y-step y-step)))
+                         (recurse x-next y-next x-step y-step (1- level))))))))
+        (recurse 0 0 w h level))))
+#+end_src
+
+For example, we can write it to [[./examples/sierpinski.pdf][PDF]] and print out to hang on your
+wall:
+
+#+begin_src lisp
+  (ql:quickload "cd-pdf")
+
+  (let ((canvas (cd:create-canvas (cd-pdf:context-pdf) "sierpinski.pdf")))
+    (unwind-protect
+         (sierpinski canvas 4)
+      (cd:kill canvas)))
+#+end_src
+
+In our IUP example however, we'll use it with IUP's CD support and
+arrange for the canvas to be draw on via ~CANVAS-REDRAW~ which will be
+triggered by the canvas widget's action callback.
+
+#+begin_src lisp :results silent
+  (ql:quickload "iup-cd")
+#+end_src
+
+#+begin_src lisp :results silent
+  (defparameter ,*canvas* nil)
+
+  (defun canvas-redraw (handle x y)
+    (cd:activate ,*canvas*)
+    (cd:clear ,*canvas*)
+    (setf (cd:foreground ,*canvas*) cd:+red+)
+    (sierpinski ,*canvas* ,*levels*)
+    (cd:flush ,*canvas*)
+    iup:+default+)
+#+end_src
+
+We can ignore ~HANDLE~, ~X~, and ~Y~ in our callback handler in this
+example. Those are IUP widget that triggered the callback and location
+on the canvas.
+
+First we activate the canvas to draw on, clear whatever was there, set
+a drawing color for the the foreground of the canvas, then draw to the
+canvas using ~SIERPINSKI~.
+
+The last step is to flush the canvas. This triggers a backing buffer
+swap, so all of the drawing appears instantly. If we don't do this, we
+don't see anything on the screen because it will still be in the
+off-screen drawing buffer.
+
+** Attributes
+
+It is a good idea to separate your UI presentation from its undelying
+model. In our case, the UI "model" is a special variable ~*LEVELS*~
+which holds the depth to draw the fractal as an integer. We need this
+updated when the user clicks on the spinner widget.
+
+#+begin_src lisp :results silent
+  (defun canvas-spin (handle pos)
+    (setf *levels* (iup:attribute handle :value 'integer))
+    (canvas-redraw nil nil nil)
+    iup:+default+)
+#+end_src
+
+We can get the number from the spinner widget and assign it to
+~*LEVELS*~ using ~IUP:ATTRIBUTE~. It takes a IUP handle from which to
+get the ~:VALUE~ attribute. 
+
+IUP widget value attributes are mostly strings. The third argument,
+~'INTEGER~ converts the string to an integer for convenience, rather
+than having to ~PARSE-INTEGER~ ourselves.
+
+** Fiddly bits
+
+Lastly, we need to associate the CD canvas with a IUP canvas, but we
+can't do this until we have the handle of the IUP canvas, so we can't
+set it up in the ~LET*~ form in our main function like we did with
+everything else. 
+
+Luckily IUP provides callbacks for when the component is "mapped" onto
+the user's display which allow us to deal with this dependency in an
+elegant manner.
+
+#+begin_src lisp :results silent
+  (defun canvas-map (handle)
+    (setf ,*canvas* (cd:create-canvas (iup-cd:context-iup-dbuffer) handle))
+    iup:+default+)
+
+  (defun canvas-unmap (handle)
+    (cd:kill ,*canvas*)
+    iup:+default+)
+#+end_src
