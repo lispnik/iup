@@ -1,0 +1,40 @@
+#+STARTUP: showall
+#+TITLE: CFFI bindings to the IUP Portable User Interface library
+
+* Introduction
+
+#+begin_src lisp :results silent
+  (ql:quickload "iup")
+#+end_src
+
+* Hello, World!
+
+#+begin_src lisp :results silent
+  (iup:with-iup ()
+    (let* ((label (iup:label :title "Hello, World!"))
+	   (dialog (iup:dialog label)))
+      (iup:show dialog)
+      (iup:main-loop)))
+#+end_src
+
+* Callbacks
+
+#+begin_src lisp :results silent
+  (iup:with-iup ()
+    (let* ((button
+	     (iup:button :title "&OK"
+			 :expand "YES"
+			 :tip "Exit button"
+			 :action (lambda (handle)
+				   (iup:message "Message"
+						(lisp-implementation-version))
+				   iup:+close+)))
+	   (label (iup:label :title (lisp-implementation-type)))
+	   (vbox (iup:vbox (list label button)
+			   :gap "10"
+			   :margin "10x10"
+			   :alignment :acenter))
+	   (dialog (iup:dialog vbox :title "Hello, World!")))
+      (iup:show dialog)
+      (iup:main-loop)))
+#+end_src
