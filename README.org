@@ -11,11 +11,16 @@
 
 #+begin_src lisp :results silent
   (iup:with-iup ()
-    (let* ((label (iup:label :title "Hello, World!"))
-           (dialog (iup:dialog label)))
+    (let* ((label (iup:label :title (format nil "Hello, World!~%IUP ~A~%~A ~A"
+                                            (iup:version)
+                                            (lisp-implementation-type)
+                                            (lisp-implementation-version))))
+           (dialog (iup:dialog label :title "Hello, World!")))
       (iup:show dialog)
       (iup:main-loop)))
 #+end_src
+
+[[./docs/screenshots/helloworld.png]]
 
 * Callbacks
 
@@ -39,6 +44,8 @@
       (iup:main-loop)))
 #+end_src
 
+[[./docs/screenshots/callback-1.png]] [[./docs/screenshots/callback-2.png]]
+
 * Canvas
 
 In this example, we'll port the Sierpinski Carpet fractal that
@@ -53,7 +60,7 @@ IUP:CALLBACK)~. ~*LEVELS*~ will keep track how deep to draw the
 fractal.
 
 #+begin_src lisp :results silent
-  (defparameter ,*levels* 0)
+  (defparameter *levels* 0)
 
   (defun sierpinski-main ()
     (iup:with-iup ()
@@ -110,7 +117,7 @@ canvas applications.
         (recurse 0 0 w h level))))
 #+end_src
 
-For example, we can write it to [[./examples/sierpinski.pdf][PDF]] and print out to hang on your
+For example, we can write it to [[./docs/sierpinski.pdf][PDF]] and print out to hang on your
 wall:
 
 #+begin_src lisp
@@ -122,6 +129,9 @@ wall:
       (cd:kill canvas)))
 #+end_src
 
+#+RESULTS:
+: NIL
+
 In our IUP example however, we'll use it with IUP's CD support and
 arrange for the canvas to be draw on via ~CANVAS-REDRAW~ which will be
 triggered by the canvas widget's action callback.
@@ -131,14 +141,14 @@ triggered by the canvas widget's action callback.
 #+end_src
 
 #+begin_src lisp :results silent
-  (defparameter ,*canvas* nil)
+  (defparameter *canvas* nil)
 
   (defun canvas-redraw (handle x y)
-    (cd:activate ,*canvas*)
-    (cd:clear ,*canvas*)
-    (setf (cd:foreground ,*canvas*) cd:+red+)
-    (sierpinski ,*canvas* ,*levels*)
-    (cd:flush ,*canvas*)
+    (cd:activate *canvas*)
+    (cd:clear *canvas*)
+    (setf (cd:foreground *canvas*) cd:+red+)
+    (sierpinski *canvas* *levels*)
+    (cd:flush *canvas*)
     iup:+default+)
 #+end_src
 
@@ -190,10 +200,16 @@ elegant manner.
 
 #+begin_src lisp :results silent
   (defun canvas-map (handle)
-    (setf ,*canvas* (cd:create-canvas (iup-cd:context-iup-dbuffer) handle))
+    (setf *canvas* (cd:create-canvas (iup-cd:context-iup-dbuffer) handle))
     iup:+default+)
 
   (defun canvas-unmap (handle)
-    (cd:kill ,*canvas*)
+    (cd:kill *canvas*)
     iup:+default+)
 #+end_src
+
+#+begin_src lisp :results silent
+  (sierpinski-main)
+#+end_src
+
+[[./docs/screenshots/sierpinski.png]]
