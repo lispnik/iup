@@ -55,8 +55,10 @@
 			       :size "HALFxHALF")))
       (iup:set-global "GLOBALLAYOUTDLGKEY" "YES")
       (iup:show dialog)
-      (show-image "/home/mkennedy/Downloads/MARBLES.TIF" dialog)
+      (show-image "/usr/share/backgrounds/pop/nasa-89127.jpg" dialog)
       (iup:main-loop))))
+
+;;; TODO scrollbars should pan the image
 
 #+nil
 (image-view)

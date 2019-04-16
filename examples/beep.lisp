@@ -14,7 +14,11 @@
 	 (ms-label (iup:label :title "ms"))
 	 (play (iup:button :title "Play"))
 	 (note-label (iup:label :title "♬"))
-	 (note (iup:list))
+	 (note (loop with list = (iup:list)
+		     for name in '("A1" "A2" "A3")
+		     for i from 0
+		     do (setf (iup:attribute list i) name)
+		     finally (return list)))
 	 (hbox2 (iup:hbox (list duration-label
 				duration
 				ms-label
