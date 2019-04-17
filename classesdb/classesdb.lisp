@@ -200,7 +200,7 @@ information to create the Lisp API at compilation time."
 	  for override-p = (getf metadata :override-p)
 	  for vanity-alist = (getf metadata :vanity-alist)
 	  for package = (getf metadata :package)
-	  do (format t "Processing for pacakge ~A~%" package)
+	  do (format t "Processing for package ~A~%" package)
 	  collect
 	  (with-iup 
 	      (if (eq initializer 'iup-cffi::%iup-open)
