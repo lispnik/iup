@@ -20,21 +20,28 @@
   ;; FIXME
   t)
 
+(defun create-arg (name spec-char)
+  (cond ((and (member name '(:button_cb :flat_button_cb))))))
+
+(defun create-arg-list (name spec)
+  (loop for i from 1
+	for c across spec
+	until (char= c #\=)
+	for arg = (intern (format nil "ARG~A" i))
+	for s = (assoc-value *iup-callback-encoding* c :test #'char=)
+	collect (cl:list arg s) into arg-list
+	finally (return (list* '(arg0 :pointer) arg-list))))
+
 (defmacro defclasscallback (classname name spec package)
   (let* ((return-type (or (and (find #\= spec)
 			       (assoc-value *iup-callback-encoding*
 					    (elt spec (1- (length spec)))
 					    :test #'char=))
 			  :int))
-	 (arg-list (loop for i from 1
-			 for c across spec
-			 until (char= c #\=)
-			 for s = (assoc-value *iup-callback-encoding* c :test #'char=)
-			 for arg = (intern (format nil "ARG~A" i))
-			 collect (cl:list arg s) into arg-list
-			 finally (return (list* '(arg0 :pointer) arg-list))))
+	 (arg-list (create-arg-list name spec))
 	 (return-and-arg-list (cl:list return-type arg-list))
 	 (callback-name (class-callback-name classname name package)))
+    (break)
     `(cffi:defcallback ,callback-name ,@return-and-arg-list
 	 (let ((action (genhash:hashref (make-callback :name ',callback-name :handle arg0)
 					*registered-callbacks*))
