@@ -15,3 +15,28 @@
 
 (defun is-button4-p (status) (char= (char status 8) #\4))
 (defun is-button5-p (status) (char= (char status 9) #\5))
+
+(defun status-plist (status)
+  (cl:list
+   :shift (is-shift-p status)
+   :control (is-control-p status)
+   :button1 (is-button1-p status)
+   :button2 (is-button2-p status)
+   :button3 (is-button3-p status)
+   :button4 (is-button4-p status)
+   :button5 (is-button5-p status)
+   :double (is-double-p status)
+   :alt (is-alt-p status)
+   :sys (is-sys-p status)))
+
+(export '(is-shift-p
+	  is-control-p
+	  is-button1-p
+	  is-button2-p
+	  is-button3-p
+	  is-button4-p
+	  is-button5-p
+	  is-double-p
+	  is-alt-p
+	  is-sys-p
+	  status-plist))

@@ -221,14 +221,14 @@ several application-specific drawing, such as: chess tables, tiles
 editors, degrade scales, drawable spreadsheets and so forth".
 
 It's included in the standard IUP distribution downloads, but it's not
-automatically loaded. The Lisp bindings do the same thing, so to use it, we need to depend on 
-
+automatically loaded. The Lisp bindings do the same thing, so to use
+it, we need to depend on ~IUP-CONTROLS~.
 
 #+begin_src lisp :results silent
-  (ql:quickload "iup-controls")
+  (ql:quickload '("iup" "iup-controls" "cd"))
 #+end_src 
 
-#+begin_src lisp :results silent :export none
+#+begin_src lisp :results silent :export none :tangle examples/cells.lisp
   (defpackage #:iup-examples.cells-checkerboard
     (:use #:common-lisp)
     (:export #:cells-checkerboard))
@@ -236,8 +236,10 @@ automatically loaded. The Lisp bindings do the same thing, so to use it, we need
   (in-package #:iup-examples.cells-checkerboard)
 #+end_src
 
+We start with the same boiler plate, but this time we need to call
+~IUP-CONTROLS:OPEN~ ahead of using the cells control.
 
-#+begin_src lisp :results silent
+#+begin_src lisp :results silent :tangle examples/cells.lisp
   (defun cells-checkerboard ()
     (iup:with-iup ()
       (iup-controls:open)
@@ -253,3 +255,48 @@ automatically loaded. The Lisp bindings do the same thing, so to use it, we need
 	(iup:show-xy dialog iup:+center+ iup:+center+)
 	(iup:main-loop))))
 #+end_src
+
+Cells has a number of callbacks related rows, columns, sizing etc.
+
+#+begin_src lisp :results silent :tangle examples/cells.lisp
+  (defun nlines (handle) 8)
+  (defun ncols (handle) 8)
+  (defun height (handle i) 50)
+  (defun width (handle j) 50)
+#+end_src
+
+When ~DRAW~ is called, we get a canvas on which to draw:
+
+#+begin_src lisp :results silent :tangle examples/cells.lisp
+  (defun draw (handle i j xmin xmax ymin ymax canvas)
+    (if (or (and (oddp i) (oddp j)) (and (oddp (1+ i)) (oddp (1+ j))))
+	(setf (cd:foreground canvas) cd:+black+)
+	(setf (cd:foreground canvas) cd:+white+))
+    (cd:box canvas xmin xmax ymin ymax)
+    iup::+default+)
+#+end_src
+
+When out click callback is called:
+
+#+begin_src lisp :results silent :tangle examples/cells.lisp
+  (defun click (handle button pressed line column x y status)
+    (iup:message
+     "Clicked!"
+     (format nil "Callback arguments~%~S"
+      (list :button button
+	    :pressed pressed
+	    :line line
+	    :column column
+	    :x x
+	    :y y
+	    :status (iup:status-plist status))))
+       iup:+default+)
+#+end_src
+
+#+begin_src lisp :results silent
+  (cells-checkerboard)
+#+end_src
+
+[[./docs/screenshots/checkerboard-01.png]]
+[[./docs/screenshots/checkerboard-02.png]]
+
