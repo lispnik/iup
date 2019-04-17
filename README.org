@@ -86,7 +86,7 @@ IUP via its introspection mechanism. In a future version of these
 bindings, it might be possible to have lispier
 names. e.g. ~:UNMAP-CALLBACK~.
 
-** CD, A 2D Graphics Library
+** CD, a 2D Graphics Library
 
 IUP has support for CD, a cross platform 2D Graphics Library. We have
 support in Lisp via [[https://github.com/lispnik/cd][CD]] bindings.
@@ -213,3 +213,43 @@ elegant manner.
 #+end_src
 
 [[./docs/screenshots/sierpinski.png]]
+
+* Using IUP Additional Controls
+
+The [[https://www.tecgraf.puc-rio.br/iup/en/ctrl/iupcells.html][cells control]] "creates a grid widget (set of cells) that enables
+several application-specific drawing, such as: chess tables, tiles
+editors, degrade scales, drawable spreadsheets and so forth".
+
+It's included in the standard IUP distribution downloads, but it's not
+automatically loaded. The Lisp bindings do the same thing, so to use it, we need to depend on 
+
+
+#+begin_src lisp :results silent
+  (ql:quickload "iup-controls")
+#+end_src 
+
+#+begin_src lisp :results silent :export none
+  (defpackage #:iup-examples.cells-checkerboard
+    (:use #:common-lisp)
+    (:export #:cells-checkerboard))
+
+  (in-package #:iup-examples.cells-checkerboard)
+#+end_src
+
+
+#+begin_src lisp :results silent
+  (defun cells-checkerboard ()
+    (iup:with-iup ()
+      (iup-controls:open)
+      (let* ((cells (iup-controls:cells
+		     :draw_cb 'draw
+		     :width_cb 'width
+		     :height_cb 'height
+		     :nlines_cb 'nlines
+		     :ncols_cb 'ncols
+		     :mouseclick_cb 'click))
+	     (vbox (iup:vbox (list cells)))
+	     (dialog (iup:dialog vbox :title "Cells Checkerboard" :rastersize "440x480" :shrink "YES")))
+	(iup:show-xy dialog iup:+center+ iup:+center+)
+	(iup:main-loop))))
+#+end_src

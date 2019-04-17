@@ -12,6 +12,7 @@
 	       (:file "classes")
 	       (:file "config")
 	       (:file "attributes")
+	       (:file "status")
 	       (:file "iup"))
   :depends-on (#:iup-cffi
 	       #:iup-utils
