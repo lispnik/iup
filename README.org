@@ -122,7 +122,7 @@ canvas applications.
 For example, we can write it to [[./docs/sierpinski.pdf][PDF]] and print out to hang on your
 wall:
 
-#+begin_src lisp
+#+begin_src lisp :results silent
   (ql:quickload "cd-pdf")
 
   (let ((canvas (cd:create-canvas (cd-pdf:context-pdf) "sierpinski.pdf")))
@@ -130,9 +130,6 @@ wall:
          (sierpinski canvas 4)
       (cd:kill canvas)))
 #+end_src
-
-#+RESULTS:
-: NIL
 
 In our IUP example however, we'll use it with IUP's CD support and
 arrange for the canvas to be draw on via ~CANVAS-REDRAW~ which will be
@@ -214,7 +211,7 @@ elegant manner.
   (sierpinski-main)
 #+end_src
 
-[[./docs/screenshots/sierpinski.png]]
+[[./docs/screenshots/sierpinski.png]][[./docs/screenshots/sierpinski-02.png]]
 
 * Using IUP Additional Controls
 
@@ -295,12 +292,20 @@ When out click callback is called:
        iup:+default+)
 #+end_src
 
-#+begin_src lisp :results silent
+#+begin_src lisp :results silent :export none
   (cells-checkerboard)
+
+  ,#+sbcl
+  (sb-int:with-float-traps-masked
+      (:divide-by-zero :invalid)
+    (cells-checkerboard))
 #+end_src
 
-[[./docs/screenshots/checkerboard-01.png]]
+[[./docs/screenshots/checkerboard-01.png]] 
 [[./docs/screenshots/checkerboard-02.png]]
+
+[[./docs/screenshots/checkerboard-03.png]] 
+[[./docs/screenshots/checkerboard-04.png]] 
 
 (lol button 49)
 
