@@ -355,3 +355,91 @@ not available via control's constructor function.
 
 [[./docs/screenshots/tabs-01.png]] [[./docs/screenshots/tabs-02.png]]
 
+* Bindings Generation Internals
+
+There are dozens of IUP controls and each control has dozens of
+callbacks and attributes. Fortunately IUP controls can be introspected
+to gain information on what the control is, what its callbacks and
+attributes are (and their arguments and types). 
+
+The "iup-classesdb" system uses this information to to automatically
+generate binding metadata from which the bindings are generated. This
+provides for a much nicer development experience:
+
+[[./docs/screenshots/generation-01.png]]
+
+The following sections describe how this works in more detail.
+
+** Maintainer
+
+The maintainer is typically someone with access to the Git repository
+for these bindings. When a new release of IUP comes out, the
+maintainer needs to update the metadata so that any new or removed
+controls, attributes or callbacks are reflected in the Lisp bindings:
+
+#+begin_src plantuml :file docs/binding-maintainer.png :results silent
+  (*) --> "(asdf:load-system :iup-classesdb)" as Load
+  Load --> "(iup-classesdb:regenerate)" as Regen
+  Regen --> "classesdb.lisp-sexp" as Sexp
+  Sexp --> (*)
+#+end_src
+
+[[./docs/binding-maintainer.png]]
+
+[[file:classesdb.lisp-sexp][~classesdb.lisp-sexp~]] is the output metadata. The maintainer typically
+commits this file to version control so the metadata is available for
+everyone.
+
+** User
+
+The first time the user compiles the IUP bindings,
+~classesdb.lisp-sexp~ is processed by macros at compile time and
+generates all function definitions for IUP controls. Note, that
+~classesdb.lisp-sexpr~ is not actually needed when the user loads the
+system.
+
+For the curious, the generation looks like the following, for each IUP
+system: ~IUP~, ~IUP-CONTROLS~, ~IUP-GL~, ~IUP-GLCONTROLS~, ~IUP-PLOT~,
+~IUP-MGLPLOT~, ~IUP-OLECONTROL~, ~IUP-SCINTILLA~, ~IUP-WEB~ and
+~IUP-TUIO~.
+
+#+begin_src lisp :results silent :export none
+  (iup::defiupclasses "IUP")
+#+end_src
+
+The process is roughly: 
+
+1. load each shared library
+2. introspect for the available IUP classes (i.e. metadata about
+   controls) availabe
+3. For each class, generate the bindings in its own package.
+
+#+begin_src plantuml :file docs/binding-generation.png :results silent
+  (*) --> "(asdf:compile-system :iup)" as Load
+  "classesdb.lisp-sexp" as Sexpr --> Load
+  Load --> (*)
+#+end_src
+
+#+begin_src plantuml :file docs/binding-generation-2.png :results silent
+  (*) --> "(asdf:load-system :iup)" as Load
+  Load --> (*)
+#+end_src
+
+ [[./docs/binding-generation.png]][[./docs/binding-generation-2.png]]
+
+** Why ~classesdb.lisp-sexp~?
+
+Extracting the metadata actually requires a complete GUI stack
+running. On Linux, this means having an X11 display available. This
+turns out to be a bit of a problem for continuous integration
+systems.
+
+Although there are embedded X11 servers that can be used, I didn't
+know what might be necessary for Windows or even macOS (when it's
+supported) for CI/CD. Hence the ~classesdb.lisp-sexp~ is the
+maintainer's job to regenerate when necessary.
+
+* Interactive Development
+
+TBD
+
