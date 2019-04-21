@@ -348,5 +348,5 @@ not available via control's constructor function.
   (tabs)
 #+end_src 
 
-[[./docs/screenshots/tabs-01.png]]
+[[./docs/screenshots/tabs-01.png]] [[./docs/screenshots/tabs-02.png]]
 
