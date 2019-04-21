@@ -300,3 +300,51 @@ When out click callback is called:
 [[./docs/screenshots/checkerboard-01.png]]
 [[./docs/screenshots/checkerboard-02.png]]
 
+(lol button 49)
+
+* Tabs Example
+
+Demonstrates the use of ~(SETF IUP:ATTRIBUTE)~ for setting attributes
+not available via control's constructor function.
+
+#+begin_src lisp :results silent :export none :tangle examples/tabs.lisp
+  (defpackage #:iup-examples.tabs
+    (:use #:common-lisp)
+    (:export #:tabs))
+
+  (in-package #:iup-examples.tabs)
+#+end_src
+
+#+begin_src lisp :results silent :tangle examples/tabs.lisp
+  (defun tabs ()
+    (iup:with-iup ()
+      (let* ((vbox1 (iup:vbox
+		     (list (iup:label :title "Inside Tab A")
+			   (iup:button :title "Button A"))))
+	     (vbox2 (iup:vbox
+		     (list (iup:label :title "Inside Tab B")
+			   (iup:button :title "Button B"))))
+	     (tabs1 (iup:tabs (list vbox1 vbox2)))
+	     (vbox3 (iup:vbox
+		     (list (iup:label :title "Inside C")
+			   (iup:button :title "Button C"))))
+	     (vbox4 (iup:vbox
+		     (list (iup:label :title "Inside D")
+			   (iup:button :title "Button D"))))
+	     (tabs2 (iup:tabs (list vbox3 vbox4)))
+	     (box (iup:hbox (list tabs1 tabs2) :margin "10x10" :gap "10"))
+	     (dialog (iup:dialog box :title "IUP Tabs" :size "200x80")))
+	(setf (iup:attribute vbox1 :tabtitle) "Tab A"
+	      (iup:attribute vbox2 :tabtitle) "Tab B"
+	      (iup:attribute vbox3 :tabtitle) "Tab C"
+	      (iup:attribute vbox4 :tabtitle) "Tab D")
+	(iup:show-xy dialog iup:+center+ iup:+center+)
+	(iup:main-loop))))
+#+end_src
+
+#+begin_src lisp :results silent :export none
+  (tabs)
+#+end_src 
+
+[[./docs/screenshots/tabs-01.png]]
+
