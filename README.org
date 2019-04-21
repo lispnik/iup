@@ -20,7 +20,7 @@
       (iup:main-loop)))
 #+end_src
 
-[[./docs/screenshots/helloworld.png]]
+[[./docs/screenshots/helloworld.png]] [[./docs/screenshots/helloworld-2.png]]
 
 * Callbacks
 
@@ -45,6 +45,8 @@
 #+end_src
 
 [[./docs/screenshots/callback-1.png]] [[./docs/screenshots/callback-2.png]]
+
+[[./docs/screenshots/callback-3.png]] [[./docs/screenshots/callback-4.png]]
 
 * Canvas
 
