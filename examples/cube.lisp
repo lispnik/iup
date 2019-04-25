@@ -43,7 +43,7 @@
 (defun cube ()
   (iup:with-iup ()
     (iup-gl:open)
-    (setf *canvas*
+    (setf *canvas*
 	  (iup-gl:canvas :rastersize "640x480"
 			 :buffer "DOUBLE"
 			 :action 'repaint

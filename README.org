@@ -246,16 +246,16 @@ We start with the same boiler plate, but this time we need to call
     (iup:with-iup ()
       (iup-controls:open)
       (let* ((cells (iup-controls:cells
-		     :draw_cb 'draw
-		     :width_cb 'width
-		     :height_cb 'height
-		     :nlines_cb 'nlines
-		     :ncols_cb 'ncols
-		     :mouseclick_cb 'click))
-	     (vbox (iup:vbox (list cells)))
-	     (dialog (iup:dialog vbox :title "Cells Checkerboard" :rastersize "440x480" :shrink "YES")))
-	(iup:show-xy dialog iup:+center+ iup:+center+)
-	(iup:main-loop))))
+                     :draw_cb 'draw
+                     :width_cb 'width
+                     :height_cb 'height
+                     :nlines_cb 'nlines
+                     :ncols_cb 'ncols
+                     :mouseclick_cb 'click))
+             (vbox (iup:vbox (list cells)))
+             (dialog (iup:dialog vbox :title "Cells Checkerboard" :rastersize "440x480" :shrink "YES")))
+        (iup:show-xy dialog iup:+center+ iup:+center+)
+        (iup:main-loop))))
 #+end_src
 
 Cells has a number of callbacks related rows, columns, sizing etc.
@@ -272,8 +272,8 @@ When ~DRAW~ is called, we get a canvas on which to draw:
 #+begin_src lisp :results silent :tangle examples/cells.lisp
   (defun draw (handle i j xmin xmax ymin ymax canvas)
     (if (or (and (oddp i) (oddp j)) (and (oddp (1+ i)) (oddp (1+ j))))
-	(setf (cd:foreground canvas) cd:+black+)
-	(setf (cd:foreground canvas) cd:+white+))
+        (setf (cd:foreground canvas) cd:+black+)
+        (setf (cd:foreground canvas) cd:+white+))
     (cd:box canvas xmin xmax ymin ymax)
     iup::+default+)
 #+end_src
@@ -286,12 +286,12 @@ When out click callback is called:
      "Clicked!"
      (format nil "Callback arguments~%~S"
       (list :button button
-	    :pressed pressed
-	    :line line
-	    :column column
-	    :x x
-	    :y y
-	    :status (iup:status-plist status))))
+            :pressed pressed
+            :line line
+            :column column
+            :x x
+            :y y
+            :status (iup:status-plist status))))
        iup:+default+)
 #+end_src
 
@@ -312,6 +312,81 @@ When out click callback is called:
 
 (lol button 49)
 
+* Detachable Box
+
+#+begin_src lisp :results silent :export none :tangle examples/detached.lisp
+  (defpackage #:iup-examples.detached
+    (:use #:common-lisp)
+    (:export #:detached))
+
+  (in-package #:iup-examples.detached)
+
+  (defun detached ()
+    (iup:with-iup ()
+      (let* ((button1 (iup:button :title "Detach Me!"
+                                  :action 'button-detach-callback
+                                  :expand :yes
+                                  :handlename "detach"))
+             (multi-line (iup:multi-line :expand :yes
+                                         :visiblelines 5))
+             (hbox (iup:hbox (list button1 multi-line) :margin "10x0"))
+             (dbox (iup:detach-box hbox :orientation :vertical
+                                        :detached_cb 'detached-callback
+                                        :handlename "dbox"))
+             (label (iup:label :title "Label"
+                               :expand :vertical))
+             (button2 (iup:button :title "Restore me!"
+                                  :expand :yes
+                                  :active :no
+                                  :action 'button-restore-callback
+                                  :handlename "restore"))
+             (text (iup:text :expand :horizontal))
+             (dialog (iup:dialog (iup:vbox (list dbox label button2 text)
+                                           :margin "10x10"
+                                           :gap 10)
+                                 :title "IupDetachBox Example"
+                                 :rastersize "300x300")))
+
+        (iup:show dialog)
+        (iup:main-loop))))
+#+end_src
+
+** Handle Names
+
+Instead of accessing other elements via lexical scope, it's sometimes
+useful to refer to them by name. This example uses the ~HANDLENAME~
+attribute to associate a name with an IUP handle.
+
+#+begin_src lisp :results silent :tangle examples/detached.lisp
+  (defun detached-callback (handle new-parent x y)
+    (setf (iup:attribute new-parent :title) "New Dialog"
+          (iup:attribute (iup:handle "restore") :active) :yes
+          (iup:attribute (iup:handle "detach") :active) :no)
+    iup:+default+)
+
+  (defun button-restore-callback (button)
+    (setf (iup:attribute (iup:handle "dbox") :restore) nil
+          (iup:attribute button :active) :no
+          (iup:attribute (iup:handle "detach") :active) :yes)
+    iup:+default+)
+
+  (defun button-detach-callback (button)
+    (setf (iup:attribute (iup:handle "dbox") :detach) nil
+          (iup:attribute button :active) :no
+          (iup:attribute (iup:handle "restore") :active) :yes)
+    iup:+default+)
+#+end_src
+
+#+begin_src lisp :results silent :tangle examples/detached.lisp
+  ,#+sbcl
+  (sb-int:with-float-traps-masked
+      (:divide-by-zero :invalid)
+    (detached))
+#+end_src
+
+# FIXME look into problem with restore not being active after detach
+# FIXME insert example of using restart to recover from error in callback
+
 * Tabs Example
 
 Demonstrates the use of ~(SETF IUP:ATTRIBUTE)~ for setting attributes
@@ -329,27 +404,27 @@ not available via control's constructor function.
   (defun tabs ()
     (iup:with-iup ()
       (let* ((vbox1 (iup:vbox
-		     (list (iup:label :title "Inside Tab A")
-			   (iup:button :title "Button A"))))
-	     (vbox2 (iup:vbox
-		     (list (iup:label :title "Inside Tab B")
-			   (iup:button :title "Button B"))))
-	     (tabs1 (iup:tabs (list vbox1 vbox2)))
-	     (vbox3 (iup:vbox
-		     (list (iup:label :title "Inside C")
-			   (iup:button :title "Button C"))))
-	     (vbox4 (iup:vbox
-		     (list (iup:label :title "Inside D")
-			   (iup:button :title "Button D"))))
-	     (tabs2 (iup:tabs (list vbox3 vbox4)))
-	     (box (iup:hbox (list tabs1 tabs2) :margin "10x10" :gap "10"))
-	     (dialog (iup:dialog box :title "IUP Tabs" :size "200x80")))
-	(setf (iup:attribute vbox1 :tabtitle) "Tab A"
-	      (iup:attribute vbox2 :tabtitle) "Tab B"
-	      (iup:attribute vbox3 :tabtitle) "Tab C"
-	      (iup:attribute vbox4 :tabtitle) "Tab D")
-	(iup:show-xy dialog iup:+center+ iup:+center+)
-	(iup:main-loop))))
+                     (list (iup:label :title "Inside Tab A")
+                           (iup:button :title "Button A"))))
+             (vbox2 (iup:vbox
+                     (list (iup:label :title "Inside Tab B")
+                           (iup:button :title "Button B"))))
+             (tabs1 (iup:tabs (list vbox1 vbox2)))
+             (vbox3 (iup:vbox
+                     (list (iup:label :title "Inside C")
+                           (iup:button :title "Button C"))))
+             (vbox4 (iup:vbox
+                     (list (iup:label :title "Inside D")
+                           (iup:button :title "Button D"))))
+             (tabs2 (iup:tabs (list vbox3 vbox4)))
+             (box (iup:hbox (list tabs1 tabs2) :margin "10x10" :gap "10"))
+             (dialog (iup:dialog box :title "IUP Tabs" :size "200x80")))
+        (setf (iup:attribute vbox1 :tabtitle) "Tab A"
+              (iup:attribute vbox2 :tabtitle) "Tab B"
+              (iup:attribute vbox3 :tabtitle) "Tab C"
+              (iup:attribute vbox4 :tabtitle) "Tab D")
+        (iup:show-xy dialog iup:+center+ iup:+center+)
+        (iup:main-loop))))
 #+end_src
 
 #+begin_src lisp :results silent :export none
@@ -421,15 +496,15 @@ a function ~CUBE~ which draws OpenGL things to the current buffer.
     (iup:with-iup ()
       (iup-gl:open)
       (setf *canvas*
-	    (iup-gl:canvas :rastersize "640x480"
-			   :buffer "DOUBLE"
-			   :action 'repaint
-			   :resize_cb 'resize))
+            (iup-gl:canvas :rastersize "640x480"
+                           :buffer "DOUBLE"
+                           :action 'repaint
+                           :resize_cb 'resize))
       (let* ((dialog (iup:dialog *canvas* :title "IUP OpenGL")))
-	;; FIXME      (iup-cffi::%iup-set-function :idle_action 'idle)
-	(setf (iup:attribute *canvas* :depthsize) "16")
-	(iup:show dialog)
-	(iup:main-loop))))
+        ;; FIXME      (iup-cffi::%iup-set-function :idle_action 'idle)
+        (setf (iup:attribute *canvas* :depthsize) "16")
+        (iup:show dialog)
+        (iup:main-loop))))
 #+end_src
 
 Our example has three callbacks: repaint, resize and a global idle
@@ -566,6 +641,14 @@ Although there are embedded X11 servers that can be used, I didn't
 know what might be necessary for Windows or even macOS (when it's
 supported) for CI/CD. Hence the ~classesdb.lisp-sexp~ is the
 maintainer's job to regenerate when necessary.
+
+** Example IUP 3.25 to 3.26
+
+Amongt other changes, IUP 3.26 introduced [[http://webserver2.tecgraf.puc-rio.br/iup/en/elem/iupmultibox.html][IupMultiBox]] as a new control
+container with 19 attributes and defaults. Regenerating
+~classesdb.lisp-sexp~ automatically collected these changes so that
+the corresponding Lisp function ~IUP:MULTIBOX~ is created and exported
+automatically from the ~IUP~ package.
 
 * Interactive Development
 
