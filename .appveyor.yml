@@ -1,0 +1,16 @@
+platform: x64
+cache:
+  - C:\cache
+environment:
+  SBCL_VERSION: '1.4.14'
+  SBCL_HOME: %PROGRAMFILES%\'Steel Bank Common Lisp'\%SBCL_VERSION%
+  CACHE: "C:\cache"
+install:
+  - cmd: curl "https://beta.quicklisp.org/quicklisp.lisp" -o %CACHE%\quicklisp.lisp
+  - cmd: curl "http://prdownloads.sourceforge.net/sbcl/sbcl-"%SBCL_VERSION%"-x86-64-windows-binary.msi" -o %CACHE%\sbcl-%SBCL_VERSION%-x86-64-windows-binary.msi
+  - cmd: start /wait msiexec /i %CACHE%\sbcl-%SBCL_VERSION%-x86-64-windows-binary.msi /quiet /qn /norestart /log sbcl-install.log
+  - cmd: %SBCL_HOME%\sbcl --noinform --non-interactive --load %CACHE\quicklisp.lisp --eval "(quicklisp-quickstart:install)"
+  - cmd: git clone --depth=1 "https://github.com/lispnik/im.git" "c:\quicklisp\local-projects\im"
+  - cmd: git clone --depth=1 "https://github.com/lispnik/cd.git" "c:\quicklisp\local-projects\cd"
+  - cmd: git clone --depth=1 "https://github.com/lispnik/pfft.git" "c:\quicklisp\local-projects\pffft"
+  - cmd: git clone --depth=1 "https://github.com/lispnik/tecgraf-libs.git" "c:\quicklisp\local-projects\tecgraf-libs"
