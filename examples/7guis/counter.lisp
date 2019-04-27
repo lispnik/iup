@@ -12,7 +12,7 @@
 			       :action #'(lambda (handle)
 					   (declare (ignore handle))
 					   (setf (iup:attribute count :value)
-						 (1+ (iup:attribute count :value :int))))))
+						 (1+ (iup:attribute count :value 'integer))))))
 	   (hbox (iup:hbox (list count button) :gap 10 :margin "10x10"))
 	   (dialog (iup:dialog hbox :title "Counter")))
       (iup:show dialog)
