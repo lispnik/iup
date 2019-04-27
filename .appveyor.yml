@@ -2,8 +2,8 @@ platform: x64
 cache:
   - C:\cache
 environment:
-  SBCL_VERSION: "1.4.14"
-  SBCL_HOME: %PROGRAMFILES%\Steel Bank Common Lisp\%SBCL_VERSION%
+  SBCL_VERSION: '1.4.14'
+  SBCL_HOME: %PROGRAMFILES%\'Steel Bank Common Lisp'\%SBCL_VERSION%
   CACHE: "C:\cache"
 install:
   - cmd: curl "https://beta.quicklisp.org/quicklisp.lisp" -o %CACHE%\quicklisp.lisp
