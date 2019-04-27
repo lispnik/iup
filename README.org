@@ -3,6 +3,9 @@
 
 * Introduction
 
+Note: If you're using SBCL, you'll need to set a larger heap size to
+compile the bindings, e.g. ~--dynamic-space-size 2048~
+
 #+begin_src lisp :results silent
   (ql:quickload "iup")
 #+end_src
