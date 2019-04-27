@@ -320,7 +320,9 @@ When out click callback is called:
     (:export #:detached))
 
   (in-package #:iup-examples.detached)
+#+end_src
 
+#+begin_src lisp :results silent :tangle examples/detached.lisp
   (defun detached ()
     (iup:with-iup ()
       (let* ((button1 (iup:button :title "Detach Me!"
@@ -377,7 +379,7 @@ attribute to associate a name with an IUP handle.
     iup:+default+)
 #+end_src
 
-#+begin_src lisp :results silent :tangle examples/detached.lisp
+#+begin_src lisp :results silent :export none :tangle examples/detached.lisp
   ,#+sbcl
   (sb-int:with-float-traps-masked
       (:divide-by-zero :invalid)
@@ -654,3 +656,4 @@ automatically from the ~IUP~ package.
 
 TBD
 
+* LED
