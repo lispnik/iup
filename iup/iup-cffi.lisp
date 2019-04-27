@@ -606,3 +606,6 @@
   (handle ihandle)
   (dialog-handle ihandle)
   (name :string))
+
+(cffi:defcfun (%iup-layout-dialog "IupLayoutDialog") ihandle
+  (dialog ihandle))

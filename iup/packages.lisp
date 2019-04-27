@@ -93,7 +93,9 @@
 	   #:attributes
 	   #:callback
 	   #:handle
-	   #:platform)
+	   #:platform
+
+	   #:layout-dialog)
   (:shadow #:open
 	   #:close
 	   #:map

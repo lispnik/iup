@@ -87,3 +87,5 @@
 (defalias message-error #'iup-cffi::%iup-message-error)
 (defalias message-alarm #'iup-cffi::%iup-message-alarm)
 (defalias alarm         #'iup-cffi::%iup-alarm)
+
+(defalias layout-dialog #'iup-cffi::%iup-layout-dialog)
