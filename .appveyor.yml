@@ -6,7 +6,7 @@ install:
   - cmd: curl "https://beta.quicklisp.org/quicklisp.lisp" -o C:\cache\quicklisp.lisp
   - cmd: curl "http://prdownloads.sourceforge.net/sbcl/sbcl-1.4.14-x86-64-windows-binary.msi" -o C:\cache\sbcl.msi
   - cmd: start /wait msiexec /i C:\cache\sbcl.msi /quiet /qn /norestart /log sbcl-install.log
-  - cmd: 'C:\Program Files\Steel Bank Common Lisp\1.4.14\sbcl' --noinform --non-interactive --load C:\cache\quicklisp.lisp --eval "(quicklisp-quickstart:install)"
+  - cmd: "C:/Program Files/Steel Bank Common Lisp/1.4.14/sbcl" --noinform --non-interactive --load C:\cache\quicklisp.lisp --eval "(quicklisp-quickstart:install)"
   # - cmd: git clone --depth=1 "https://github.com/lispnik/im.git" "c:\quicklisp\local-projects\im"
   # - cmd: git clone --depth=1 "https://github.com/lispnik/cd.git" "c:\quicklisp\local-projects\cd"
   # - cmd: git clone --depth=1 "https://github.com/lispnik/pfft.git" "c:\quicklisp\local-projects\pffft"
