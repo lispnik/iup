@@ -12,39 +12,75 @@ compile the bindings, e.g. ~--dynamic-space-size 2048~
 
 * Hello, World!
 
-#+begin_src lisp :results silent
-  (iup:with-iup ()
-    (let* ((label (iup:label :title (format nil "Hello, World!~%IUP ~A~%~A ~A"
-                                            (iup:version)
-                                            (lisp-implementation-type)
-                                            (lisp-implementation-version))))
-           (dialog (iup:dialog label :title "Hello, World!")))
-      (iup:show dialog)
-      (iup:main-loop)))
+#+begin_src lisp :results silent :export none :tangle examples/hello.lisp
+  (defpackage #:iup-examples.hello
+    (:use #:common-lisp)
+    (:export #:hello))
+
+  (in-package #:iup-examples.hello)
+#+end_src
+
+#+begin_src lisp :results silent :tangle examples/hello.lisp
+  (defun hello ()
+    (iup:with-iup ()
+      (let* ((label (iup:label :title (format nil "Hello, World!~%IUP ~A~%~A ~A"
+					      (iup:version)
+					      (lisp-implementation-type)
+					      (lisp-implementation-version))))
+	     (dialog (iup:dialog label :title "Hello, World!")))
+	(iup:show dialog)
+	(iup:main-loop))))
+#+end_src
+
+#+begin_src lisp :results silent :tangle examples/hello.lisp
+  #-sbcl (hello)
+
+  ,#+sbcl
+  (sb-int:with-float-traps-masked
+      (:divide-by-zero :invalid)
+    (hello))
 #+end_src
 
 [[./docs/screenshots/helloworld.png]] [[./docs/screenshots/helloworld-2.png]]
 
 * Callbacks
 
-#+begin_src lisp :results silent
-  (iup:with-iup ()
-    (let* ((button
-             (iup:button :title "&OK"
-                         :expand "YES"
-                         :tip "Exit button"
-                         :action (lambda (handle)
-                                   (iup:message "Message"
-                                                (lisp-implementation-version))
-                                   iup:+close+)))
-           (label (iup:label :title (lisp-implementation-type)))
-           (vbox (iup:vbox (list label button)
-                           :gap "10"
-                           :margin "10x10"
-                           :alignment :acenter))
-           (dialog (iup:dialog vbox :title "Hello, World!")))
-      (iup:show dialog)
-      (iup:main-loop)))
+#+begin_src lisp :results silent :export none :tangle examples/callback.lisp
+  (defpackage #:iup-examples.callback
+    (:use #:common-lisp)
+    (:export #:callback))
+
+  (in-package #:iup-examples.callback)
+#+end_src
+
+#+begin_src lisp :results silent :tangle examples/callback.lisp
+  (defun callback ()
+      (iup:with-iup ()
+	(let* ((button
+		 (iup:button :title "&OK"
+			     :expand "YES"
+			     :tip "Exit button"
+			     :action (lambda (handle)
+				       (iup:message "Message"
+						    (lisp-implementation-version))
+				       iup:+close+)))
+	       (label (iup:label :title (lisp-implementation-type)))
+	       (vbox (iup:vbox (list label button)
+			       :gap "10"
+			       :margin "10x10"
+			       :alignment :acenter))
+	       (dialog (iup:dialog vbox :title "Hello, World!")))
+	  (iup:show dialog)
+	  (iup:main-loop))))
+#+end_src
+
+#+begin_src lisp :results silent :tangle examples/callback.lisp
+  #-sbcl (hello)
+
+  ,#+sbcl
+  (sb-int:with-float-traps-masked
+      (:divide-by-zero :invalid)
+    (callback))
 #+end_src
 
 [[./docs/screenshots/callback-1.png]] [[./docs/screenshots/callback-2.png]]
@@ -64,10 +100,18 @@ separate functions and set them later using ~(SETF
 IUP:CALLBACK)~. ~*LEVELS*~ will keep track how deep to draw the
 fractal.
 
+#+begin_src lisp :results silent :export none :tangle examples/sierpinski.lisp
+  (defpackage #:iup-examples.sierpinksi
+    (:use #:common-lisp)
+    (:export #:sierpinksi))
+
+  (in-package #:iup-examples.sierpinksi)
+#+end_src
+
 #+begin_src lisp :results silent
   (defparameter *levels* 0)
 
-  (defun sierpinski-main ()
+  (defun sierpinski ()
     (iup:with-iup ()
       (let* ((canvas (iup:canvas :rastersize "200x200"))
              (spin (iup:text :spin "YES" :spinmin 0 :spinmax 4))
@@ -105,7 +149,7 @@ canvas applications.
 
 #+caption: Adapted from Edi's LTK example in Common Lisp Recipes: A Problem-Solution Approach
 #+begin_src lisp :results silent
-  (defun sierpinski (canvas level)
+  (defun sierpinski-draw (canvas level)
     (multiple-value-bind
           (w h)
         (cd:size canvas)
@@ -128,9 +172,9 @@ wall:
 #+begin_src lisp :results silent
   (ql:quickload "cd-pdf")
 
-  (let ((canvas (cd:create-canvas (cd-pdf:context-pdf) "sierpinski.pdf")))
+  (let ((canvas (cd:create-canvas (cd-pdf:context-pdf) "docs/sierpinski.pdf")))
     (unwind-protect
-         (sierpinski canvas 4)
+	 (sierpinski-draw canvas 4)
       (cd:kill canvas)))
 #+end_src
 
@@ -142,14 +186,14 @@ triggered by the canvas widget's action callback.
   (ql:quickload "iup-cd")
 #+end_src
 
-#+begin_src lisp :results silent
+#+begin_src lisp :results silent :tangle examples/sierpinski.lisp
   (defparameter *canvas* nil)
 
   (defun canvas-redraw (handle x y)
     (cd:activate *canvas*)
     (cd:clear *canvas*)
     (setf (cd:foreground *canvas*) cd:+red+)
-    (sierpinski *canvas* *levels*)
+    (sierpinski-draw *canvas* *levels*)
     (cd:flush *canvas*)
     iup:+default+)
 #+end_src
@@ -160,7 +204,7 @@ on the canvas.
 
 First we activate the canvas to draw on, clear whatever was there, set
 a drawing color for the the foreground of the canvas, then draw to the
-canvas using ~SIERPINSKI~.
+canvas using ~SIERPINSKI-DRAW~.
 
 The last step is to flush the canvas. This triggers a backing buffer
 swap, so all of the drawing appears instantly. If we don't do this, we
@@ -174,7 +218,7 @@ model. In our case, the UI "model" is a special variable ~*LEVELS*~
 which holds the depth to draw the fractal as an integer. We need this
 updated when the user clicks on the spinner widget.
 
-#+begin_src lisp :results silent
+#+begin_src lisp :results silent :tangele examples/sierpinski.lisp
   (defun canvas-spin (handle pos)
     (setf *levels* (iup:attribute handle :value 'integer))
     (canvas-redraw nil nil nil)
@@ -200,7 +244,7 @@ Luckily IUP provides callbacks for when the component is "mapped" onto
 the user's display which allow us to deal with this dependency in an
 elegant manner.
 
-#+begin_src lisp :results silent
+#+begin_src lisp :results silent :tangle examples/sierpinski.lisp
   (defun canvas-map (handle)
     (setf *canvas* (cd:create-canvas (iup-cd:context-iup-dbuffer) handle))
     iup:+default+)
@@ -210,8 +254,13 @@ elegant manner.
     iup:+default+)
 #+end_src
 
-#+begin_src lisp :results silent
-  (sierpinski-main)
+#+begin_src lisp :results silent :tangle examples/sierpinksi.lisp
+  #-sbcl (sierpinski)
+
+  ,#+sbcl
+  (sb-int:with-float-traps-masked
+      (:divide-by-zero :invalid)
+    (sierpinski))
 #+end_src
 
 [[./docs/screenshots/sierpinski.png]][[./docs/screenshots/sierpinski-02.png]]
@@ -295,8 +344,8 @@ When out click callback is called:
        iup:+default+)
 #+end_src
 
-#+begin_src lisp :results silent :export none
-  (cells-checkerboard)
+#+begin_src lisp :results silent :export none :tangle examples/cells.lisp
+  #-sbcl (cells-checkerboard)
 
   ,#+sbcl
   (sb-int:with-float-traps-masked
@@ -380,11 +429,15 @@ attribute to associate a name with an IUP handle.
 #+end_src
 
 #+begin_src lisp :results silent :export none :tangle examples/detached.lisp
+  #-sbcl (detached)
+
   ,#+sbcl
   (sb-int:with-float-traps-masked
       (:divide-by-zero :invalid)
     (detached))
 #+end_src
+
+[[./docs/screenshots/detach-01.png]]
 
 # FIXME look into problem with restore not being active after detach
 # FIXME insert example of using restart to recover from error in callback
@@ -425,12 +478,17 @@ not available via control's constructor function.
               (iup:attribute vbox2 :tabtitle) "Tab B"
               (iup:attribute vbox3 :tabtitle) "Tab C"
               (iup:attribute vbox4 :tabtitle) "Tab D")
-        (iup:show-xy dialog iup:+center+ iup:+center+)
+        (iup:show dialog)
         (iup:main-loop))))
 #+end_src
 
 #+begin_src lisp :results silent :export none
-  (tabs)
+  #-sbcl (tabs)
+
+  ,#+sbcl
+  (sb-int:with-float-traps-masked
+      (:divide-by-zero :invalid)
+    (tabs))
 #+end_src 
 
 [[./docs/screenshots/tabs-01.png]] [[./docs/screenshots/tabs-02.png]]
@@ -454,7 +512,9 @@ a function ~CUBE~ which draws OpenGL things to the current buffer.
     (:use #:common-lisp))
 
   (in-package #:iup-examples.cube)
+#+end_src
 
+#+begin_src lisp :results silent :tangle examples/cube.lisp
   (defvar *canvas* nil)
   (defvar *tt* 0.0)
 
@@ -557,6 +617,8 @@ variable ~*TT*~.
       (:divide-by-zero :invalid)
     (cube))
 #+end_src
+
+[[./docs/screenshots/opengl.png]]
 
 [[./docs/screenshots/opengl-01.png]]
 
