@@ -7,10 +7,10 @@
 (defun hello ()
   (iup:with-iup ()
     (let* ((label (iup:label :title (format nil "Hello, World!~%IUP ~A~%~A ~A"
-					    (iup:version)
-					    (lisp-implementation-type)
-					    (lisp-implementation-version))))
-	   (dialog (iup:dialog label :title "Hello, World!")))
+                                            (iup:version)
+                                            (lisp-implementation-type)
+                                            (lisp-implementation-version))))
+           (dialog (iup:dialog label :title "Hello, World!")))
       (iup:show dialog)
       (iup:main-loop))))
 
