@@ -57,8 +57,7 @@
       (cd:arc canvas xc1 yc1 w1 h1 a1 a2)
       (cd:arc canvas xc2 yc2 w2 h2 a1 a2)
       (cd:sector canvas xc1 yc1 (* w1 1/4) (* h1 1/4) 0 360)
-      (cd:sector canvas xc2 yc2 (* w1 1/4) (* h1 1/4) 0 360)
-      (iup:)))
+      (cd:sector canvas xc2 yc2 (* w1 1/4) (* h1 1/4) 0 360)))
   (cd:flush canvas)
   iup:+default+)
 
@@ -72,11 +71,6 @@
       (iup:show-xy dialog iup:+center+ iup:+center+)
       (iup:main-loop))))
 
-#+nil
-(ltk-eyes)
-
-
-#+nil
 (defun ltk-eyes ()
   (with-ltk ()
    (let* ((*debug-tk* nil)
@@ -129,3 +123,10 @@
      (itemconfigure c p2 "fill" "blue")
      (after 100 #'update)
      ))))
+
+#-sbcl (ltk-eyes)
+
+#+sbcl
+(sb-int:with-float-traps-masked
+    (:divide-by-zero :invalid)
+  (ltk-eyes))

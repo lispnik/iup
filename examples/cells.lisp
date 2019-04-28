@@ -1,3 +1,6 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (ql:quickload '("iup" "iup-controls" "cd")))
+
 (defpackage #:iup-examples.cells-checkerboard
   (:use #:common-lisp)
   (:export #:cells-checkerboard))

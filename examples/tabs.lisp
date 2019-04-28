@@ -1,3 +1,6 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (ql:quickload "iup"))
+
 (defpackage #:iup-examples.tabs
   (:use #:common-lisp)
   (:export #:tabs))
@@ -28,3 +31,10 @@
             (iup:attribute vbox4 :tabtitle) "Tab D")
       (iup:show dialog)
       (iup:main-loop))))
+
+#-sbcl (tabs)
+
+#+sbcl
+(sb-int:with-float-traps-masked
+    (:divide-by-zero :invalid)
+  (tabs))

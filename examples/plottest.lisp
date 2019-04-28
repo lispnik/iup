@@ -287,7 +287,9 @@
       (iup:show-xy dialog iup:+center+ iup:+center+)
       (iup:main-loop))))
 
-#+nil
+#-sbcl (plottest)
+
+#+sbcl
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)
   (plottest))
