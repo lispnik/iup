@@ -3,8 +3,53 @@
 
 * Introduction
 
-Note: If you're using SBCL, you'll need to set a larger heap size to
-compile the bindings, e.g. ~--dynamic-space-size 2048~
+* Shared Libraries
+
+Get the Tecgraf shared libraries (.so and .dll files) from the Tecgraf
+project pages and install them per your operating system. Usually this
+means setting ~LD_LIBRARY_PATH~ on Linux or ~PATH~ on Windows.
+
+- [[https://www.tecgraf.puc-rio.br/iup/]]
+- [[https://www.tecgraf.puc-rio.br/cd/]]
+- [[https://www.tecgraf.puc-rio.br/im/]]
+
+There is, however, a [[https://github.com/lispnik/tecgraf-libs][companion project]] which can be used to download
+and install the Tecgraf IUP, CD and IM shared libraries for x86/64-bit
+Linux and Windows automatically:
+
+#+begin_src lisp :results silent 
+  (ql:quickload "tecgraf-libs")
+#+end_src
+
+This downloads the archives from each of the project pages according
+to the platform your lisp is running on (Linux or Windows). It unpacks
+the archives, and copies all of the shared libraries to a single
+directory.
+
+It is a one-off step is is not needed subsequently.
+
+~NOTE~: On Linux, the ~tecgraf-libs~ system needs the ~patchelf~
+command available (usually available via ~sudo apt install
+patchelf~). ~patchelf~ is used to set the shared library .so files
+origin to the library's location so that the multiple shared libraries
+loaded via CFFI uses are found relative to each other.
+
+To tell CFFI to find these libraries, use:
+
+#+begin_src lisp
+  (ql:quickload "cffi")
+
+  (pushnew (asdf:system-relative-pathname :tecgraf-libs #p"libs/")
+           cffi:*foreign-library-directories*)
+#+end_src
+
+#+RESULTS:
+: (#P"/home/mkennedy/.roswell/local-projects/lispnik/tecgraf-libs/libs/")
+
+* Loading IUP
+
+~NOTE~: For SBCL, you need to set a larger heap size to compile the
+bindings, e.g. ~--dynamic-space-size 2048~
 
 #+begin_src lisp :results silent
   (ql:quickload "iup")
@@ -24,12 +69,12 @@ compile the bindings, e.g. ~--dynamic-space-size 2048~
   (defun hello ()
     (iup:with-iup ()
       (let* ((label (iup:label :title (format nil "Hello, World!~%IUP ~A~%~A ~A"
-					      (iup:version)
-					      (lisp-implementation-type)
-					      (lisp-implementation-version))))
-	     (dialog (iup:dialog label :title "Hello, World!")))
-	(iup:show dialog)
-	(iup:main-loop))))
+                                              (iup:version)
+                                              (lisp-implementation-type)
+                                              (lisp-implementation-version))))
+             (dialog (iup:dialog label :title "Hello, World!")))
+        (iup:show dialog)
+        (iup:main-loop))))
 #+end_src
 
 #+begin_src lisp :results silent :tangle examples/hello.lisp
@@ -56,22 +101,22 @@ compile the bindings, e.g. ~--dynamic-space-size 2048~
 #+begin_src lisp :results silent :tangle examples/callback.lisp
   (defun callback ()
       (iup:with-iup ()
-	(let* ((button
-		 (iup:button :title "&OK"
-			     :expand "YES"
-			     :tip "Exit button"
-			     :action (lambda (handle)
-				       (iup:message "Message"
-						    (lisp-implementation-version))
-				       iup:+close+)))
-	       (label (iup:label :title (lisp-implementation-type)))
-	       (vbox (iup:vbox (list label button)
-			       :gap "10"
-			       :margin "10x10"
-			       :alignment :acenter))
-	       (dialog (iup:dialog vbox :title "Hello, World!")))
-	  (iup:show dialog)
-	  (iup:main-loop))))
+        (let* ((button
+                 (iup:button :title "&OK"
+                             :expand "YES"
+                             :tip "Exit button"
+                             :action (lambda (handle)
+                                       (iup:message "Message"
+                                                    (lisp-implementation-version))
+                                       iup:+close+)))
+               (label (iup:label :title (lisp-implementation-type)))
+               (vbox (iup:vbox (list label button)
+                               :gap "10"
+                               :margin "10x10"
+                               :alignment :acenter))
+               (dialog (iup:dialog vbox :title "Hello, World!")))
+          (iup:show dialog)
+          (iup:main-loop))))
 #+end_src
 
 #+begin_src lisp :results silent :tangle examples/callback.lisp
@@ -174,7 +219,7 @@ wall:
 
   (let ((canvas (cd:create-canvas (cd-pdf:context-pdf) "docs/sierpinski.pdf")))
     (unwind-protect
-	 (sierpinski-draw canvas 4)
+         (sierpinski-draw canvas 4)
       (cd:kill canvas)))
 #+end_src
 
@@ -629,7 +674,7 @@ callbacks and attributes. Fortunately IUP controls can be introspected
 to gain information on what the control is, what its callbacks and
 attributes are (and their arguments and types). 
 
-The "iup-classesdb" system uses this information to to automatically
+The ~iup-classesdb~ system uses this information to to automatically
 generate binding metadata from which the bindings are generated. This
 provides for a much nicer development experience:
 
