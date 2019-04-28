@@ -58,8 +58,8 @@
       (iup:show dialog)
       (iup:main-loop))))
 
-(pomodoro)
-#+nil
+#-sbcl (pomodoro)
+#+sbcl
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)
   (pomodoro))

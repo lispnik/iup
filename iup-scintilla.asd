@@ -3,4 +3,5 @@
   :pathname "scintilla"
   :components ((:file "scintilla"))
   :depends-on (#:iup-scintilla-cffi
-	       #:cffi))
+	       #:cffi
+               #:iup))

@@ -1,5 +1,9 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (ql:quickload '("iup" "iup-gl" "cl-opengl" "cl-glu")))
+
 (defpackage #:iup-examples.cube
-  (:use #:common-lisp))
+  (:use #:common-lisp)
+  (:export #:cube))
 
 (in-package #:iup-examples.cube)
 

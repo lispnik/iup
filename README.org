@@ -51,13 +51,12 @@ To tell CFFI to find these libraries, use:
 *NOTE:* For SBCL, you need to set a larger heap size to compile the
 bindings, e.g. ~--dynamic-space-size 2048~
 
-#+begin_src lisp :results silent
-  (ql:quickload "iup")
-#+end_src
-
 * Hello, World!
 
 #+begin_src lisp :results silent :export none :tangle examples/hello.lisp
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (ql:quickload "iup"))
+
   (defpackage #:iup-examples.hello
     (:use #:common-lisp)
     (:export #:hello))
@@ -91,6 +90,9 @@ bindings, e.g. ~--dynamic-space-size 2048~
 * Callbacks
 
 #+begin_src lisp :results silent :export none :tangle examples/callback.lisp
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (ql:quickload "iup"))
+
   (defpackage #:iup-examples.callback
     (:use #:common-lisp)
     (:export #:callback))
@@ -146,6 +148,9 @@ IUP:CALLBACK)~. ~*LEVELS*~ will keep track how deep to draw the
 fractal.
 
 #+begin_src lisp :results silent :export none :tangle examples/sierpinski.lisp
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (ql:quickload '("iup" "iup-cd" "cd")))
+
   (defpackage #:iup-examples.sierpinksi
     (:use #:common-lisp)
     (:export #:sierpinksi))
@@ -153,7 +158,7 @@ fractal.
   (in-package #:iup-examples.sierpinksi)
 #+end_src
 
-#+begin_src lisp :results silent
+#+begin_src lisp :results silent :tangle examples/sierpinski.lisp
   (defparameter *levels* 0)
 
   (defun sierpinski ()
@@ -185,15 +190,11 @@ names. e.g. ~:UNMAP-CALLBACK~.
 IUP has support for CD, a cross platform 2D Graphics Library. We have
 support in Lisp via [[https://github.com/lispnik/cd][CD]] bindings.
 
-#+begin_src lisp :results silent
-  (ql:quickload "cd")
-#+end_src
-
 The following code is entirely CD dependent and can be used in non-IUP
 canvas applications.
 
 #+caption: Adapted from Edi's LTK example in Common Lisp Recipes: A Problem-Solution Approach
-#+begin_src lisp :results silent
+#+begin_src lisp :results silent :tangle examples/sierpinski.lisp
   (defun sierpinski-draw (canvas level)
     (multiple-value-bind
           (w h)
@@ -227,10 +228,6 @@ In our IUP example however, we'll use it with IUP's CD support and
 arrange for the canvas to be draw on via ~CANVAS-REDRAW~ which will be
 triggered by the canvas widget's action callback.
 
-#+begin_src lisp :results silent
-  (ql:quickload "iup-cd")
-#+end_src
-
 #+begin_src lisp :results silent :tangle examples/sierpinski.lisp
   (defparameter *canvas* nil)
 
@@ -263,7 +260,7 @@ model. In our case, the UI "model" is a special variable ~*LEVELS*~
 which holds the depth to draw the fractal as an integer. We need this
 updated when the user clicks on the spinner widget.
 
-#+begin_src lisp :results silent :tangele examples/sierpinski.lisp
+#+begin_src lisp :results silent :tangle examples/sierpinski.lisp
   (defun canvas-spin (handle pos)
     (setf *levels* (iup:attribute handle :value 'integer))
     (canvas-redraw nil nil nil)
@@ -299,7 +296,7 @@ elegant manner.
     iup:+default+)
 #+end_src
 
-#+begin_src lisp :results silent :tangle examples/sierpinksi.lisp
+#+begin_src lisp :results silent :tangle examples/sierpinski.lisp
   #-sbcl (sierpinski)
 
   ,#+sbcl
@@ -320,11 +317,10 @@ It's included in the standard IUP distribution downloads, but it's not
 automatically loaded. The Lisp bindings do the same thing, so to use
 it, we need to depend on ~IUP-CONTROLS~.
 
-#+begin_src lisp :results silent
-  (ql:quickload '("iup" "iup-controls" "cd"))
-#+end_src 
-
 #+begin_src lisp :results silent :export none :tangle examples/cells.lisp
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (ql:quickload '("iup" "iup-controls" "cd")))
+
   (defpackage #:iup-examples.cells-checkerboard
     (:use #:common-lisp)
     (:export #:cells-checkerboard))
@@ -409,6 +405,9 @@ When out click callback is called:
 * Detachable Box
 
 #+begin_src lisp :results silent :export none :tangle examples/detached.lisp
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (ql:quickload "iup"))
+
   (defpackage #:iup-examples.detached
     (:use #:common-lisp)
     (:export #:detached))
@@ -493,6 +492,9 @@ Demonstrates the use of ~(SETF IUP:ATTRIBUTE)~ for setting attributes
 not available via control's constructor function.
 
 #+begin_src lisp :results silent :export none :tangle examples/tabs.lisp
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (ql:quickload "iup"))
+
   (defpackage #:iup-examples.tabs
     (:use #:common-lisp)
     (:export #:tabs))
@@ -527,7 +529,7 @@ not available via control's constructor function.
         (iup:main-loop))))
 #+end_src
 
-#+begin_src lisp :results silent :export none
+#+begin_src lisp :results silent :export none :tangle examples/tabs.lisp
   #-sbcl (tabs)
 
   ,#+sbcl
@@ -544,17 +546,17 @@ For this example, we'll take advantage for [[https://github.com/3b/cl-opengl][cl
 cl-glu]]. Don't forget to depend on iup-gl (part of these bindings) as
 well.
 
-#+begin_src lisp :results silent
-  (ql:quickload '("iup-gl" "cl-opengl" "cl-glu"))
-#+end_src
-
 Much of this example is tedious old-style OpenGL. We'll only highlight
 the IUP/OpenGL integration points here. It suffices to say, we've got
 a function ~CUBE~ which draws OpenGL things to the current buffer.
 
 #+begin_src lisp :export none :results silent :tangle examples/cube.lisp
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (ql:quickload '("iup" "iup-gl" "cl-opengl" "cl-glu")))
+
   (defpackage #:iup-examples.cube
-    (:use #:common-lisp))
+    (:use #:common-lisp)
+    (:export #:cube))
 
   (in-package #:iup-examples.cube)
 #+end_src
@@ -672,11 +674,10 @@ variable ~*TT*~.
 IUP includes a number of dialogs, including one that embeds the
 [[https://www.scintilla.org/][Scintilla]] editor control.
 
-#+begin_src lisp :results silent
-  (ql:quickload "iup-scintilla")
-#+end_src
-
 #+begin_src lisp :results silent :tangle examples/dialogs.lisp
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (ql:quickload '("iup" "iup-scintilla")))
+
   (defpackage #:iup-examples.dialogs
     (:use #:common-lisp)
     (:export #:dialogs))
@@ -798,10 +799,6 @@ configuration (result buttons, etc.).
 
 ** Scintilla Dialog
 
-#+begin_src lisp :results silent
-  (ql:quickload "iup-scintilla")
-#+end_src
-
 #+begin_src lisp :results silent :tangle examples/dialogs.lisp
   (defun scintilla-dialog (handle)
     (let ((dialog (iup-scintilla:scintilla-dialog :title "IUP Scintilla Dialog")))
@@ -844,6 +841,17 @@ configuration (result buttons, etc.).
       (:divide-by-zero :invalid)
     (dialogs))
 #+end_src 
+
+* Examples
+
+Checkout the [[./examples][examples]] directory for the examples in this document as
+well as these other examples.
+
+** LTK Demonstration Port
+
+Includes example usage of ~IUP:TIMER~ for canvas animations.
+
+[[./docs/screenshots/ltkdemo-01.png]]
 
 * Bindings Generation Internals
 

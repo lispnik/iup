@@ -1,3 +1,6 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (ql:quickload '("iup" "iup-cd")))
+
 (defpackage #:iup-example.ltk-demo
   (:use #:common-lisp))
 
@@ -16,19 +19,17 @@
   iup:+default+)
 
 (defun canvas-unmap (handle)
-  (declare (ignore handle))
   (cd:kill *canvas*)
   iup:+default+)
 
 (defun canvas-redraw (handle x y)
-  (declare (ignore handle x y))
   (draw *canvas*)
   iup:+default+)
 
 (defun draw (canvas)
   (let ((dx (* 50 (sin *angle2*)))
-	(dy (* 50 (cos *angle2*)))
-	(wx (sin *angle3*)))
+        (dy (* 50 (cos *angle2*)))
+        (wx (sin *angle3*)))
     (cd:activate canvas)
     (cd:clear canvas)
     (setf (cd:foreground canvas) cd:+black+)
@@ -37,62 +38,62 @@
     (incf *angle3* 0.01f0)
     (cd:with-vertices (canvas :path-mode-open-lines)
       (dotimes (i 100)
-	(let* ((w (+ *angle* (* i 2.8001f0)))
-	       (x (+ dx 250 (* 150 (sin w) wx)))
-	       (y (+ dy 200 (* 150 (cos w)))))
-	  (cd:vertex canvas x y)))))
+        (let* ((w (+ *angle* (* i 2.8001f0)))
+               (x (+ dx 250 (* 150 (sin w) wx)))
+               (y (+ dy 200 (* 150 (cos w)))))
+          (cd:vertex canvas x y)))))
   (cd:flush canvas)
   iup:+default+)
 
 (defun ltk-demo ()
   (iup:with-iup ()
     (let* ((canvas (iup:canvas :scrollbar "YES"
-			       :map_cb 'canvas-map
-			       :unmap_cb 'canvas-unmap
-			       :action 'canvas-redraw))
-	   (timer (iup:timer :run "NO"
-			     :time 20	;ms
-			     :action_cb #'(lambda (handle)
-					    (declare (ignore handle))
-					    (iup:redraw canvas 1)
-					    iup:+default+)))
-	   (progress (iup:progress-bar :min 0 :max 100))
-	   (button1 (iup:button :title "&Step"
-				:action (lambda (handle)
-					  (declare (ignore handle))
-					  (draw *canvas*)
-					  iup:+default+)))
-	   (vbox (iup:vbox
-		  (list canvas
-			(iup:radio
-			 (iup:hbox
-			  (list
-			   (iup:label :title "&Eggs: ")
-			   (iup:toggle :title "fried")
-			   (iup:toggle :title "stirred")
-			   (iup:toggle :title "cooked"))))
-			(iup:hbox (list progress button1))
-			(iup:hbox (list (iup:label :title "&Add: ")
-					(iup:toggle :title "Pepper")
-					(iup:toggle :title "Salt")))
-			(iup:hbox (list (iup:label :title "&Rotation: ")
-					(iup:button :title "Start"
-						    :action #'(lambda (handle)
-								(declare (ignore handle))
-								(setf (iup:attribute timer :run) "YES")
-								iup:+default+))
-					(iup:button :title "Stop"
-						    :action  #'(lambda (handle)
-								 (declare (ignore handle))
-								 (setf (iup:attribute timer :run) "NO")
-								 iup:+default+))
-					(iup:button :title "Hallo")
-					(iup:button :title "Welt!")
-					)))))
-	   (dialog (iup:dialog vbox :title "IUP LTK Demonstration"
-				    :size "500x320")))
+                               :map_cb 'canvas-map
+                               :unmap_cb 'canvas-unmap
+                               :action 'canvas-redraw))
+           (timer (iup:timer :run "NO"
+                             :time 20   ;ms
+                             :action_cb #'(lambda (handle)
+                                            (iup:redraw canvas 1)
+                                            iup:+default+)))
+           (progress (iup:progress-bar :min 0 :max 100))
+           (button1 (iup:button :title "&Step"
+                                :action (lambda (handle)
+                                          (draw *canvas*)
+                                          iup:+default+)))
+           (vbox (iup:vbox
+                  (list canvas
+                        (iup:radio
+                         (iup:hbox
+                          (list
+                           (iup:label :title "&Eggs: ")
+                           (iup:toggle :title "fried")
+                           (iup:toggle :title "stirred")
+                           (iup:toggle :title "cooked"))))
+                        (iup:hbox (list progress button1))
+                        (iup:hbox (list (iup:label :title "&Add: ")
+                                        (iup:toggle :title "Pepper")
+                                        (iup:toggle :title "Salt")))
+                        (iup:hbox (list (iup:label :title "&Rotation: ")
+                                        (iup:button :title "Start"
+                                                    :action (lambda (handle)
+                                                              (setf (iup:attribute timer :run) "YES")
+                                                              iup:+default+))
+                                        (iup:button :title "Stop"
+                                                    :action  (lambda (handle)
+                                                               (setf (iup:attribute timer :run) "NO")
+                                                               iup:+default+))
+                                        (iup:button :title "Hallo")
+                                        (iup:button :title "Welt!")
+                                        )))))
+           (dialog (iup:dialog vbox :title "IUP LTK Demonstration"
+                                    :size "500x320")))
       (iup:show-xy dialog iup:+center+ iup:+center+)
       (iup:main-loop))))
 
-#+nil
-(ltk-demo)
+#-sbcl (ltk-demo)
+
+#+sbcl
+(sb-int:with-float-traps-masked
+    (:divide-by-zero :invalid)
+  (ltk-demo))

@@ -1,3 +1,6 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (ql:quickload "iup"))
+
 (defpackage #:iup-examples.detached
   (:use #:common-lisp)
   (:export #:detached))
