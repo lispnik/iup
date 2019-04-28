@@ -85,3 +85,10 @@
 ;;   (iup-gl:make-current canvas)
 ;;   (repaint canvas)
 ;;   iup::+default+)
+
+#-sbcl (cube)
+
+#+sbcl
+(sb-int:with-float-traps-masked
+    (:divide-by-zero :invalid)
+  (cube))

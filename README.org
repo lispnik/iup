@@ -28,7 +28,7 @@ directory.
 
 It is a one-off step is is not needed subsequently.
 
-~NOTE~: On Linux, the ~tecgraf-libs~ system needs the ~patchelf~
+*NOTE:* On Linux, the ~tecgraf-libs~ system needs the ~patchelf~
 command available (usually available via ~sudo apt install
 patchelf~). ~patchelf~ is used to set the shared library .so files
 origin to the library's location so that the multiple shared libraries
@@ -48,7 +48,7 @@ To tell CFFI to find these libraries, use:
 
 * Loading IUP
 
-~NOTE~: For SBCL, you need to set a larger heap size to compile the
+*NOTE:* For SBCL, you need to set a larger heap size to compile the
 bindings, e.g. ~--dynamic-space-size 2048~
 
 #+begin_src lisp :results silent
@@ -654,7 +654,7 @@ variable ~*TT*~.
   ;;   iup::+default+)
 #+end_src
 
-#+begin_src lisp :results silent :export none
+#+begin_src lisp :results silent :tangle examples/cube.lisp
   #-sbcl (cube)
 
   ,#+sbcl
@@ -666,6 +666,184 @@ variable ~*TT*~.
 [[./docs/screenshots/opengl.png]]
 
 [[./docs/screenshots/opengl-01.png]]
+
+* Built-in Dialogs
+
+IUP includes a number of dialogs, including one that embeds the
+[[https://www.scintilla.org/][Scintilla]] editor control.
+
+#+begin_src lisp :results silent
+  (ql:quickload "iup-scintilla")
+#+end_src
+
+#+begin_src lisp :results silent :tangle examples/dialogs.lisp
+  (defpackage #:iup-examples.dialogs
+    (:use #:common-lisp)
+    (:export #:dialogs))
+
+  (in-package #:iup-examples.dialogs)
+#+end_src
+
+#+begin_src lisp :results silent :tangle examples/dialogs.lisp
+  (defun dialogs ()
+    (iup:with-iup ()
+      (iup-scintilla:open)
+      (flet ((button (title callback)
+               (iup:button :title title
+                           :action callback
+                           :expand :horizontal)))
+        (let* ((dialog (iup:dialog
+                        (iup:vbox (list (button "File Dialog" 'file-dialog)
+                                        (button "Message Dialog" 'message-dialog)
+                                        (button "Color Dialog" 'color-dialog)
+                                        (button "Font Dialog" 'font-dialog)
+                                        (button "Scintilla Dialog" 'scintilla-dialog)))
+                        :title "IUP Predefined Dialogs")))
+          (iup:show dialog)
+          (iup:main-loop)))))
+#+end_src
+
+[[./docs/screenshots/dialogs-01.png]]
+
+** Using ~IUP:POPUP~ for Modal Dialogs
+
+Often a UI designs for grabbing the user's attention via modal dialogs
+where the dialog is shown above the rest of the application and
+prevents interaction with the rest of the application. ~IUP:POPUP~
+lets you achive this.
+
+** File Dialog
+
+#+begin_src lisp :results silent :tangle examples/dialogs.lisp
+  (defun file-dialog (handle)
+    (let ((dialog (iup:file-dialog)))
+      (unwind-protect
+           (progn
+             (iup:popup dialog iup:+center+ iup:+center+)
+             (iup:message "File Dialog Example"
+                          (format nil "Selected ~A" (iup:attribute dialog :value))))
+        (iup:destroy dialog)))
+    iup:+default+)
+#+end_src
+
+*NOTE:* Because modal dialogs are often created over the course of a
+program's runtime, they need to be destroyed after use, via
+~IUP:DESTROY~.
+
+[[./docs/screenshots/filedialog-01.png]] [[./docs/screenshots/filedialog-02.png]]
+
+** Message Dialog
+
+Message dialogs are like ~IUP:MESSAGE~ except that they allow for more
+configuration (result buttons, etc.).
+
+#+begin_src lisp :results silent :tangle examples/dialogs.lisp
+  (defun message-dialog (handle)
+    (let ((dialog (iup:message-dialog 
+                   :dialogtype :warning
+                   :buttons :retrycancel)))
+      (unwind-protect
+           (progn
+             (setf (iup:attribute dialog :value) "Heap exhausted, game over.")
+             (iup:popup dialog iup:+center+ iup:+center+)
+             (iup:message "Message Dialog"
+                          (format nil "Got button response ~S"
+                                  (iup:attribute dialog :buttonresponse))))
+        (iup:destroy dialog)))
+    iup:+default+)
+#+end_src
+
+[[./docs/screenshots/messagedialog-01.png]] [[./docs/screenshots/messagedialog-02.png]]
+
+** Color Dialog
+
+#+begin_src lisp :results silent :tangle examples/dialogs.lisp
+  (defun color-dialog (handle)
+    (let ((dialog (iup:color-dialog
+                   :title "IUP Color Dialog"
+                   :showhex "YES"
+                   :showcolortable "YES"
+                   :showalpha "YES")))
+      (unwind-protect
+           (progn
+             (iup:popup dialog iup:+center+ iup:+center+)
+             (iup:message "Result"
+                          (format nil "Got button response ~S~%Got color ~A RGB (~A HSI, ~A)"
+                                  (iup:attribute dialog :status)
+                                  (iup:attribute dialog :value)
+                                  (iup:attribute dialog :valuehsi)
+                                  (iup:attribute dialog :valuehex))))))
+    iup:+default+)
+#+end_src
+
+[[./docs/screenshots/colordialog-01.png]] [[./docs/screenshots/colordialog-02.png]]
+
+** Font Dialog
+
+#+begin_src lisp :results silent :tangle examples/dialogs.lisp
+  (defun font-dialog (handle)
+    (let ((dialog (iup:font-dialog :title "IUP Font Dialog")))
+      (unwind-protect
+           (progn
+             (iup:popup dialog iup:+center+ iup:+center+)
+             (iup:message "Result"
+                          (format nil "Got button response ~S~%Got font ~S"
+                                  (iup:attribute dialog :status)
+                                  (iup:attribute dialog :value))))
+        (iup:destroy dialog)))
+    iup:+default+)
+#+end_src
+
+[[./docs/screenshots/fontdialog-01.png]] [[./docs/screenshots/fontdialog-02.png]]
+
+** Scintilla Dialog
+
+#+begin_src lisp :results silent
+  (ql:quickload "iup-scintilla")
+#+end_src
+
+#+begin_src lisp :results silent :tangle examples/dialogs.lisp
+  (defun scintilla-dialog (handle)
+    (let ((dialog (iup-scintilla:scintilla-dialog :title "IUP Scintilla Dialog")))
+      (unwind-protect
+           (progn
+             (iup:popup dialog iup:+center+ iup:+center+))
+        (iup:destroy dialog))))
+#+end_src
+
+[[./docs/screenshots/scintilladialog-01.png]]
+
+(There is also a separate, more customizable Scintilla control:
+~IUP-SCINTILLA:SCINTILLA~.)
+
+** Get Text Dialog
+
+#+begin_src lisp :results silent :tangle examples/dialogs.lisp
+#+end_src
+
+** List Dialog
+
+#+begin_src lisp :results silent :tangle examples/dialogs.lisp
+#+end_src
+
+** Get Param Dialog
+
+#+begin_src lisp :results silent :tangle examples/dialogs.lisp
+#+end_src
+
+** Alarm Dialog
+
+#+begin_src lisp :results silent :tangle examples/dialogs.lisp
+#+end_src
+
+#+begin_src lisp :results silent :tangle examples/dialogs.lisp
+  #-sbcl (dialogs)
+
+  ,#+sbcl
+  (sb-int:with-float-traps-masked
+      (:divide-by-zero :invalid)
+    (dialogs))
+#+end_src 
 
 * Bindings Generation Internals
 
