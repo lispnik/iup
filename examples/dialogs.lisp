@@ -85,7 +85,7 @@
       (iup:destroy dialog))))
 
 (defun layout-dialog (handle)
-  (let ((dialog (iup:layout-dialog handle)))
+  (let ((dialog (iup:layout-dialog nil)))
     (unwind-protect
 	 (iup:popup dialog iup:+center+ iup:+center+)
       (iup:destroy dialog)))

@@ -835,12 +835,14 @@ export format is a [[https://www.tecgraf.puc-rio.br/iup/en/led.html][IUP LED fil
 
 #+begin_src lisp :results silent :tangle examples/dialogs.lisp
   (defun layout-dialog (handle)
-    (let ((dialog (iup:layout-dialog handle)))
+    (let ((dialog (iup:layout-dialog nil)))
       (unwind-protect
 	   (iup:popup dialog iup:+center+ iup:+center+)
 	(iup:destroy dialog)))
     iup:+default+)
 #+end_src
+
+[[./docs/screenshots/layoutdialog-01.png]]
 
 [[./docs/screenshots/layoutdialog-02.png]]
 
