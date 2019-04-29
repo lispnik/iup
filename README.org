@@ -305,7 +305,7 @@ elegant manner.
     (sierpinski))
 #+end_src
 
-[[./docs/screenshots/sierpinski.png]][[./docs/screenshots/sierpinski-02.png]]
+[[./docs/screenshots/sierpinski.png]] [[./docs/screenshots/sierpinski-02.png]]
 
 * Using IUP Additional Controls
 
@@ -481,7 +481,7 @@ attribute to associate a name with an IUP handle.
     (detached))
 #+end_src
 
-[[./docs/screenshots/detach-01.png]]
+[[./docs/screenshots/detach-01.png]] [[./docs/screenshots/detach-02.png]]
 
 # FIXME look into problem with restore not being active after detach
 # FIXME insert example of using restart to recover from error in callback
@@ -704,7 +704,7 @@ IUP includes a number of dialogs, including one that embeds the
           (iup:main-loop)))))
 #+end_src
 
-[[./docs/screenshots/dialogs-01.png]]
+[[./docs/screenshots/dialogs-01.png]] [[./docs/screenshots/dialogs-02.png]]
 
 ** Using ~IUP:POPUP~ for Modal Dialogs
 
@@ -733,6 +733,8 @@ program's runtime, they need to be destroyed after use, via
 
 [[./docs/screenshots/filedialog-01.png]] [[./docs/screenshots/filedialog-02.png]]
 
+[[./docs/screenshots/filedialog-03.png]] [[./docs/screenshots/filedialog-04.png]]
+
 ** Message Dialog
 
 Message dialogs are like ~IUP:MESSAGE~ except that they allow for more
@@ -755,6 +757,8 @@ configuration (result buttons, etc.).
 #+end_src
 
 [[./docs/screenshots/messagedialog-01.png]] [[./docs/screenshots/messagedialog-02.png]]
+
+[[./docs/screenshots/messagedialog-03.png]] [[./docs/screenshots/messagedialog-04.png]]
 
 ** Color Dialog
 
@@ -779,6 +783,8 @@ configuration (result buttons, etc.).
 
 [[./docs/screenshots/colordialog-01.png]] [[./docs/screenshots/colordialog-02.png]]
 
+[[./docs/screenshots/colordialog-03.png]] [[./docs/screenshots/colordialog-04.png]]
+
 ** Font Dialog
 
 #+begin_src lisp :results silent :tangle examples/dialogs.lisp
@@ -797,6 +803,7 @@ configuration (result buttons, etc.).
 
 [[./docs/screenshots/fontdialog-01.png]] [[./docs/screenshots/fontdialog-02.png]]
 
+[[./docs/screenshots/fontdialog-03.png]] [[./docs/screenshots/fontdialog-04.png]]
 ** Scintilla Dialog
 
 #+begin_src lisp :results silent :tangle examples/dialogs.lisp
@@ -809,6 +816,8 @@ configuration (result buttons, etc.).
 #+end_src
 
 [[./docs/screenshots/scintilladialog-01.png]]
+
+[[./docs/screenshots/scintilladialog-02.png]]
 
 (There is also a separate, more customizable Scintilla control:
 ~IUP-SCINTILLA:SCINTILLA~.)
@@ -852,6 +861,8 @@ well as these other examples.
 Includes example usage of ~IUP:TIMER~ for canvas animations.
 
 [[./docs/screenshots/ltkdemo-01.png]]
+
+[[./docs/screenshots/ltkdemo-02.png]]
 
 * Bindings Generation Internals
 
