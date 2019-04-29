@@ -690,18 +690,19 @@ IUP includes a number of dialogs, including one that embeds the
     (iup:with-iup ()
       (iup-scintilla:open)
       (flet ((button (title callback)
-               (iup:button :title title
-                           :action callback
-                           :expand :horizontal)))
-        (let* ((dialog (iup:dialog
-                        (iup:vbox (list (button "File Dialog" 'file-dialog)
-                                        (button "Message Dialog" 'message-dialog)
-                                        (button "Color Dialog" 'color-dialog)
-                                        (button "Font Dialog" 'font-dialog)
-                                        (button "Scintilla Dialog" 'scintilla-dialog)))
-                        :title "IUP Predefined Dialogs")))
-          (iup:show dialog)
-          (iup:main-loop)))))
+	       (iup:button :title title
+			   :action callback
+			   :expand :horizontal)))
+	(let* ((dialog (iup:dialog
+			(iup:vbox (list (button "File Dialog" 'file-dialog)
+					(button "Message Dialog" 'message-dialog)
+					(button "Color Dialog" 'color-dialog)
+					(button "Font Dialog" 'font-dialog)
+					(button "Scintilla Dialog" 'scintilla-dialog)
+					(button "Layout Dialog" 'layout-dialog)))
+			:title "IUP Predefined Dialogs")))
+	  (iup:show dialog)
+	  (iup:main-loop)))))
 #+end_src
 
 [[./docs/screenshots/dialogs-01.png]] [[./docs/screenshots/dialogs-02.png]]
@@ -810,9 +811,8 @@ configuration (result buttons, etc.).
   (defun scintilla-dialog (handle)
     (let ((dialog (iup-scintilla:scintilla-dialog :title "IUP Scintilla Dialog")))
       (unwind-protect
-           (progn
-             (iup:popup dialog iup:+center+ iup:+center+))
-        (iup:destroy dialog))))
+	   (iup:popup dialog iup:+center+ iup:+center+)
+	(iup:destroy dialog))))
 #+end_src
 
 [[./docs/screenshots/scintilladialog-01.png]]
@@ -821,6 +821,28 @@ configuration (result buttons, etc.).
 
 (There is also a separate, more customizable Scintilla control:
 ~IUP-SCINTILLA:SCINTILLA~.)
+
+** IUP Layout Dialog
+
+The layout dialog lets you visually inspect and edit an existing
+dialog and it's children or create a new dialog from scretch. It is
+extremely useful for experimenting and iterating on UI design.
+
+You can use it as a visual GUI builder, similar to Glade in GTK+.
+
+You can export a dialog and load it from file via ~IUP:LOAD~. The
+export format is a [[https://www.tecgraf.puc-rio.br/iup/en/led.html][IUP LED file]].
+
+#+begin_src lisp :results silent :tangle examples/dialogs.lisp
+  (defun layout-dialog (handle)
+    (let ((dialog (iup:layout-dialog handle)))
+      (unwind-protect
+	   (iup:popup dialog iup:+center+ iup:+center+)
+	(iup:destroy dialog)))
+    iup:+default+)
+#+end_src
+
+[[./docs/screenshots/layoutdialog-02.png]]
 
 ** Get Text Dialog
 
@@ -959,5 +981,3 @@ automatically from the ~IUP~ package.
 * Interactive Development
 
 TBD
-
-* LED

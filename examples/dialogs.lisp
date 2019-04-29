@@ -11,18 +11,19 @@
   (iup:with-iup ()
     (iup-scintilla:open)
     (flet ((button (title callback)
-             (iup:button :title title
-                         :action callback
-                         :expand :horizontal)))
+	     (iup:button :title title
+			 :action callback
+			 :expand :horizontal)))
       (let* ((dialog (iup:dialog
-                      (iup:vbox (list (button "File Dialog" 'file-dialog)
-                                      (button "Message Dialog" 'message-dialog)
-                                      (button "Color Dialog" 'color-dialog)
-                                      (button "Font Dialog" 'font-dialog)
-                                      (button "Scintilla Dialog" 'scintilla-dialog)))
-                      :title "IUP Predefined Dialogs")))
-        (iup:show dialog)
-        (iup:main-loop)))))
+		      (iup:vbox (list (button "File Dialog" 'file-dialog)
+				      (button "Message Dialog" 'message-dialog)
+				      (button "Color Dialog" 'color-dialog)
+				      (button "Font Dialog" 'font-dialog)
+				      (button "Scintilla Dialog" 'scintilla-dialog)
+				      (button "Layout Dialog" 'layout-dialog)))
+		      :title "IUP Predefined Dialogs")))
+	(iup:show dialog)
+	(iup:main-loop)))))
 
 (defun file-dialog (handle)
   (let ((dialog (iup:file-dialog)))
@@ -80,9 +81,15 @@
 (defun scintilla-dialog (handle)
   (let ((dialog (iup-scintilla:scintilla-dialog :title "IUP Scintilla Dialog")))
     (unwind-protect
-         (progn
-           (iup:popup dialog iup:+center+ iup:+center+))
+	 (iup:popup dialog iup:+center+ iup:+center+)
       (iup:destroy dialog))))
+
+(defun layout-dialog (handle)
+  (let ((dialog (iup:layout-dialog handle)))
+    (unwind-protect
+	 (iup:popup dialog iup:+center+ iup:+center+)
+      (iup:destroy dialog)))
+  iup:+default+)
 
 
 
