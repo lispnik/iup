@@ -1,110 +1,129 @@
+;;; NOTE: not representative of good application structure!
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (ql:quickload "iup"))
+
+(defpackage #:iup-examples.sample
+  (:use #:common-lisp)
+  (:export #:hello))
+
 (in-package #:iup-examples.sample)
 
-(declaim (declaration load-image-tecgraf load-image-logo-tecgraph *image-bits*))
+(declaim (declaration load-image-tecgraf load-image-logo-tecgraph))
 
-(defun set-callbacks (handle)
-  (prog1
-      handle
-    (setf (iup:callback handle :valuechanged_cb) nil
-	  (iup:callback handle :k_any) nil)))
+(defun tree-map-callback (handle)
+  ;; NOTE: tree building attributes have to be done after mapping the
+  ;; control
+  (loop 
+    for (op opand) on '("TITLE0" "Figures"
+                        "ADDLEAF0" "Other"
+                        "ADDBRANCH1" "triangle"
+                        "ADDLEAF2" "equilateral"
+                        "ADDLEAF3" "isoceles"
+                        "ADDLEAF4" "scalenus"
+                        "INSERTBRANCH2" "parallelogram"
+                        "ADDLEAF6" "square"
+                        "ADDLEAF7" "diamond"
+                        "INSERTBRANCH6" "2D"
+                        "INSERTBRANCH6" "3D")
+    by #'cddr
+    do (setf (iup:attribute handle op) opand))
+  (setf (iup:attribute handle :value) 3)
+  iup:+default+)
+
+(defun title ()
+  (format nil "~A ~A on ~A, IUP ~A"
+          (lisp-implementation-type)
+          (lisp-implementation-version)
+          (machine-type)
+          (iup:version)))
 
 (defun sample ()
   (iup:with-iup ()
     (setf (iup:handle "img1") (load-image-tecgraf)
-	  (iup:handle "img2") (iup:image 32 32 *image-bits* :0 "0 0 0" :1 "0 255 0" :2 "BGCOLOR" :3 "255 0 0"))
-    (let* ((menu (iup:menu (list (iup:submenu
-				  (iup:menu (list (iup:item :title "Item 1 Checked" :value "ON")
-						  (iup:separator)
-						  (iup:item :title "Item 2 Disabled" :active "NO")))
-				  :title "IupSubMenu 1" )
-				 (iup:item :title "IupItem 3")
-				 (iup:item :title "IupItem 4"))))
-	   (frame-1 (iup:frame
-		     (iup:vbox (list (set-callbacks (iup:button :title "Button Text" :padding "5x5"))
-				     (set-callbacks (iup:button :title "Text" :image "img1" :padding "5x5" :action nil))
-				     (set-callbacks (iup:button :image "img1" :action nil))
-				     (set-callbacks (iup:button :title "" :image "img1" :impress "img2" :action nil))
-				     (set-callbacks (iup:button :bgcolor "255 0 128" :size "20x10" :action nil))))
-		     :title "IupButton"))
-	   (frame-2 (iup:frame
-		     (iup:vbox (list (iup:label :title "Label Text" :maxsize "150")
-				     (iup:label :image "img1")))
-		     :title "IupLabel"))
-	   (frame-3 (iup:frame
-		     (iup:vbox (list (iup:toggle :title "Toggle Text" :value "ON")
-				     (iup:toggle :value "ON" :image "img1" :impress "img2")
-				     (iup:toggle :value "ON" :image "img1")
-				     (iup:frame (iup:radio (iup:vbox (list (set-callbacks (iup:toggle :title "Toggle Text"))
-									   (set-callbacks (iup:toggle :title "Toggle Text"))))))))
-		     :title "IupToggle"))
-	   (frame-4 (iup:frame
-		     (iup:vbox (list (iup:text :value "Single Line Text" :size "80x")
-				     (iup:multi-line :value (format nil "Multiline Text~%Second Line~%Third Line")
-						     :expand "YES"
-						     :size "80x40")))
-		     :title "IupText"))
-	   (frame-5 (iup:frame
-		     (iup:vbox (list (iup:list :value "1" :1 "Item 1 Text" :2 "Item 2 Text" :3 "Item 3 Text" :tip "List 1")
-				     (iup:list :dropdown "YES" :value "2"  :1 "Item 1 Text" :2 "Item 2 Text" :3 "Item 3 Text" :tip "List 2")
-				     (iup:list :editbox "YES" :value "3" :1 "Item 1 Text" :2 "Item 2 Text" :3 "Item 3 Text" :tip "List 3")))
-		     :title "IupList"))
-	   #+nil (frame-6 (iup:frame
-		     (iup:vbox (list (iup:tree
-				      :title "Figures"
-				      :addbranch "2D"
-				      :addbranch "3D"
-				      :addleaf "test"
-				      :addbranch1 "parallelogram"
-				      :addleaf2 "diamond"
-				      :addleaf2 "square"
-				      :addbranch1 "triangle"
-				      :addleaf2 "scalene"
-				      :addleaf2 "isosceles"
-				      :addleaf2 "equilateral"
-				      :value "6"
-				      :showtoggle "YES"
-				      :expandall "YES")))
-		     :title "IupTree"))
-	   (frame-7 (iup:frame (iup:vbox (list (iup:colorbar :rastersize "70x" :expand "VERTICAL" :num_parts "2" :show_secondary "YES" :preview_size "60")))
-			       :title "IupColorBar"))
-	   (hbox-1 (iup:hbox (list frame-1 frame-2 frame-3 frame-4 frame-5 #+nil frame-6 frame-7)))
-	   (val (set-callbacks (iup:val)))
-	   (pbar (set-callbacks (iup:progress-bar :value "0.5")))
-	   (tabs (set-callbacks (iup:tabs (list (iup:vbox (list (iup:label :title "")))
-						(iup:vbox (list (iup:fill)))
-						(iup:vbox (list (iup:fill))))
-					  :tabtitle0 "Tab Title 0"
-					  :tabtitle1 "Tab Title 1"
-					  :tabtitle2 "Tab Title 2"
-					  :tabimage1 (load-image-tecgraf)
-					  :rastersize "300x50")))
-	   (vbox-1 (iup:vbox (list hbox-1
-				   (iup:hbox (list (iup:frame (iup:hbox (list val)) :title "IupVal")
-						   (iup:frame (iup:hbox (list pbar)) :title "IupProgressBar")
-						   (iup:frame (iup:hbox (list tabs)) :title "IupTabs")))
-				   (iup:hbox (list (iup:frame (iup:hbox (list (set-callbacks (iup:canvas :bgcolor "128 255 0" :scrollbar "YES" :expand "HORIZONTAL" :rastersize "x100")))))))
-				   (iup:hbox (list (iup:frame (iup:calendar) :title "IupCalendar")
-						   (iup:frame (iup:date-pick) :title "IupDatePick")
-						   (iup:frame (iup:color-browser) :title "IupColorBrowser")
-						   (iup:frame (iup:dial :orientation "VERTICAL") :title "IupDial")))
-				   (iup:hbox (list (iup:frame (iup:vbox (list (iup:gauge :showtext "YES" :dashed "NO" :min "0" :max "1" :value "0.2")
-									      (iup:gauge :showtext "NO" :dashed "YES" :min "-10" :max "10" :value "6")))
-							      :title "IupGauge")
-						   (iup:vbox (list (iup:frame (iup:vbox (list (iup:link :url "http://webserver2.tecgraf.puc-rio.br/iup/" :title "IUP Toolkit")))
-									      :title "IupLink"))))))
-			     :margin "5x5"
-			     :gap "5"))
-	   (dialog (iup:dialog vbox-1 :menu "menu" :title "Iup Sample Dialog Title")))
+          (iup:handle "img2") (iup:image 32 32 *image-bits*))
+    (let* ((menu (iup:menu (list (iup:sub-menu
+                                  (iup:menu (list (iup:item :title "Item 1 Checked" :value :on)
+                                                  (iup:separator)
+                                                  (iup:item :title "Item 2 Disabled" :active :no)))
+                                  :title "IupSubMenu 1" )
+                                 (iup:item :title "IupItem 3")
+                                 (iup:item :title "IupItem 4"))))
+           (frame-1 (iup:frame
+                     (iup:vbox (list (iup:button :title "Button Text" :padding "5x5")
+                                     (iup:button :title "Text" :image "img1" :padding "5x5")
+                                     (iup:button :image "img1")
+                                     (iup:button :title "" :image "img1" :impress "img2")
+                                     (iup:button :bgcolor "255 0 128" :size "20x10")))
+                     :title "IupButton"))
+           (frame-2 (iup:frame
+                     (iup:vbox (list (iup:label :title "Label Text" :maxsize 150)
+                                     (iup:label :image "img1")))
+                     :title "IupLabel"))
+           (frame-3 (iup:frame
+                     (iup:vbox (list (iup:toggle :title "Toggle Text" :value :on)
+                                     (iup:toggle :value :on :image "img1" :impress "img2")
+                                     (iup:toggle :value :on :image "img1")
+                                     (iup:frame (iup:radio (iup:vbox (list (iup:toggle :title "Toggle Text")
+                                                                           (iup:toggle :title "Toggle Text")))))))
+                     :title "IupToggle"))
+           (frame-4 (iup:frame
+                     (iup:vbox (list (iup:text :value "Single Line Text" :size "80x")
+                                     (iup:multi-line :value (format nil "Multiline Text~%Second Line~%Third Line")
+                                                     :expand :yes
+                                                     :size "80x40")))
+                     :title "IupText"))
+           (frame-5 (iup:frame
+                     (iup:vbox (loop for list in (list (iup:list :value 1 :tip "List 1")
+                                                       (iup:list :value 2 :tip "list 2" :dropdown :yes)
+                                                       (iup:list :value 3 :tip "List 3" :editbox :yes))
+                                     do (loop for i from 1 upto 3
+                                              do (setf (iup:attribute list i)
+                                                       (format nil "Item ~A" i)))
+                                     collect list))
+                     :title "IupList"))
+           (frame-6 (iup:frame
+                     (iup:vbox (list (iup:tree :showtoggle :yes
+                                               :expandall :yes
+                                               :addexpanded :yes
+                                               :map_cb 'tree-map-callback)))
+                     :title "IupTree"))
+           (frame-7 (iup:frame (iup:vbox (list (iup:colorbar :rastersize "70x" :expand :yes :num_parts 2 :show_secondary "YES" :preview_size 60 :orientation :horizontal)))
+                               :title "IupColorBar"))
+           (hbox-1 (iup:hbox (list  frame-1 frame-2 frame-3 frame-4 frame-5 frame-6)))
+           (val (iup:val))
+           (pbar (iup:progress-bar :value 0.5))
+           (tabs (let ((tabs (iup:tabs (list (iup:vbox (list (iup:label :title "")))
+                                             (iup:vbox (list (iup:fill)))
+                                             (iup:vbox (list (iup:fill))))
+                                       :rastersize "300x50")))
+                   (setf (iup:attribute tabs "TABTITLE0")  "Tab Title 0"
+                         (iup:attribute tabs "TABTITLE1")  "Tab Title 1"
+                         (iup:attribute tabs "TABTITLE2")  "Tab Title 2"
+                         (iup:attribute-handle tabs "TABIMAGE1") (load-image-tecgraf))
+                   tabs))
+           (vbox-1 (iup:vbox (list hbox-1
+                                   (iup:hbox (list (iup:frame (iup:hbox (list val)) :title "IupVal")
+                                                   (iup:frame (iup:hbox (list pbar)) :title "IupProgressBar")
+                                                   (iup:frame (iup:hbox (list tabs)) :title "IupTabs")))
+                                   (iup:hbox (list (iup:frame (iup:hbox (list (iup:canvas :bgcolor "128 255 0" :scrollbar :yes :expand :horizontal :rastersize "x100"))))))
+                                   (iup:hbox (list (iup:frame (iup:calendar) :title "IupCalendar")
+                                                   (iup:frame (iup:date-pick) :title "IupDatePick")
+                                                   (iup:frame (iup:color-browser) :title "IupColorBrowser")
+                                                   frame-7
+                                                   (iup:frame (iup:dial :orientation "VERTICAL") :title "IupDial")))
+                                   (iup:hbox (list (iup:frame (iup:vbox (list (iup:gauge :showtext "YES" :dashed :no :min 0 :max 1 :value 0.2)
+                                                                              (iup:gauge :showtext "NO" :dashed :yes :min -10 :max 10 :value 6)))
+                                                              :title "IupGauge")
+                                                   (iup:vbox (list (iup:frame (iup:vbox (list (iup:link :url "http://webserver2.tecgraf.puc-rio.br/iup/" :title "IUP Toolkit")))
+                                                                              :title "IupLink"))))))
+                             :margin "5x5"
+                             :gap 5))
+           (dialog (iup:dialog vbox-1 :menu "menu" :title (title))))
       (setf (iup:handle "menu") menu)
       (iup:map dialog)
       (iup:show dialog)
       (iup:main-loop))))
-
-#+nil
-(sb-int:with-float-traps-masked
-    (:divide-by-zero :invalid)
-  (sample))
-
 
 (defun load-image-tecgraf ()
   (iup:image-rgba
@@ -166,34 +185,41 @@
 
 (defvar *image-bits*
   #(2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2
-     2 2 2 2 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2
-     2 2 2 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2
-     2 2 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2
-     2 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2
-     2 2 2 2 2 2 2 2 2 2 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2
-     2 2 2 2 2 2 2 2 2 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2
-     2 2 2 2 2 2 2 2 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2
-     3 3 3 3 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-     3 3 3 3 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-     3 3 3 0 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-     3 3 3 0 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-     3 3 3 0 3 0 3 0 3 3 0 3 3 3 1 1 0 3 3 3 0 0 3 0 3 3 0 0 0 3 3 3
-     3 3 3 0 3 0 0 3 0 0 3 0 3 0 1 1 3 0 3 0 3 3 0 0 3 0 3 3 3 0 3 3
-     3 3 3 0 3 0 3 3 0 3 3 0 3 3 1 1 3 0 3 0 3 3 3 0 3 0 3 3 3 0 3 3
-     1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-     1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-     3 3 3 0 3 0 3 3 0 3 3 0 3 0 1 1 3 0 3 0 3 3 0 0 3 0 3 3 3 0 3 3
-     3 3 3 0 3 0 3 3 0 3 3 0 3 3 1 1 0 0 3 3 0 0 3 0 3 3 0 0 0 3 3 3
-     3 3 3 3 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 0 3 3 3 3 3 3 3 3
-     3 3 3 3 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 0 3 3 3 0 3 3 3 3 3 3 3 3
-     3 3 3 3 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 0 0 0 3 3 3 3 3 3 3 3 3
-     3 3 3 3 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-     3 3 3 3 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
-     2 2 2 2 2 2 2 3 3 3 3 3 3 3 1 1 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2
-     2 2 2 2 2 2 3 3 3 3 3 3 3 3 1 1 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2 2
-     2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2 2 2
-     2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2
-     2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
-     2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
-     2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
-     3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2))
+    2 2 2 2 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2
+    2 2 2 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2
+    2 2 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2
+    2 2 2 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2
+    2 2 2 2 2 2 2 2 2 2 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2
+    2 2 2 2 2 2 2 2 2 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2
+    2 2 2 2 2 2 2 2 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2
+    3 3 3 3 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+    3 3 3 3 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+    3 3 3 0 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+    3 3 3 0 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+    3 3 3 0 3 0 3 0 3 3 0 3 3 3 1 1 0 3 3 3 0 0 3 0 3 3 0 0 0 3 3 3
+    3 3 3 0 3 0 0 3 0 0 3 0 3 0 1 1 3 0 3 0 3 3 0 0 3 0 3 3 3 0 3 3
+    3 3 3 0 3 0 3 3 0 3 3 0 3 3 1 1 3 0 3 0 3 3 3 0 3 0 3 3 3 0 3 3
+    1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+    1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+    3 3 3 0 3 0 3 3 0 3 3 0 3 0 1 1 3 0 3 0 3 3 0 0 3 0 3 3 3 0 3 3
+    3 3 3 0 3 0 3 3 0 3 3 0 3 3 1 1 0 0 3 3 0 0 3 0 3 3 0 0 0 3 3 3
+    3 3 3 3 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 0 3 3 3 3 3 3 3 3
+    3 3 3 3 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 0 3 3 3 0 3 3 3 3 3 3 3 3
+    3 3 3 3 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 0 0 0 3 3 3 3 3 3 3 3 3
+    3 3 3 3 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+    3 3 3 3 3 3 3 3 3 3 3 3 3 3 1 1 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+    2 2 2 2 2 2 2 3 3 3 3 3 3 3 1 1 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2
+    2 2 2 2 2 2 3 3 3 3 3 3 3 3 1 1 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2 2
+    2 2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2 2 2
+    2 2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+    2 2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+    2 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+    2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+    3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2))
+
+#-sbcl (sample)
+
+#+sbcl
+(sb-int:with-float-traps-masked
+    (:divide-by-zero :invalid)
+  (sample))

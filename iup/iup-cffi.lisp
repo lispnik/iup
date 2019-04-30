@@ -609,3 +609,19 @@
 
 (cffi:defcfun (%iup-layout-dialog "IupLayoutDialog") ihandle
   (dialog ihandle))
+
+(cffi:defcfun (%iup-image "IupImage") ihandle
+  (width :int)
+  (height :int)
+  (pixels :pointer))
+
+(cffi:defcfun (%iup-image-rgb "IupImageRGB") ihandle
+  (width :int)
+  (height :int)
+  (pixels :pointer))
+
+(cffi:defcfun (%iup-image-rgba "IupImageRGBA") ihandle
+  (width :int)
+  (height :int)
+  (pixels :pointer))
+
