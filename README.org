@@ -1,6 +1,10 @@
 #+STARTUP: showall
 #+TITLE: CFFI bindings to the IUP Portable User Interface library
 
+[[./docs/screenshots/sample-01.png]]
+
+[[./docs/screenshots/sample-02.png]]
+
 * Introduction
 
 * Shared Libraries
