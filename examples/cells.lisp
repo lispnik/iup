@@ -1,3 +1,6 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (ql:quickload '("iup" "iup-controls" "cd")))
+
 (defpackage #:iup-examples.cells-checkerboard
   (:use #:common-lisp)
   (:export #:cells-checkerboard))
@@ -8,14 +11,14 @@
   (iup:with-iup ()
     (iup-controls:open)
     (let* ((cells (iup-controls:cells
-		   :draw_cb 'draw
-		   :width_cb 'width
-		   :height_cb 'height
-		   :nlines_cb 'nlines
-		   :ncols_cb 'ncols
-		   :mouseclick_cb 'click))
-	   (vbox (iup:vbox (list cells)))
-	   (dialog (iup:dialog vbox :title "Cells Checkerboard" :rastersize "440x480" :shrink "YES")))
+                   :draw_cb 'draw
+                   :width_cb 'width
+                   :height_cb 'height
+                   :nlines_cb 'nlines
+                   :ncols_cb 'ncols
+                   :mouseclick_cb 'click))
+           (vbox (iup:vbox (list cells)))
+           (dialog (iup:dialog vbox :title "Cells Checkerboard" :rastersize "440x480" :shrink "YES")))
       (iup:show-xy dialog iup:+center+ iup:+center+)
       (iup:main-loop))))
 
@@ -36,10 +39,17 @@
    "Clicked!"
    (format nil "Callback arguments~%~S"
     (list :button button
-	  :pressed pressed
-	  :line line
-	  :column column
-	  :x x
-	  :y y
-	  :status (iup:status-plist status))))
+          :pressed pressed
+          :line line
+          :column column
+          :x x
+          :y y
+          :status (iup:status-plist status))))
      iup:+default+)
+
+#-sbcl (cells-checkerboard)
+
+#+sbcl
+(sb-int:with-float-traps-masked
+    (:divide-by-zero :invalid)
+  (cells-checkerboard))

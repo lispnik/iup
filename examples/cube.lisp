@@ -1,5 +1,9 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (ql:quickload '("iup" "iup-gl" "cl-opengl" "cl-glu")))
+
 (defpackage #:iup-examples.cube
-  (:use #:common-lisp))
+  (:use #:common-lisp)
+  (:export #:cube))
 
 (in-package #:iup-examples.cube)
 
@@ -43,11 +47,11 @@
 (defun cube ()
   (iup:with-iup ()
     (iup-gl:open)
-    (setf *canvas*
-	  (iup-gl:canvas :rastersize "640x480"
-			 :buffer "DOUBLE"
-			 :action 'repaint
-			 :resize_cb 'resize))
+    (setf *canvas*
+          (iup-gl:canvas :rastersize "640x480"
+                         :buffer "DOUBLE"
+                         :action 'repaint
+                         :resize_cb 'resize))
     (let* ((dialog (iup:dialog *canvas* :title "IUP OpenGL")))
       ;; FIXME      (iup-cffi::%iup-set-function :idle_action 'idle)
       (setf (iup:attribute *canvas* :depthsize) "16")
@@ -85,3 +89,10 @@
 ;;   (iup-gl:make-current canvas)
 ;;   (repaint canvas)
 ;;   iup::+default+)
+
+#-sbcl (cube)
+
+#+sbcl
+(sb-int:with-float-traps-masked
+    (:divide-by-zero :invalid)
+  (cube))

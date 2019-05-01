@@ -8,8 +8,8 @@
   (iup:with-iup ()
     (let* ((celsius-label (iup:label :title "Celsius = "))
 	   (farenheit-label (iup:label :title "Farenheit"))
-	   (celsius (iup:text :value "" :size 50 :mask iup:+mask-float+))
-	   (farenheit (iup:text :value "" :size 50 :mask iup:+mask-float+ ))
+	   (celsius (iup:text :value "" :size 50 #|:mask iup:+mask-float+|#))
+	   (farenheit (iup:text :value "" :size 50 #|:mask iup:+mask-float+|# ))
 	   (hbox (iup:hbox
 		  (list celsius celsius-label farenheit farenheit-label)
 		  :alignment "ACENTER"

@@ -13,6 +13,7 @@
 	       (:file "config")
 	       (:file "attributes")
 	       (:file "status")
+	       (:file "masks")
 	       (:file "iup"))
   :depends-on (#:iup-cffi
 	       #:iup-utils

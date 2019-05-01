@@ -1,3 +1,6 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (ql:quickload '("iup" "iup-cd")))
+
 (defpackage #:iup-examples.canvas
   (:use #:common-lisp
 	#:alexandria)
@@ -8,7 +11,6 @@
 (defparameter *canvas* nil)
 
 (defun canvas-redraw (handle x y)
-  (declare (ignore handle x y))
   (cd:activate *canvas*)
   (multiple-value-bind (w h)
       (cd:size *canvas*)
@@ -32,7 +34,6 @@
   iup:+default+)
 
 (defun canvas-unmap (handle)
-  (declare (ignore handle))
   (cd:kill *canvas*)
   iup:+default+)
 
@@ -46,7 +47,9 @@
       (iup:show-xy dialog iup:+center+ iup:+center+)
       (iup:main-loop))))
 
-#+nil
+#-sbcl (canvas)
+
+#+sbcl
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)
   (canvas))
