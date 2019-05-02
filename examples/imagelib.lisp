@@ -18,9 +18,10 @@
 				 for r from 0 by (/ width 100)
 				 for a from 0 by 2
 				 for label = (iup:label :image image-name :tip image-name)
-				 do (print (list image-name (* r (cos a)) (* r (sin a))))
-				 do (setf (iup:attribute label :cx) (+ (/ width 2) (* r (cos a)))
-					  (iup:attribute label :cy) (+ (/ height 2) (* r (sin a))))
+				 do (setf (iup:attribute label :cx)
+					  (+ (/ width 2) (* r (cos a)))
+					  (iup:attribute label :cy)
+					  (+ (/ height 2) (* r (sin a))))
 				 collect label)
 			   :expand :yes))
 	   (hbox (iup:hbox (list cbox)))
