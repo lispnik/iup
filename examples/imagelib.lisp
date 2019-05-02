@@ -18,14 +18,11 @@
 				 for r from 0 by (/ width 100)
 				 for a from 0 by 2
 				 for label = (iup:label :image image-name :tip image-name)
-				 do (setf (iup:attribute label :cx)
-					  (+ (/ width 2) (* r (cos a)))
-					  (iup:attribute label :cy)
-					  (+ (/ height 2) (* r (sin a))))
+				 do (setf (iup:attribute label :cx) (+ (/ width 2) (* r (cos a)))
+					  (iup:attribute label :cy) (+ (/ height 2) (* r (sin a))))
 				 collect label)
 			   :expand :yes))
-	   (hbox (iup:hbox (list cbox)))
-           (dialog (iup:dialog hbox :title "IUP Image Library Example!")))
+           (dialog (iup:dialog cbox :title "IUP Image Library Example")))
       (iup:show dialog)
       (iup:main-loop))))
 
