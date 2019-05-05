@@ -28,7 +28,7 @@
 				 (iup:sbox results :direction :north))
 			   :margin "10x10"
 			   :cgap 5))
-           (dialog (iup:dialog vbox
+	   (dialog (iup:dialog vbox
 			       :title "Drop Hash"
 			       :size "HALFxHALF")))
       (loop for digest in (ironclad:list-all-digests)
@@ -55,4 +55,3 @@
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)
   (drophash))
-
