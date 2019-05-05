@@ -12,11 +12,12 @@
     (let* ((list (iup:list :dropdown :yes
 			   :expand :horizontal
 			   :handlename "list"))
-	   (label (iup:label :title "Drop files for hash"
-			     :alignment "ACENTER:ACENTER"
-			     :dropfilestarget :yes
-			     :dropfiles_cb 'drop-files-callback
-			     :expand :yes))
+	   (label (iup:flat-label :title "Drop files for hash"
+				  :alignment "ACENTER:ACENTER"
+				  :font "Helvetica, 24"
+				  :dropfilestarget :yes
+				  :dropfiles_cb 'drop-files-callback
+				  :expand :yes))
 	   (frame (iup:frame label))
 	   (results (iup:multi-line :expand :yes
 				    :readonly :yes
