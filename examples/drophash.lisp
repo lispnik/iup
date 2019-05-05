@@ -18,13 +18,15 @@
 			     :dropfiles_cb 'drop-files-callback
 			     :expand :yes))
 	   (frame (iup:frame label))
-	   (results (iup:multi-line :visiblelines 5
-				    :expand :horizontal
+	   (results (iup:multi-line :expand :yes
 				    :readonly :yes
+				    :visiblelines 7
 				    :handlename "results"))
-	   (vbox (iup:vbox (list list frame results)
+	   (vbox (iup:vbox (list list
+				 frame
+				 (iup:sbox results :direction :north))
 			   :margin "10x10"
-			   :cgap 10))
+			   :cgap 5))
            (dialog (iup:dialog vbox
 			       :title "Drop Hash"
 			       :size "HALFxHALF")))
