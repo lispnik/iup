@@ -879,6 +879,57 @@ export format is a [[https://www.tecgraf.puc-rio.br/iup/en/led.html][IUP LED fil
     (dialogs))
 #+end_src 
 
+* Application Icons and IUP-IM
+
+In this example, we'll set the application icon via an arbitrary image
+file, demonstrating the use of the ~IUP-IM~ system. The ~IM-IUP~
+system provides support in our IUP bindings for interoperability with
+[[http://webserver2.tecgraf.puc-rio.br/im/][IM]], an imaging toolkit, also by Tecgraf.
+
+#+begin_src lisp :results silent :export none :tangle examples/icon.lisp
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (ql:quickload '("iup" "iup-im")))
+
+  (defpackage #:iup-examples.icon
+    (:use #:common-lisp)
+    (:export #:icon))
+
+  (in-package #:iup-examples.icon)
+#+end_src
+
+Here we load an image from the filesystem using ~IUP-IM:LOAD-IMAGE~
+and associate the global handle name ~lispalien~ with it. We can use
+this handle name in labels, buttons, etc. to set the image that should
+be used. In the case of dialogs however, we can use the handle name to
+specify the image that should be displayed in the application's title
+bar.
+
+IM supports a large number of formats. Here we use a .ICO file.
+
+#+begin_src lisp :results silent :tangle examples/icon.lisp
+  (defun icon ()
+    (iup:with-iup ()
+      (let ((icon (iup-im:load-image (asdf:system-relative-pathname "iup" "examples/lispalien.ico"))))
+	(setf (iup:handle "lispalien") icon))
+      (let* ((label (iup:flat-label :image "lispalien" :expand :yes))
+	     (dialog (iup:dialog label :title "Icon from File"
+				       :icon "lispalien"
+				       :size "THIRDxTHIRD")))
+	(iup:show dialog)
+	(iup:main-loop))))
+#+end_src
+
+#+begin_src lisp :results silent :export none :tangle examples/icon.lisp
+  #-sbcl (icon)
+
+  ,#+sbcl
+  (sb-int:with-float-traps-masked
+      (:divide-by-zero :invalid)
+    (icon))
+#+end_src
+
+[[./docs/screenshots/icon-01.png]] [[./docs/screenshots/icon-02.png]]
+
 * Drag and Drop
 
 ** File Drag and Drop from Applications
