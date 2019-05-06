@@ -1,5 +1,5 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "ironclad" "iup-imglib")))
+  (ql:quickload '("iup" "ironclad")))
 
 (defpackage #:iup-examples.drophash
   (:use #:common-lisp)

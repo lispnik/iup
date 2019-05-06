@@ -881,7 +881,6 @@ export format is a [[https://www.tecgraf.puc-rio.br/iup/en/led.html][IUP LED fil
 
 * Drag and Drop
 
-
 ** File Drag and Drop from Applications
 
 #+begin_src lisp :results silent :export none :tangle examples/drophash.lisp
@@ -981,6 +980,8 @@ revisit this example for better responsiveness later.
 #+end_src 
 
 [[./docs/screenshots/drophash-01.png]]
+
+[[./docs/screenshots/drophash-02.png]]
 
 * Examples
 
