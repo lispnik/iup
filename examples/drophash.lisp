@@ -1,5 +1,5 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "ironclad")))
+  (ql:quickload '("iup" "ironclad" "iup-imglib")))
 
 (defpackage #:iup-examples.drophash
   (:use #:common-lisp)
@@ -9,6 +9,7 @@
 
 (defun drophash ()
   (iup:with-iup ()
+    (iup-imglib:open)
     (let* ((list (iup:list :dropdown :yes
 			   :expand :horizontal
 			   :handlename "list"))
@@ -35,6 +36,7 @@
 	    for i from 1
 	    do (setf (iup:attribute list i) digest)
 	    finally (setf (iup:attribute list :valuestring) 'ironclad:sha256))
+      (setf (iup:attribute dialog :icon)  "IUP_Tecgraf")
       (iup:show dialog)
       (iup:main-loop))))
 
