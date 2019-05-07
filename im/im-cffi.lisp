@@ -4,7 +4,7 @@
 (in-package #:iup-im-cffi)
 
 (cffi:define-foreign-library iup-im
-  (:unix "libim.so")
+  (:unix "libiupim.so")
   (:windows "iupim.dll")
   (t (:default "iupim")))
 

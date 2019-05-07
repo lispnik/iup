@@ -1,5 +1,5 @@
 #+STARTUP: showall
-#+TITLE: CFFI bindings to the IUP Portable User Interface library
+#+TITLE: Common Lisp CFFI bindings to the IUP Portable User Interface library
 
 [[./docs/screenshots/sample-01.png]]
 
