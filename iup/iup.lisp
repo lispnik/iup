@@ -10,6 +10,7 @@
 (defalias close #'iup-cffi::%iup-close)
 
 (defun call-with-iup (func)
+  #+windows (iup-cffi::%set-process-dpi-aware)
   (iup:open)
   (unwind-protect
        (progn

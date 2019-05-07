@@ -625,3 +625,12 @@
   (height :int)
   (pixels :pointer))
 
+#+windows
+(cffi:define-foreign-library iup-win32-user32
+  (:windows "user32.dll"))
+
+#+windows
+(cffi:use-foreign-library iup-win32-user32)
+
+#+windows
+(cffi:defcfun (%set-process-dpi-aware "SetProcessDPIAware") :boolean)
