@@ -1,0 +1,4 @@
+* text eol=lf
+*.pdf -text
+*.png -text
+*.ico -text
