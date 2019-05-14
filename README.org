@@ -32,7 +32,7 @@ directory.
 
 It is a one-off step is is not needed subsequently.
 
-*NOTE:* On Linux, the ~tecgraf-libs~ system needs the ~patchelf~
+,*NOTE:* On Linux, the ~tecgraf-libs~ system needs the ~patchelf~
 command available (usually available via ~sudo apt install
 patchelf~). ~patchelf~ is used to set the shared library .so files
 origin to the library's location so that the multiple shared libraries
@@ -52,7 +52,7 @@ To tell CFFI to find these libraries, use:
 
 * Loading IUP
 
-*NOTE:* For SBCL, you need to set a larger heap size to compile the
+,*NOTE:* For SBCL, you need to set a larger heap size to compile the
 bindings, e.g. ~--dynamic-space-size 2048~
 
 * Hello, World!
