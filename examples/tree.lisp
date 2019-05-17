@@ -21,7 +21,7 @@
 	   (vbox (iup:vbox (list (iup:hbox (list tree button)
 					   :cgap 5))
 			   :margin "5x5"))
-           (dialog (iup:dialog vbox :title "Hello, World!")))
+           (dialog (iup:dialog vbox :title "Tree Example")))
       (iup:show dialog)
       (setf (iup:attribute tree :title) "Figures"
 	    (iup:attribute tree :addbranch) "3D"
