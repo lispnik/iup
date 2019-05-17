@@ -100,7 +100,10 @@
 		    ("fontdlg" . "font-dialog")
 		    ("messagedlg" . "message-dialog")
 		    ("progressdlg" . "progress-dialog")
-		    ("parambox" . "param-box")))
+		    ("parambox" . "param-box")
+		    ("imagergb" . "image-rgb")
+		    ("imagergba" . "image-rgba")
+		    ("multibox" . "multi-box")))
     (:initializer iup-controls-cffi::%iup-controls-open
      :package "IUP-CONTROLS"
      :vanity-alist (("matrixex" . "matrix-ex")
@@ -200,7 +203,7 @@ information to create the Lisp API at compilation time."
 	  for override-p = (getf metadata :override-p)
 	  for vanity-alist = (getf metadata :vanity-alist)
 	  for package = (getf metadata :package)
-	  do (format t "Processing for package ~A~%" package)
+	  do (format t "~&Processing for package ~A" package)
 	  collect
 	  (with-iup 
 	      (if (eq initializer 'iup-cffi::%iup-open)
