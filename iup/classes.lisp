@@ -17,8 +17,31 @@
 
 (defun check-callback-args (action args-list)
   (declare (ignore action args-list))
-  ;; FIXME
+  ;; FIXME should have enough info to check callback args at runtime
+  ;; based on the compile time metadata
   t)
+
+(defun invoke-callback (action action-args-list args-list-names)
+  (if (check-callback-args action args-list-names)
+      (let ((result (restart-case
+			(apply action action-args-list)
+		      (:use-default ()
+		       :report "Continue by returning IUP:+DEFAULT+"
+			iup:+default+))))
+	(if (null result)
+	    (restart-case
+		(error "Callback returned NIL")
+	      (:use-default ()
+	       :report "Continue by returning IUP:+DEFAULT+"
+		iup:+default+))
+	    result))
+      (restart-case 
+	  (error "Callback arguments list does not conform to to expected arguments list")
+	(:continue ()
+	 :report "Continue without invoking the callback")
+	(:danger-zone ()
+	 :report "Call it anyway"
+	  (apply action action-args-list)))))
 
 (defmacro defclasscallback (classname name spec package)
   (let* ((return-type (or (and (find #\= spec)
@@ -36,25 +59,10 @@
          (return-and-arg-list (cl:list return-type arg-list))
          (callback-name (class-callback-name classname name package)))
     `(cffi:defcallback ,callback-name ,@return-and-arg-list
-         (let ((action (genhash:hashref (make-callback :name ',callback-name :handle arg0)
-                                        *registered-callbacks*))
-               (args-list-names (cl:list ,@(mapcar #'car arg-list))))
-           (if (check-callback-args action args-list-names)
-               (let ((result (funcall action ,@(mapcar #'car arg-list))))
-                 (if (null result)
-                     (restart-case
-                         (error "Callback returned NIL")
-                       (:use-default ()
-                        :report "Continue by returning IUP:+DEFAULT+"
-                         iup:+default+))
-                     result))
-               (restart-case 
-                   (error "Callback arguments list does not conform to to expected arguments list")
-                 (:continue ()
-                  :report "Continue without invoking the callback")
-                 (:danger-zone ()
-                  :report "Call it anyway"
-                   (funcall action args-list))))))))
+	 (let* ((action (find-callback ',callback-name arg0))
+		(args-list-names (cl:list ,@(mapcar #'car arg-list)))
+		(action-args-list (cl:list ,@(mapcar #'car arg-list))))
+	   (invoke-callback action action-args-list args-list-names)))))
 
 (defmacro defiupclass (class package)
   (flet ((sort-attributes (attributes)
@@ -132,7 +140,6 @@
                      for name = (make-keyword (getf attribute :name))
                      collect
                      `(defclasscallback ,classname ,name ,spec ,package))))))))
-
 
 (defmacro defiupclasses (export-package)
   (let* ((classesdb (with-open-file
