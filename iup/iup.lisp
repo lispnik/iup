@@ -64,24 +64,6 @@
 (defalias previous-field          #'iup-cffi::%iup-previous-field)
 (defalias next-field              #'iup-cffi::%iup-next-field)
 
-(defun image (width height pixels)
-  (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height))))
-    (unwind-protect
-	 (iup-cffi::%iup-image width height array)
-      (cffi:foreign-free array))))
-
-(defun image-rgb (width height pixels)
-  (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height 3))))
-    (unwind-protect
-	 (iup-cffi::%iup-image-rgb width height array)
-      (cffi:foreign-free array))))
-
-(defun image-rgba (width height pixels)
-  (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height 4))))
-    (unwind-protect
-	 (iup-cffi::%iup-image-rgba width height array)
-      (cffi:foreign-free array))))
-
 (defalias message       #'iup-cffi::%iup-message)
 (defalias message-error #'iup-cffi::%iup-message-error)
 (defalias message-alarm #'iup-cffi::%iup-message-alarm)

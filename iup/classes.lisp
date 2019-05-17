@@ -64,6 +64,35 @@
 		(action-args-list (cl:list ,@(mapcar #'car arg-list))))
 	   (invoke-callback action action-args-list args-list-names)))))
 
+(defun %iup-image (width height pixels)
+  (assert (= (length pixels) (* width height)))
+  (let ((ptr (cffi:foreign-alloc :unsigned-char :initial-contents pixels)))
+    (unwind-protect
+	 (iup-cffi::%iup-image width height ptr)
+      (cffi:foreign-free ptr))))
+
+(defun %iup-image-rgb (width height pixels)
+  (assert (= (length pixels) (* 3 width height)))
+  (let ((ptr (cffi:foreign-alloc :unsigned-char :initial-contents pixels)))
+    (unwind-protect
+	 (iup-cffi::%iup-image-rgb width height ptr)
+      (cffi:foreign-free ptr))))
+
+(defun %iup-image-rgba (width height pixels)
+  (assert (= (length pixels) (* 4 width height)))
+  (let ((ptr (cffi:foreign-alloc :unsigned-char :initial-contents pixels)))
+    (unwind-protect
+	 (iup-cffi::%iup-image-rgba width height ptr)
+      (cffi:foreign-free ptr))))
+
+(defparameter *iup-image-constructor-alist*
+  '(("image" . %iup-image)
+    ("imagergb" . %iup-image-rgb)
+    ("imagergba" . %iup-image-rgba)))
+
+(defun image-class (classname)
+  (assoc-value *iup-image-constructor-alist* classname :test #'string=))
+
 (defmacro defiupclass (class package)
   (flet ((sort-attributes (attributes)
            (sort (copy-seq attributes) #'string<
@@ -87,11 +116,16 @@
            (vanity-classname (getf class :vanity-classname))
            (classname-symbol (intern (if vanity-classname vanity-classname (string-upcase classname))
                                      (find-package package)))
-           (children (getf class :children)))
+           (children (getf class :children))
+	   (image-class (image-class classname))
+	   (fixed-args (if image-class '(width height pixels) nil))
+	   (constructor-args (if image-class '(width height pixels) (cl:list classname)))
+	   (class-constructor (or (image-class classname) 'iup-cffi::%iup-create)))
       (with-gensyms (handle)
         `(progn
            (defun ,classname-symbol
-               (,@(case children
+               (,@fixed-args
+		,@(case children
                     (:child-many '(children))
                     (:child-none nil)
                     (otherwise (if (= 1 children)
@@ -107,7 +141,7 @@
                                          (cl:list symbol (getf attribute :default-value)))))
                                attributes)
                   ,@callback-names)
-             (let ((,handle (iup-cffi::%iup-create ,classname)))
+             (let ((,handle (,class-constructor ,@constructor-args)))
                (loop for (attribute value) on attributes by #'cddr
                      do (if (member attribute ',(mapcar #'(lambda (attribute)
                                                             (make-keyword (getf attribute :name)))
