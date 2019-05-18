@@ -4,16 +4,17 @@
   name
   handle)
 
-(genhash:register-test-designator
- 'callback=
- (lambda (callback)
-   (sxhash (cl:list (callback-name callback)
-		    (callback-handle callback))))
- (lambda (a b)
-   (and (eq (callback-name a)
-	    (callback-name b))
-	(cffi:pointer-eq (callback-handle a)
-			 (callback-handle b)))))
+(ignore-errors
+ (genhash:register-test-designator
+  'callback=
+  (lambda (callback)
+    (sxhash (cl:list (callback-name callback)
+		     (callback-handle callback))))
+  (lambda (a b)
+    (and (eq (callback-name a)
+	     (callback-name b))
+	 (cffi:pointer-eq (callback-handle a)
+			  (callback-handle b))))))
 
 (defvar *registered-callbacks* (genhash:make-generic-hash-table :test 'callback=))
 

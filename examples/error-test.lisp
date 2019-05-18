@@ -39,6 +39,9 @@ tooltip for a description."
   (error "Error in callback")
   iup:+default+)
 
+(defun forgot-callback (handle)
+  nil)
+
 #-sbcl (error-test)
 
 #+sbcl
