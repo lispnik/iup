@@ -17,6 +17,7 @@
 		 (:file "attributes")
 		 (:file "status")
 		 (:file "masks")
+		 (:file "globals")
 		 (:file "iup"))))
   :depends-on (#:iup-cffi
 	       #:iup-utils

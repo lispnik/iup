@@ -57,8 +57,6 @@
 (defalias map                     #'iup-cffi::%iup-map)
 (defalias unmap                   #'iup-cffi::%iup-unmap)
 (defalias reset-attribute         #'iup-cffi::%iup-reset-attribute)
-(defalias set-global              #'iup-cffi::%iup-set-str-global)
-(defalias get-global              #'iup-cffi::%iup-get-global)
 (defalias set-focus               #'iup-cffi::%iup-set-focus)
 (defalias get-focus               #'iup-cffi::%iup-get-focus)
 (defalias previous-field          #'iup-cffi::%iup-previous-field)
