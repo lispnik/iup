@@ -694,20 +694,20 @@ as branches open.
   (defun get-dir (pathname)
     (assert (uiop:directory-pathname-p pathname))
     (loop for pathname in (uiop:directory* (make-pathname :name :wild :defaults pathname))
-	  if (uiop:directory-pathname-p pathname)
-	    collect pathname into dirs
-	  else
-	    collect pathname into files
-	  finally (return (values dirs files))))
+          if (uiop:directory-pathname-p pathname)
+            collect pathname into dirs
+          else
+            collect pathname into files
+          finally (return (values dirs files))))
 
   (defun fill-tree (tree id pathname)
     (multiple-value-bind
-	  (dirs files)
-	(get-dir pathname)
+          (dirs files)
+        (get-dir pathname)
       (dolist (file files)
-	(setf (iup:attribute tree :addleaf) (namestring file)))
+        (setf (iup:attribute tree :addleaf) (namestring file)))
       (dolist (dir dirs)
-	(setf (iup:attribute tree :addbranch) (namestring dir)))
+        (setf (iup:attribute tree :addbranch) (namestring dir)))
       (setf (iup:attribute tree :title) (namestring pathname))))
 #+end_src
 
@@ -724,11 +724,11 @@ as branches open.
   (defun tree ()
     (iup:with-iup ()
       (let* ((tree (iup:tree :minsize "200x300"
-			     :map_cb 'map-callback
-			     :branchopen_cb 'branchopen-callback))
-	     (dialog (iup:dialog tree :title "Tree Example")))
-	(iup:show dialog)
-	(iup:main-loop))))
+                             :map_cb 'map-callback
+                             :branchopen_cb 'branchopen-callback))
+             (dialog (iup:dialog tree :title "Tree Example")))
+        (iup:show dialog)
+        (iup:main-loop))))
 #+end_src
 
 #+begin_src lisp :results silent :export none :tangle examples/tree.lisp
@@ -763,19 +763,19 @@ IUP includes a number of dialogs, including one that embeds the
     (iup:with-iup ()
       (iup-scintilla:open)
       (flet ((button (title callback)
-	       (iup:button :title title
-			   :action callback
-			   :expand :horizontal)))
-	(let* ((dialog (iup:dialog
-			(iup:vbox (list (button "File Dialog" 'file-dialog)
-					(button "Message Dialog" 'message-dialog)
-					(button "Color Dialog" 'color-dialog)
-					(button "Font Dialog" 'font-dialog)
-					(button "Scintilla Dialog" 'scintilla-dialog)
-					(button "Layout Dialog" 'layout-dialog)))
-			:title "IUP Predefined Dialogs")))
-	  (iup:show dialog)
-	  (iup:main-loop)))))
+               (iup:button :title title
+                           :action callback
+                           :expand :horizontal)))
+        (let* ((dialog (iup:dialog
+                        (iup:vbox (list (button "File Dialog" 'file-dialog)
+                                        (button "Message Dialog" 'message-dialog)
+                                        (button "Color Dialog" 'color-dialog)
+                                        (button "Font Dialog" 'font-dialog)
+                                        (button "Scintilla Dialog" 'scintilla-dialog)
+                                        (button "Layout Dialog" 'layout-dialog)))
+                        :title "IUP Predefined Dialogs")))
+          (iup:show dialog)
+          (iup:main-loop)))))
 #+end_src
 
 [[./docs/screenshots/dialogs-01.png]] [[./docs/screenshots/dialogs-02.png]]
@@ -884,8 +884,8 @@ configuration (result buttons, etc.).
   (defun scintilla-dialog (handle)
     (let ((dialog (iup-scintilla:scintilla-dialog :title "IUP Scintilla Dialog")))
       (unwind-protect
-	   (iup:popup dialog iup:+center+ iup:+center+)
-	(iup:destroy dialog))))
+           (iup:popup dialog iup:+center+ iup:+center+)
+        (iup:destroy dialog))))
 #+end_src
 
 [[./docs/screenshots/scintilladialog-01.png]]
@@ -910,8 +910,8 @@ export format is a [[https://www.tecgraf.puc-rio.br/iup/en/led.html][IUP LED fil
   (defun layout-dialog (handle)
     (let ((dialog (iup:layout-dialog nil)))
       (unwind-protect
-	   (iup:popup dialog iup:+center+ iup:+center+)
-	(iup:destroy dialog)))
+           (iup:popup dialog iup:+center+ iup:+center+)
+        (iup:destroy dialog)))
     iup:+default+)
 #+end_src
 
@@ -979,13 +979,13 @@ IM supports a large number of formats. Here we use a .ICO file.
   (defun icon ()
     (iup:with-iup ()
       (let ((icon (iup-im:load-image (asdf:system-relative-pathname "iup" "examples/lispalien.ico"))))
-	(setf (iup:handle "lispalien") icon))
+        (setf (iup:handle "lispalien") icon))
       (let* ((label (iup:flat-label :image "lispalien" :expand :yes))
-	     (dialog (iup:dialog label :title "Icon from File"
-				       :icon "lispalien"
-				       :size "THIRDxTHIRD")))
-	(iup:show dialog)
-	(iup:main-loop))))
+             (dialog (iup:dialog label :title "Icon from File"
+                                       :icon "lispalien"
+                                       :size "THIRDxTHIRD")))
+        (iup:show dialog)
+        (iup:main-loop))))
 #+end_src
 
 #+begin_src lisp :results silent :export none :tangle examples/icon.lisp
@@ -1029,33 +1029,33 @@ are appended to a result panel.
   (defun drophash ()
     (iup:with-iup ()
       (let* ((list (iup:list :dropdown :yes
-			     :expand :horizontal
-			     :handlename "list"))
-	     (label (iup:flat-label :title "Drop files for hash"
-				    :alignment "ACENTER:ACENTER"
-				    :font "Helvetica, 24"
-				    :dropfilestarget :yes
-				    :dropfiles_cb 'drop-files-callback
-				    :expand :yes))
-	     (frame (iup:frame label))
-	     (results (iup:multi-line :expand :yes
-				      :readonly :yes
-				      :visiblelines 7
-				      :handlename "results"))
-	     (vbox (iup:vbox (list list
-				   frame
-				   (iup:sbox results :direction :north))
-			     :margin "10x10"
-			     :cgap 5))
-	     (dialog (iup:dialog vbox
-				 :title "Drop Hash"
-				 :size "HALFxHALF")))
-	(loop for digest in (ironclad:list-all-digests)
-	      for i from 1
-	      do (setf (iup:attribute list i) digest)
-	      finally (setf (iup:attribute list :valuestring) 'ironclad:sha256))
-	(iup:show dialog)
-	(iup:main-loop))))
+                             :expand :horizontal
+                             :handlename "list"))
+             (label (iup:flat-label :title "Drop files for hash"
+                                    :alignment "ACENTER:ACENTER"
+                                    :font "Helvetica, 24"
+                                    :dropfilestarget :yes
+                                    :dropfiles_cb 'drop-files-callback
+                                    :expand :yes))
+             (frame (iup:frame label))
+             (results (iup:multi-line :expand :yes
+                                      :readonly :yes
+                                      :visiblelines 7
+                                      :handlename "results"))
+             (vbox (iup:vbox (list list
+                                   frame
+                                   (iup:sbox results :direction :north))
+                             :margin "10x10"
+                             :cgap 5))
+             (dialog (iup:dialog vbox
+                                 :title "Drop Hash"
+                                 :size "HALFxHALF")))
+        (loop for digest in (ironclad:list-all-digests)
+              for i from 1
+              do (setf (iup:attribute list i) digest)
+              finally (setf (iup:attribute list :valuestring) 'ironclad:sha256))
+        (iup:show dialog)
+        (iup:main-loop))))
 #+end_src 
 
 When files are dropped onto the drop target (in this case, an IUP flat
@@ -1066,12 +1066,12 @@ file.
 #+begin_src lisp :results silent :tangle examples/drophash.lisp
   (defun drop-files-callback (handle filename num x y)
     (let ((digest-hex 
-	    (ironclad:byte-array-to-hex-string 
-	     (ironclad:digest-file
-	      (read-from-string (iup:attribute (iup:handle "list") :valuestring))
-	      filename))))
+            (ironclad:byte-array-to-hex-string 
+             (ironclad:digest-file
+              (read-from-string (iup:attribute (iup:handle "list") :valuestring))
+              filename))))
       (setf (iup:attribute (iup:handle "results") :append)
-	    (format nil "~A	~A" filename digest-hex)))
+            (format nil "~A     ~A" filename digest-hex)))
     (iup:flush)
     iup:+default+)
 #+end_src
@@ -1102,6 +1102,52 @@ revisit this example for better responsiveness later.
 [[./docs/screenshots/drophash-01.png]]
 
 [[./docs/screenshots/drophash-02.png]]
+
+* Globals
+
+IUP supports a number of [[http://webserver2.tecgraf.puc-rio.br/iup/en/attrib/iup_globals.html#General][global settings]] which govern general
+settings, system control, mouse and keyboard, system and screen
+information and default attributes (for example, default colors, fonts
+etc.). It also provides low-level information on the application's
+context within the OS (for example Windows ~HINSTANCE~.
+
+Some settings are read-only and some may be changed and can differ
+depending on the platform IUP is running on.
+
+#+begin_src lisp :results silent :tangle examples/globals.lisp
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (ql:quickload '("iup" "iup-controls")))
+
+  (defpackage #:iup-examples.globals
+    (:use #:common-lisp)
+    (:export #:globals))
+
+  (in-package #:iup-examples.globals)
+#+end_src
+
+In this example we list global setting using the [[http://webserver2.tecgraf.puc-rio.br/iup/en/ctrl/iupmatrix.html][IUP matrix control]].
+
+#+begin_src lisp :results silent :tangle examples/globals.lisp
+  (defun globals ()
+    (iup:with-iup ()
+      (let* ((label (iup-controls:matrix  :title (format nil "Hello, World!~%IUP ~A~%~A ~A"
+                                              (iup:version)
+                                              (lisp-implementation-type)
+                                              (lisp-implementation-version))))
+             (dialog (iup:dialog label :title "Hello, World!")))
+        (iup:show dialog)
+        (iup:main-loop))))
+
+#+end_src
+
+#+begin_src lisp :results silent :tangle examples/globals.lisp
+  #-sbcl (globals)
+
+  ,#+sbcl
+  (sb-int:with-float-traps-masked
+      (:divide-by-zero :invalid)
+    (globals))
+#+end_src
 
 * Examples
 
