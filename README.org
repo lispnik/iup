@@ -266,7 +266,7 @@ updated when the user clicks on the spinner widget.
 
 #+begin_src lisp :results silent :tangle examples/sierpinski.lisp
   (defun canvas-spin (handle pos)
-    (setf *levels* (iup:attribute handle :value 'integer))
+    (setf *levels* (iup:attribute handle :value 'number))
     (canvas-redraw nil nil nil)
     iup:+default+)
 #+end_src

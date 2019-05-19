@@ -26,4 +26,5 @@
 	       #:serapeum
 	       #:genhash
 	       #:trivial-arguments
-	       #:split-sequence))
+	       #:split-sequence
+	       #:parse-number))
