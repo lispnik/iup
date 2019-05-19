@@ -1,47 +1,237 @@
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (ql:quickload '("iup" "iup-gl" "iup-controls" "iup-glcontrols" "cl-opengl" "cl-glu")))
+
 (defpackage #:iup-examples.glcontrols
-  (:use #:common-lisp
-	#:alexandria)
+  (:use #:common-lisp)
   (:export #:glcontrols))
 
 (in-package #:iup-examples.glcontrols)
 
-(define-constant +image-close+
-    #(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
-      0 0 0 1 1 1 1 1 1 1 1 1 1 0 0 0
-      0 0 0 1 1 1 1 1 1 1 1 1 1 0 0 0
-      0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
-  :test #'equalp)
+(defvar *use-model-matrix-p* nil)
+(defvar *model-matrix-view* (cffi:foreign-alloc :double :count 16 :initial-element 0d0))
 
-(define-constant +image-open+
-    #(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 1 1 1 1 1 1 1 1 1 1 0 0 0
-      0 0 0 1 1 1 1 1 1 1 1 1 1 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
-      0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)
-  :test #'equalp)
+(defun init ()
+  (gl:clear-color 1 1 1 0)
+  (gl:matrix-mode :projection)
+  (gl:load-identity)
+  (glu:perspective 45 1 1 10)
+  (gl:matrix-mode :modelview)
+  (gl:load-identity)
+  (glu:look-at .5 .5 3 .5 .5 0 0 1 1)
+  (gl:enable :depth-test)
+  (gl:clear-depth 1)
+  (when *use-model-matrix-p*
+    (%gl:load-matrix-d *model-matrix-view*)))
+
+(defun draw-cube ()
+  (gl:clear :color-buffer-bit :depth-buffer-bit)
+  (gl:clear-color 1 1 1 1))
+
+(defun action-cb (handle x y)
+  (iup-gl:make-current handle)
+  (init)
+  (draw-cube)
+  (iup-gl:swap-buffers handle)
+  iup::+default+)
+
+(defun button-action-cb (handle)
+  iup::+default+)
+
+(defun toggle-action-cb (handle state)
+  iup::+default+)
+
+(defun link-action-cb (handle url)
+  iup::+default+)
+
+(defun val-action-cb (handle)
+  iup::+default+)
+
+(defun expand-cb (handle)
+  iup::+default+)
+
+(defun extrabutton-cb (handle pressed)
+  iup::+default+)
+
+(defun button-cb (handle button pressed x y status)
+  iup::+default+)
+
+(defun motion-cb (handle x y status)
+  iup::+default+)
+
+(defun repaint-cb (handle pressed x y status)
+  iup::+default+)
+
+(defun image (width height pixels &rest palette)
+  (let ((handle (iup:image width height pixels)))
+    (loop for (index color) on palette
+          for i from 0
+          do (setf (iup:attribute handle i) color)
+          finally (return handle))))
+
+(defun glcontrols ()
+  (iup:with-iup ()
+    (iup-gl:open)
+    (iup-glcontrols:open)
+    (iup-controls:open)
+    (let* ((image-open (image 16 16 *image-open* 0 "BGCOLOR" 1 "192 192 192"))
+	   (image-close (image 16 16 *image-close* 0 "BGCOLOR" 1 "192 192 192"))
+	   (image-high (image 16 16 *image-close* 1 "192 192 192"))
+	   (glabel (iup-glcontrols:label :title "Label" :font "Arial, 18"))
+	   (gbutton1 (iup-glcontrols:button :title "Button"
+					    :padding "5x5"
+					    :action 'button-action-cb
+					    :name "button1"
+					    :tip "Button Tip"))
+	   (gbutton2 (iup-glcontrols:button :padding "5x5"
+					    :action 'button-action-cb
+					    :name "button2"))
+	   (gtoggle (iup-glcontrols:toggle :title "Toggle"
+					   :padding "5x5"
+					   :action 'toggle-action-cb
+					   :name "toggle"))
+	   (gtoggle1 (iup-glcontrols:toggle :padding "5x5"
+					    :action 'toggle-action-cb
+					    :name "toggle1"))
+	   (gtoggle2 (iup-glcontrols:toggle :padding "5x5"
+					    :action 'toggle-action-cb
+					    :name "toggle2"))
+	   (gsep1 (iup-glcontrols:separator))
+	   (glink (iup-glcontrols:link :url "http://www.tecgraf.puc-rio.br/iup"
+				       :title "IUP Toolkit"
+				       :action 'link-action-cb))
+	   (pbar1 (iup-glcontrols:progress-bar :value 0.3 :show_text :yes))
+	   (gval1 (iup-glcontrols:val :value 0.3
+				      :valuechanged_cb 'val-action-cb
+				      :name "val1"
+				      :tip "Val Tip"))
+	   (hbox (iup:hbox (list glabel gsep1 gbutton1 gtoggle glink pbar1 gval1)
+			   :alignment "ACENTER"
+			   :margin "5x5"
+			   :gap 5))
+	   (pbar2 (iup-glcontrols:progress-bar :value 0.3 :orientation :vertical))
+	   (gval2 (iup-glcontrols:val :value 0.3
+				      :orientation :vertical
+				      :valuechanged_cb 'val-action-cb
+				      :name "val2"))
+	   (gsep2 (iup-glcontrols:separator :orientation :horizontal))
+	   (vbox (iup:vbox (list gbutton2
+				 gsep2
+				 (iup:radio (iup:vbox (list gtoggle1 gtoggle2)))
+				 pbar2
+				 gval2)
+			   :alignment "ACENTER"
+			   :margin "5x5"
+			   :gap 5))
+	   (gtoggle5 (iup-glcontrols:toggle :title "Toggle"
+					    :padding "5x5"
+					    :action 'toggle-action-cb
+					    :name "toggle5"
+					    :checkmark :yes))
+	   (gtoggle3 (iup-glcontrols:toggle :title "Radio Toggle"
+					    :padding "5x5"
+					    :action 'toggle-action-cb
+					    :name "toggle3"
+					    :checkmark :yes))
+	   (gtoggle4 (iup-glcontrols:toggle :title "Radio Toggle"
+					    :padding "5x5"
+					    :action 'toggle-action-cb
+					    :name "toggle4"
+					    :checkmark :yes))
+	   (vbox2 (iup:vbox (list (iup:radio (iup:vbox (list gtoggle3 gtoggle4)))
+				  gtoggle5)))
+	   (gsbox (iup-glcontrols:size-box (iup-glcontrols:scroll-box vbox2 :rastersize "90x90")))
+	   (gframe1 (iup-glcontrols:frame hbox :title "Frame1"))
+	   (gframe2 (iup-glcontrols:frame vbox :backcolor "250 250 160" :framecolor "250 250 160"))
+	   (gframe3 (iup-glcontrols:frame gsbox :title "Frame3"
+						:titlebox :yes
+						:moveable :yes
+						:position "550,200"))
+	   (gexp1 (iup-glcontrols:expander gframe1 :title "Expander"
+						   :moveable :yes
+						   :action 'expand-cb
+						   :extrabuttons 3
+						   :extrabutton_cb 'extrabutton-cb))
+	   (gexp2 (iup-glcontrols:expander gframe2 :barposition :left))
+	   (text (iup:text :value "Text"))
+	   (matrix (loop with matrix = (iup-controls:matrix :numlin 3
+							    :numcol 2
+							    :numlin_visible 3
+							    :numcol_visible 2
+							    :scrollbar :no)
+			 for i from 0 to 3
+			 do (loop for j from 0 to 3
+				  do (setf (iup:attribute-id-2 matrix :value i j)
+					   (* i j)))
+			 finally (return matrix)))
+	   (vbox3 (iup-glcontrols:frame (iup:vbox (list text matrix))
+                                        :title "Frame4"
+                                        :moveable :yes
+                                        :position "250,350"))
+	   (canvas (iup-glcontrols:canvas-box (list gexp1 gexp2 gframe3 vbox3)
+					      :action 'action-cb
+					      :button_cb 'button-cb
+					      :motion_cb 'motion-cb
+					      :buffer :double
+					      :margin "10x10"))
+	   (dialog (iup:dialog
+		    (iup:vbox (list canvas) :margin "5x5")
+		    :title "IUP GL Canvas Test"
+		    :rastersize "800x600")))
+      (setf (iup:attribute-handle glabel :image) (load-image-tecgraf)
+            (iup:attribute-handle gbutton2 :image) (load-image-file-save)
+            (iup:attribute-handle gtoggle1 :image) (load-image-test)
+            (iup:attribute-handle gtoggle2 :image) (load-image-test)
+            (iup:attribute-handle gtoggle4 :image) (load-image-test)
+            (iup:attribute-handle gexp1 :imageextra1) image-close
+            (iup:attribute-handle gexp1 :imageextrapress1) image-open
+            (iup:attribute-handle gexp1 :imageextrahighlight1) image-high
+            (iup:attribute-handle gexp1 :imageextra2) image-close
+            (iup:attribute-handle gexp1 :imageextrapress2) image-open
+            (iup:attribute-handle gexp1 :imageextrahighlight2) image-high
+            (iup:attribute-handle gexp1 :imageextra3) image-close
+            (iup:attribute-handle gexp1 :imageextrapress3) image-open
+            (iup:attribute-handle gexp1 :imageextrahighlight3) image-high)
+      (iup:map dialog)
+      (iup-gl:make-current canvas)
+      (format t "OpenGL Version: ~A~%" (gl:gl-version))
+      (iup:show-xy dialog iup:+center+ iup:+center+)
+      (iup:main-loop))))
+
+(defparameter *image-close*
+  #(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
+    0 0 0 1 1 1 1 1 1 1 1 1 1 0 0 0
+    0 0 0 1 1 1 1 1 1 1 1 1 1 0 0 0
+    0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0))
+
+(defparameter *image-open*
+  #(0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 1 1 1 1 1 1 1 1 1 1 0 0 0
+    0 0 0 1 1 1 1 1 1 1 1 1 1 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0))
 
 (defun load-image-tecgraf ()
   (iup:image-rgba
@@ -122,199 +312,10 @@
      255 0 255 0 108 107 207 84 101 100 195 255 86 85 170 255 83 82 164 255 80 79 159 255 77 77 154 255 74 74 148 255 71 71 143 255 68 68 137 255 65 65 131 255 60 59 120 255 60 59 120 255 57 57 114 255 55 54 110 255 255 0 255 0
      255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0 255 0)))
 
-(defvar *use-model-matrix-p* nil)
-(defvar *model-matrix-view* (cffi:foreign-alloc :double :count 16 :initial-element 0d0))
-
-(defun init ()
-  (gl:clear-color 1 1 1 0)
-  (gl:matrix-mode :projection)
-  (gl:load-identity)
-  (glu:perspective 45 1 1 10)
-  (gl:matrix-mode :modelview)
-  (gl:load-identity)
-  (glu:look-at .5 .5 3 .5 .5 0 0 1 1)
-  (gl:enable :depth-test)
-  (gl:clear-depth 1)
-  (when *use-model-matrix-p*
-    (%gl:load-matrix-d *model-matrix-view*)))
-
-(defun draw-cube ()
-  (gl:clear :color-buffer-bit :depth-buffer-bit)
-  (gl:clear-color 1 1 1 1))
-
-(cffi:defcallback action-cb :int ((handle iup-cffi::ihandle))
-  (iup-gl:make-current handle)
-  (init)
-  (draw-cube)
-  (iup-gl:swap-buffers handle)
-  iup::+default+)
-
-(cffi:defcallback button-action-cb :int ((handle iup-cffi::ihandle))
-  iup::+default+)
-
-(cffi:defcallback toggle-action-cb :int ((handle iup-cffi::ihandle) (state :int))
-  iup::+default+)
-
-(cffi:defcallback link-action-cb :int ((handle iup-cffi::ihandle) (url :string))
-  iup::+default+)
-
-(cffi:defcallback val-action-cb :int ((handle iup-cffi::ihandle))
-  iup::+default+)
-
-(cffi:defcallback expand-cb :int ((handle iup-cffi::ihandle))
-  iup::+default+)
-
-(cffi:defcallback extrabutton-cb :int ((handle iup-cffi::ihandle) (pressed :int))
-  iup::+default+)
-
-(cffi:defcallback button-cb :int ((handle iup-cffi::ihandle) (pressed :int) (x :int) (y :int) (status :pointer))
-  iup::+default+)
-
-(cffi:defcallback motion-cb :int ((handle iup-cffi::ihandle) (pressed :int) (x :int) (y :int) (status :pointer))
-  iup::+default+)
-
-(cffi:defcallback repaint-cb :int ((handle iup-cffi::ihandle) (pressed :int) (x :int) (y :int) (status :pointer))
-  iup::+default+)
-
-(defun glcontrols ()
-  (iup:with-iup ()
-    (iup-gl:open)
-    (iup-glcontrols:open)
-    (iup-controls:open)
-    (let* ((image-open (iup:image 16 16 +image-open+ :0 "BGCOLOR" :1 "192 192 192"))
-	   (image-close (iup:image 16 16 +image-close+ :0 "BGCOLOR" :1 "192 192 192"))
-	   (image-high (iup:image 16 16 +image-close+ :1 "192 192 192"))
-	   (glabel (iup-glcontrols:label :title "Label"
-					 :fgcolor "255 255 255"
-					 :font "Arial, 18"
-					 :image (load-image-tecgraf)))
-	   (gbutton1 (iup-glcontrols:button :title "Button"
-					    :padding "5x5"
-					    :action 'button-action-cb
-					    :name "button1"
-					    :tip "Button Tip"))
-	   (gbutton2 (iup-glcontrols:button :padding "5x5"
-					    :action 'button-action-cb
-					    :name "button2"
-					    :image (load-image-file-save)))
-	   (gtoggle (iup-glcontrols:toggle :title "Toggle"
-					   :padding "5x5"
-					   :action 'toggle-action-cb
-					   :name "toggle"))
-	   (gtoggle1 (iup-glcontrols:toggle :padding "5x5"
-					    :action 'toggle-action-cb
-					    :name "toggle"
-					    :image (load-image-test)))
-	   (gtoggle2 (iup-glcontrols:toggle :padding "5x5"
-					    :action 'toggle-action-cb
-					    :name "toggle"
-					    :image (load-image-test)))
-	   (gsep1 (iup-glcontrols:separator))
-	   (glink (iup-glcontrols:link :url "http://www.tecgraf.puc-rio.br/iup"
-				       :title "IUP Toolkit"
-				       :action 'link-action-cb))
-	   (pbar1 (iup-glcontrols:progress-bar :value 0.3 :show_text "YES"))
-	   (gval1 (iup-glcontrols:val :value 0.3
-				      :valuechanged_cb 'val-action-cb
-				      :progressbar pbar1
-				      :name "val1"
-				      :tip "Val Tip"
-				      :show_text "YES"))
-	   (hbox (iup:hbox (list glabel gsep1 gbutton1 gtoggle glink pbar1 gval1)
-			   :alignment "ACENTER"
-			   :margin "5x5"
-			   :gap "5"))
-	   (pbar2 (iup-glcontrols:progress-bar :value 0.3 :orientation "VERTICAL"))
-	   (gval2 (iup-glcontrols:val :value 0.3
-				      :orientation "VERTICAL"
-				      :valuechanged_cb 'val-action-cb
-				      :progressbar pbar2
-				      :name "val2"))
-	   (gsep2 (iup-glcontrols:separator))
-	   (vbox (iup:vbox (list gbutton2
-				 gsep2
-				 (iup:radio (iup:vbox (list gtoggle1 gtoggle2)) :margin "0x0")
-				 pbar2
-				 gval2)
-			   :alignment "ACENTER"
-			   :margin "5x5"
-			   :gap "5"))
-	   (gtoggle5 (iup-glcontrols:toggle :title "Toggle"
-					    :padding "5x5"
-					    :action 'toggle-action-cb
-					    :name "toggle5"
-					    :checkmark "YES"))
-	   (gtoggle3 (iup-glcontrols:toggle :title "Radio Toggle"
-					    :padding "5x5"
-					    :action 'toggle-action-cb
-					    :name "toggle3"
-					    :checkmark "YES"))
-	   (gtoggle4 (iup-glcontrols:toggle :title "Radio Toggle"
-					    :padding "5x5"
-					    :image (load-image-test)
-					    :action 'toggle-action-cb
-					    :name "toggle4"
-					    :checkmark "YES"))
-	   (vbox2 (iup:vbox (list (iup:radio (iup:vbox (list gtoggle3 gtoggle4)) :margin "0x0")
-				  gtoggle5)))
-	   (gsbox (iup-glcontrols:size-box (iup-glcontrols:scroll-box vbox2 :rastersize "90x90")))
-	   (gframe1 (iup-glcontrols:frame hbox :title "Frame1"))
-	   (gframe2 (iup-glcontrols:frame vbox :backcolor "250 250 160" :framecolor "250 250 160") )
-	   (gframe3 (iup-glcontrols:frame gsbox :title "Frame3"
-						:titlebox "YES"
-						:moveable "YES"
-						:position "550,200"))
-	   (gexp1 (iup-glcontrols:expander gframe1 :title "Expander"
-						   :horizontalalign "ACENTER"
-						   :verticalalign "ATOP"
-						   :moveable "YES"
-						   :action 'expand-cb
-						   :extrabuttons 3
-						   :extrabutton_cb 'extrabutton-cb
-						   :imageextra1 image-close
-						   :imageextrapress1 image-open
-						   :imageextrahighlight1 image-high
-						   :imageextra2 image-close
-						   :imageextrapress2 image-open
-						   :imageextrahighlight2 image-high
-						   :imageextra3 image-close
-						   :imageextrapress3 image-open
-						   :imageextrahighlight3 image-high
-						   ))
-	   (gexp2 (iup-glcontrols:expander gframe2 :barposition "LEFT"
-						   :horizontalalign "ALEFT"
-						   :verticalalign "ACENTER"))
-	   (text (iup:text :value "Text"))
-	   (matrix (loop with matrix = (iup-controls:matrix :numlin 3
-							    :numcol 2
-							    :numlin_visible 3
-							    :numcol_visible 2
-							    :scrollbar "NO")
-			 for i from 0 to 3
-			 do (loop for j from 0 to 3
-				  do (setf (iup:attribute-id-2 matrix :value i j)
-					   (* i j)))
-			 finally (return matrix)))
-	   (vbox3 (iup-glcontrols:frame (iup:vbox (list text matrix)) :title "Frame4" :moveable "YES" :position "250,350"))
-	   (canvas (iup-glcontrols:canvas-box (list gexp1 gexp2 gframe3 vbox3)
-					      :depth_size 16
-					      :action 'action-cb
-					      :button_cb 'button-cb
-					      :motion_cb 'motion-cb
-					      :buffer "DOUBLE"
-					      :margin "10x10"))
-	   (dialog (iup:dialog
-		    (iup:vbox (list canvas))
-		    :title "IUPGLControls Test"
-		    :rastersize "800x600")))
-      (iup:set-global :globallayoutdlgkey "YES")
-      (iup:map dialog)
-      (iup-gl:make-current canvas)
-      (format t "Version: ~A~%" (gl:gl-version))
-      (iup:show-xy dialog iup:+center+ iup:+center+)
-      (iup:main-loop))))
-	    
-#+nil
+#+sbcl
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)
   (glcontrols))
+
+#-sbcl
+(glcontrols)
