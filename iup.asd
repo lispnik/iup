@@ -10,21 +10,22 @@
    (:module "iup"
     :serial t
     :components ((:file "packages")
-		 (:file "constants")
-		 (:file "callback")
-		 (:file "classes")
-		 (:file "config")
-		 (:file "attributes")
-		 (:file "status")
-		 (:file "masks")
-		 (:file "globals")
-		 (:file "iup"))))
+                 (:file "constants")
+                 (:file "callback")
+                 (:file "classes")
+                 (:file "config")
+                 (:file "attributes")
+                 (:file "status")
+                 (:file "masks")
+                 (:file "globals")
+                 (:file "misc")
+                 (:file "iup"))))
   :depends-on (#:iup-cffi
-	       #:iup-utils
-	       #:cffi
-	       #:alexandria
-	       #:serapeum
-	       #:genhash
-	       #:trivial-arguments
-	       #:split-sequence
-	       #:parse-number))
+               #:iup-utils
+               #:cffi
+               #:alexandria
+               #:serapeum
+               #:genhash
+               #:trivial-arguments
+               #:split-sequence
+               #:parse-number))
