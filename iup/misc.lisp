@@ -6,7 +6,7 @@
   (cl:list :iup-version (iup:version)
            :iup-version-date (iup:version-date)
            :driver (iup:global :driver)
-           #+linux :gtkversion #+linux (iup:global :gtkversion)
+           #+linux :gtk-version #+linux (iup:global :gtkversion)
            :system (iup:global :system)
            :system-version (iup:global :systemversion)
            :lisp-implementation-type (lisp-implementation-type)
