@@ -1,6 +1,6 @@
 (defpackage #:iup-cffi
   (:use #:common-lisp
-	#:alexandria))
+        #:alexandria))
 
 (in-package #:iup-cffi)
 
@@ -11,17 +11,16 @@
 
 (cffi:use-foreign-library iup)
 
-(cffi:define-foreign-type ihandle ()
-  ()
-  (:actual-type :pointer)
-  (:simple-parser ihandle))
+(pffft:define-foreign-pointer-wrapper ihandle)
 
-(defmethod cffi:translate-from-foreign (value (type ihandle))
-  (unless (cffi:null-pointer-p value)
-    value))
-
-(defmethod cffi:translate-to-foreign (value (type ihandle))
-  (or value (cffi:null-pointer)))
+(defmethod print-object ((object ihandle) stream)
+  (print-unreadable-object (object stream :type t)
+    (let ((pointer (pffft:pointer object)))
+      (if (cffi:null-pointer-p pointer)
+          (write-string "NULL" stream)
+          (format stream "~S ~X"
+                  (iup-cffi::%iup-get-class-name object)
+                  (cffi:pointer-address pointer))))))
 
 (defun attr-name-from-c (value)
   (if (cffi:null-pointer-p value) nil value))
@@ -29,9 +28,9 @@
 (defun attr-name-to-c (value)
   (if value
       (etypecase value
-	(symbol (symbol-name value))
-	(string value)
-	(integer (write-to-string value)))
+        (symbol (symbol-name value))
+        (string value)
+        (integer (write-to-string value)))
       (cffi:null-pointer)))
 
 (cffi:defctype attr-name
@@ -517,7 +516,7 @@
 (cffi:defcfun (%iup-config-copy "IupConfigCopy") :void
   (from-handle ihandle)
   (to-handle ihandle)
-  (exclude-prefix :pointer))		;FIXME in wrapper, can be nullable
+  (exclude-prefix :pointer))            ;FIXME in wrapper, can be nullable
 
 ;; void IupConfigSetListVariable(Ihandle* ih, const char *group, const char* key, const char* value, int add);
 
