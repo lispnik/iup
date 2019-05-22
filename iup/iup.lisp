@@ -33,7 +33,6 @@
 (defalias redraw                  #'iup-cffi::%iup-redraw)
 (defalias refresh                 #'iup-cffi::%iup-refresh)
 (defalias refresh-children        #'iup-cffi::%iup-refresh-children)
-(defalias play-input              #'iup-cffi::%iup-play-input)
 (defalias version                 #'iup-cffi::%iup-version)
 (defalias version-date            #'iup-cffi::%iup-version-date)
 (defalias version-number          #'iup-cffi::%iup-version-number)
