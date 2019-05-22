@@ -69,7 +69,7 @@
 		     for ref = (cffi:mem-aref array :pointer i)
 		     until (cffi:null-pointer-p ref)
 		     collect (make-keyword (cffi:foreign-string-to-lisp ref))))
-	  (foreign-free array))))))
+	  (cffi:foreign-free array))))))
 
 (defun class-attributes (classname)
   (classname-names classname #'iup-cffi::%iup-get-class-attributes))

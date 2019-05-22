@@ -13,7 +13,7 @@
                  (:file "constants")
                  (:file "callback")
                  (:file "classes")
-                 (:file "config")
+;;                 (:file "config")
                  (:file "attributes")
                  (:file "status")
                  (:file "masks")
