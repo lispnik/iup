@@ -160,7 +160,11 @@
                (loop for c in ,(case children
                                  (:child-many 'children)
                                  (:child-none nil)
-                                 (otherwise '(cl:list child)))
+                                 (otherwise (if (= 1 children)
+                                                '(cl:list child)
+                                                (cons 'cl:list
+                                                      (loop for i from 0 below children
+                                                            collect (intern (format nil "CHILD~A" (1+ i))))))))
                      do (iup-cffi::%iup-append ,handle c))
                (when-let ((handlename (getf attributes :handlename)))
                  (setf (iup:handle handlename) ,handle))
