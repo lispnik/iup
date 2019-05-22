@@ -120,7 +120,17 @@
 	   (image-class (image-class classname))
 	   (fixed-args (if image-class '(width height pixels) nil))
 	   (constructor-args (if image-class '(width height pixels) (cl:list classname)))
-	   (class-constructor (or (image-class classname) 'iup-cffi::%iup-create)))
+	   (class-constructor (or (image-class classname) 'iup-cffi::%iup-create))
+           (key-args (mapcar #'(lambda (attribute)
+                                 (let ((symbol (intern (getf attribute :name) (find-package package))))
+                                   (if (or (has-flag-p attribute :iupaf-no-defaultvalue)
+                                           (not (getf attribute :default-value)))
+                                       symbol
+                                       (cl:list symbol (getf attribute :default-value)))))
+                             attributes))
+           (key-args-names (mapcar #'(lambda (key-arg)
+                                       (if (consp key-arg) (car key-arg) key-arg))
+                                   key-args)))
       (with-gensyms (handle)
         `(progn
            (defun ,classname-symbol
@@ -133,14 +143,8 @@
                                    (loop for i from 0 below children
                                          collect (intern (format nil "CHILD~A" (1+ i)))))))
                 &rest attributes
-                &key ,@(mapcar #'(lambda (attribute)
-                                   (let ((symbol (intern (getf attribute :name) (find-package package))))
-                                     (if (or (has-flag-p attribute :iupaf-no-defaultvalue)
-                                             (not (getf attribute :default-value)))
-                                         symbol
-                                         (cl:list symbol (getf attribute :default-value)))))
-                               attributes)
-                  ,@callback-names)
+                &key ,@key-args ,@callback-names)
+             (declare (ignore ,@key-args-names ,@callback-names))
              (let ((,handle (,class-constructor ,@constructor-args)))
                (loop for (attribute value) on attributes by #'cddr
                      do (if (member attribute ',(mapcar #'(lambda (attribute)
