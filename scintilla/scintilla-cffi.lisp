@@ -1,5 +1,6 @@
 (defpackage #:iup-scintilla-cffi
-  (:use #:common-lisp))
+  (:use #:common-lisp)
+  (:import-from #:tecgraf-base #:ihandle))
 
 (in-package #:iup-scintilla-cffi)
 
@@ -13,7 +14,7 @@
 (cffi:defcfun (%iup-scintilla-open "IupScintillaOpen") :void)
 
 (cffi:defcfun (%iup-scintilla-send-message "IupScintillaSendMessage") :pointer
-  (handle iup-cffi::ihandle)
+  (handle ihandle)
   (message :unsigned-int)
   (wparam :pointer)
   (lparam :pointer))

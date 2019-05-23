@@ -1,5 +1,6 @@
 (defpackage #:iup-gl-cffi
-  (:use #:common-lisp))
+  (:use #:common-lisp)
+  (:import-from #:tecgraf-base #:ihandle))
 
 (in-package #:iup-gl-cffi)
 
@@ -13,23 +14,23 @@
 (cffi:defcfun (%iup-gl-canvas-open "IupGLCanvasOpen") :void)
 
 (cffi:defcfun (%iup-gl-make-current "IupGLMakeCurrent") :void
-  (handle iup-cffi::ihandle))
+  (handle ihandle))
 
 (cffi:defcfun (%iup-gl-is-current "IupGLIsCurrent") :boolean
-  (handle iup-cffi::ihandle))
+  (handle ihandle))
 
 (cffi:defcfun (%iup-gl-swap-buffers "IupGLSwapBuffers") :void
-  (handle iup-cffi::ihandle))
+  (handle ihandle))
 
 (cffi:defcfun (%iup-gl-palette "IupGLPalette") :void
-  (handle iup-cffi::ihandle)
+  (handle ihandle)
   (index :int)
   (r :float)
   (g :float)
   (b :float))
 
 (cffi:defcfun (%iup-gl-use-font "IupGLUseFont") :void
-  (handle iup-cffi::ihandle)
+  (handle ihandle)
   (first :int)
   (count :int)
   (list-base :int))

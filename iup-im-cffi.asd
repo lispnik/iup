@@ -3,4 +3,5 @@
   :components ((:file "im-cffi"))
   :depends-on (#:im-cffi
 	       #:iup-cffi
+               #:tecgraf-base
 	       #:cffi))

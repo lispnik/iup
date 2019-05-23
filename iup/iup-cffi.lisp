@@ -1,6 +1,7 @@
 (defpackage #:iup-cffi
   (:use #:common-lisp
-        #:alexandria))
+        #:alexandria)
+  (:import-from #:tecgraf-base #:ihandle))
 
 (in-package #:iup-cffi)
 
@@ -10,8 +11,6 @@
   (t (:default "iup")))
 
 (cffi:use-foreign-library iup)
-
-(pffft:define-foreign-pointer-wrapper ihandle)
 
 (defmethod print-object ((object ihandle) stream)
   (print-unreadable-object (object stream :type t)
@@ -291,7 +290,7 @@
 
 ;; int       IupClassMatch(Ihandle* ih, const char* classname);
 
-(cffi:defcfun (%iup-create "IupCreate") iup-cffi::ihandle
+(cffi:defcfun (%iup-create "IupCreate") ihandle
   (classname :string))
 
 ;; /* IupImage utility */
