@@ -1,5 +1,6 @@
 (defpackage #:iup-im-cffi
-  (:use #:common-lisp))
+  (:use #:common-lisp)
+  (:import-from #:tecgraf-base #:ihandle))
 
 (in-package #:iup-im-cffi)
 
@@ -10,18 +11,18 @@
 
 (cffi:use-foreign-library iup-im)
 
-(cffi:defcfun (%iup-im-load-image "IupLoadImage") iup-cffi::ihandle
+(cffi:defcfun (%iup-im-load-image "IupLoadImage") ihandle
   (filename :string))
 
 (cffi:defcfun (%iup-im-save-image "IupSaveImage") :int
-  (handle iup-cffi::ihandle)
+  (handle ihandle)
   (filename :string)
   (format :string))
 
-(cffi:defcfun (%iup-im-load-animation "IupLoadAnimation") iup-cffi::ihandle
+(cffi:defcfun (%iup-im-load-animation "IupLoadAnimation") ihandle
   (filename :string))
 
-(cffi:defcfun (%iup-im-load-animation-frames "IupLoadAnimation") iup-cffi::ihandle
+(cffi:defcfun (%iup-im-load-animation-frames "IupLoadAnimation") ihandle
   (filename-list :string)
   (filename-count :int))
 
@@ -34,9 +35,9 @@
   (handle im-cffi::im-image))
 
 (cffi:defcfun (%iup-im-iup-image-from-im-image "IupImageFromImImage")
-    iup-cffi::ihandle
+    ihandle
   (handle im-cffi::im-image))
 
 (cffi:defcfun (%iup-im-iup-image-to-im-image "IupImageToImImage")
     im-cffi::im-image
-  (handle iup-cffi::ihandle))
+  (handle ihandle))

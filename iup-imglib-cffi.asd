@@ -2,4 +2,5 @@
   :pathname "imglib"
   :components ((:file "imglib-cffi"))
   :depends-on (#:iup-cffi
+               #:tecgraf-base
 	       #:cffi))

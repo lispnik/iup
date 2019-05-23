@@ -2,4 +2,5 @@
   :pathname "controls/"
   :components ((:file "controls-cffi"))
   :depends-on (#:iup-cffi
+               #:tecgraf-base
 	       #:cffi))

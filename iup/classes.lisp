@@ -10,7 +10,7 @@
     (#\V . :pointer)    ;*void
     (#\C . :pointer)    ;*cdCanvas
     (#\v . :pointer)    ;FIXME Asked about this on mailing list, confirmed it should be "C"
-    (#\n . :pointer)))  ;*Ihandle
+    (#\n . tecgraf-base:ihandle)))
 
 (defun class-callback-name (classname callback-name package)
   (intern (format nil "~:@(~A-~A~)" classname callback-name) package))
@@ -55,7 +55,7 @@
                          for s = (assoc-value *iup-callback-encoding* c :test #'char=)
                          for arg = (intern (format nil "ARG~A" i))
                          collect (cl:list arg s) into arg-list
-                         finally (return (list* '(arg0 :pointer) arg-list))))
+                         finally (return (list* '(arg0 tecgraf-base:ihandle) arg-list))))
          (return-and-arg-list (cl:list return-type arg-list))
          (callback-name (class-callback-name classname name package)))
     `(cffi:defcallback ,callback-name ,@return-and-arg-list
