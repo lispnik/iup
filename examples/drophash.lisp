@@ -39,10 +39,11 @@
       (iup:main-loop))))
 
 (defun drop-files-callback (handle filename num x y)
-  (let ((digest-hex 
+  (let* ((digest
+          (intern (iup:attribute (iup:handle "list") :valuestring) "IRONCLAD"))
+        (digest-hex 
 	  (ironclad:byte-array-to-hex-string 
-	   (ironclad:digest-file
-	    (read-from-string (iup:attribute (iup:handle "list") :valuestring))
+	   (ironclad:digest-file digest
 	    filename))))
     (setf (iup:attribute (iup:handle "results") :append)
 	  (format nil "~A	~A" filename digest-hex)))
