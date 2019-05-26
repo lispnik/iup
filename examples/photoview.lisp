@@ -10,30 +10,32 @@
 (defun photoview ()
   (iup:with-iup ()
     (let* ((timer (iup:timer :action_cb 'timer-callback
-                             :time 30))
+                             :time 2000))
            (label (iup:flat-label :expand :yes :handlename "label"))
            (dialog (iup:dialog
                     label
                     :customframe :yes
-                    ;;                               :opacity 255
                     :size "320x200"
-                    ;;                               :topmost :yes
+                    ;;:topmost :yes
                     :handlename "dialog")))
       (iup:show dialog)
+      (timer-callback nil)
       (setf (iup:attribute timer :run) :yes)
-      (iup:main-loop))))
+      (iup:main-loop)
+      (setf (iup:attribute timer :run) :no))))
 
 (defun timer-callback (handle)
   (handler-case
-      (let* ((images (alexandria:shuffle (find-photos)))
-             (image (car images))
-             (image-handle (iup-im:load-image (namestring image)))
+      (let* ((image-pathnames (alexandria:shuffle (find-photos)))
+             (image-pathname (car image-pathnames))
+             (image-handle (iup-im:load-image image-pathname))
              (label (iup:handle "label")))
-        (setf (iup:handle "image") image-handle)
-        (setf (iup:attribute label :image) "image")
-        (iup:redraw (iup:handle "dialog")))
+        (when (iup:handle "image")
+          (iup:destroy (iup:handle "image")))
+        (setf (iup:handle "image") image-handle
+              (iup:attribute label :image) "image"))
     (t (c)
-      (format t "~&Error reading next image, ignoring...~A~%" c)
+      (format t "~&Error reading next image, ignoring... ~A~%" c)
       (force-output)))
   iup:+default+)
 
