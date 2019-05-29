@@ -1,5 +1,5 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "iup-im" "uiop")))
+  (ql:quickload '("iup" "iup-im" "im" "uiop")))
 
 (defpackage #:iup-examples.photoview
   (:use #:common-lisp)
@@ -9,13 +9,13 @@
 
 (defun photoview ()
   (iup:with-iup ()
-    (let* ((timer (iup:timer :action_cb 'timer-callback
-                             :time 2000))
+    (let* ((timer (iup:timer :action_cb 'timer-callback :time 2000))
            (label (iup:flat-label :expand :yes :handlename "label"))
            (dialog (iup:dialog
                     label
                     :customframe :yes
-                    :size "320x200"
+                    :opacity 255
+;;                    :size "320x200"
                     ;;:topmost :yes
                     :handlename "dialog")))
       (iup:show dialog)
@@ -28,12 +28,16 @@
   (handler-case
       (let* ((image-pathnames (alexandria:shuffle (find-photos)))
              (image-pathname (car image-pathnames))
+             (im-image-source (iup-im:load- ))
              (image-handle (iup-im:load-image image-pathname))
-             (label (iup:handle "label")))
+             (label (iup:handle "label"))
+             (dialog (iup:handle "dialog")))
         (when (iup:handle "image")
           (iup:destroy (iup:handle "image")))
         (setf (iup:handle "image") image-handle
-              (iup:attribute label :image) "image"))
+              (iup:attribute label :image) "image"
+              (iup:attribute dialog :size) (iup:attribute (iup:handle "image") :size))
+        (iup:refresh dialog))
     (t (c)
       (format t "~&Error reading next image, ignoring... ~A~%" c)
       (force-output)))
