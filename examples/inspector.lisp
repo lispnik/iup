@@ -28,15 +28,13 @@
                                  (iup:attribute handle :numcol) 2
                                  (iup:attribute handle "0:1") "Place"
                                  (iup:attribute handle "0:2") "Value"
+                                 (iup:attribute handle "1:1") "CAR"
+                                 (iup:attribute handle "2:1") "CDR"
                                  (iup:attribute-id handle :alignment 1) :aleft
                                  (iup:attribute-id handle :alignment 2) :aleft
                                  (iup:attribute-id handle :alignmentlin 0) :aleft)
-                           (setf (iup:attribute handle "1:1") "CAR"
-                                 (iup:attribute handle "2:1") "CDR")
-                           (setf (iup:attribute handle "1:2")
-                                 (princ-to-string (car object))
-                                 (iup:attribute handle "2:2")
-                                 (write-to-string (cdr object) :pretty nil))
+                           (setf (iup:attribute handle "1:2") (write-to-string (car object))
+                                 (iup:attribute handle "2:2") (write-to-string (cdr object)))
                            handle))))
 
 (defun make-list-detector ()
@@ -56,7 +54,51 @@
                            (loop :for i :from 0 :below length
                                  :for l :from 1
                                  :do (setf (iup:attribute handle (format nil "~A:1" l)) i
-                                           (iup:attribute handle (format nil "~A:2" l)) (elt object i)))
+                                           (iup:attribute handle (format nil "~A:2" l)) (write-to-string (elt object i))))
+                           handle))))
+
+(defun make-alist-detector ()
+  (make-instance 'detector
+                 :title "&Alist"
+                 :test-function #'(lambda (object)
+                                    (and (listp object)
+                                         (every #'consp object)))
+                 :view (lambda (object)
+                         (let* ((length (length object))
+                                (handle (iup-controls:matrix :resizematrix :yes
+                                                             :numcol 2
+                                                             :numlin length)))
+                           (setf (iup:attribute handle "0:1") "Attribute"
+                                 (iup:attribute handle "0:2") "Value"
+                                 (iup:attribute-id handle :alignment 1) :aleft
+                                 (iup:attribute-id handle :alignment 2) :aleft
+                                 (iup:attribute-id handle :alignmentlin 0) :aleft)
+                           (loop for ((car . cdr)) on object
+                                 for l from 1
+                                 do (setf (iup:attribute handle (format nil "~A:1" l)) (write-to-string car)
+                                          (iup:attribute handle (format nil "~A:2" l)) (write-to-string cdr)))
+                           handle))))
+
+(defun make-plist-detector ()
+  (make-instance 'detector
+                 :title "&Plist"
+                 :test-function #'(lambda (object)
+                                    (and (listp object)
+                                         (evenp (length object))))
+                 :view (lambda (object)
+                         (let* ((length (length object))
+                                (handle (iup-controls:matrix :resizematrix :yes
+                                                             :numcol 2
+                                                             :numlin (/ length 2))))
+                           (setf (iup:attribute handle "0:1") "Attribute"
+                                 (iup:attribute handle "0:2") "Value"
+                                 (iup:attribute-id handle :alignment 1) :aleft
+                                 (iup:attribute-id handle :alignment 2) :aleft
+                                 (iup:attribute-id handle :alignmentlin 0) :aleft)
+                           (loop for (car cdr) on object by #'cddr
+                                 for l from 1
+                                 do (setf (iup:attribute handle (format nil "~A:1" l)) (write-to-string car)
+                                          (iup:attribute handle (format nil "~A:2" l)) (write-to-string cdr)))
                            handle))))
 
 (defun make-vector-detector ()
@@ -140,6 +182,13 @@
                                                                         (write-to-string (aref object (1- line) (1- column))))
                                                            iup:+default+))))
                              handle))))
+
+(defun make-string-detector ()
+  (make-instance 'detector
+                 :title "&String"
+                 :test-function #'stringp
+                 :view (lambda (object)
+                         ())))
 (defun inspector ()
   (iup:with-iup ()
     (iup-controls:open)
@@ -147,12 +196,19 @@
     (let* ((detectors (list
                        (make-cons-detector)
                        (make-list-detector)
+                       (make-alist-detector)
+                       (make-plist-detector)
                        (make-vector-detector)
                        (make-list-plotting-detector)
                        (make-2d-array-detector)
                        (make-2d-array-plotting-detector)))
            (object
-             (let ((array #2A ((1 2 3 3)
+             '(:foo "bar" :baz 43)
+             #+nil '(("foo" . "bar")
+               ("baz" 42)
+               ("quux")
+               (:key . :value))
+             #+nil (let ((array #2A ((1 2 3 3)
                                (1 2 3 3)
                                (1 2 3 3)
                                (1 2 3 3))))
