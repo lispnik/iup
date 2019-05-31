@@ -7,6 +7,8 @@
 
 (in-package #:iup-examples.inspector)
 
+;;; https://core.ac.uk/download/pdf/4404837.pdf
+
 (defclass detector ()
   ((title :initarg :title :reader title)
    (test-function :initarg :test-function :reader test-function)
@@ -81,11 +83,63 @@
                                     (and (listp object) (every #'realp object)))
                  :view (lambda (object)
                          (let ((handle (iup-plot:plot)))
-                           ;; (iup-plot:with-plot (handle)
-                           ;;   (loop for i from 0
-                           ;;         for e in object
-                           ;;         do (iup-plot:add handle i e)))
+                           (iup-plot:with-plot (handle)
+                             (loop for i from 0
+                                   for e in object
+                                   do (iup-plot:add handle i e)))
                            handle))))
+
+(defun make-2d-array-detector ()
+  (make-instance 'detector
+                 :title "&Matrix"
+                 :test-function #'(lambda (object)
+                                    (and (arrayp object)
+                                         (= 2 (array-rank object))
+                                         (loop for i below (array-total-size object)
+                                               always (realp (row-major-aref object i)))))
+                 :view #'(lambda (object)
+                           (let* ((numcol (elt (array-dimensions object) 1))
+                                  (numlin (elt (array-dimensions object) 0))
+                                  (handle (iup-controls:matrix :numcol numcol :numlin numlin)))
+                             (loop for i below numlin
+                                   for l = (1+ i)
+                                   do (setf (iup:attribute handle (format nil "~A:0" l)) i))
+                             (loop for j below numcol
+                                   for c = (1+ j)
+                                   do (setf (iup:attribute handle (format nil "0:~A" c)) j
+                                            (iup:attribute-id handle :alignment c) :aright))
+                             (loop for i below (elt (array-dimensions object) 0)
+                                   for l = (1+ i)
+                                   do (loop for j below (elt (array-dimensions object) 1)
+                                            for c = (1+ j)
+                                            do (setf (iup:attribute handle (format nil "~A:~A" l c))
+                                                     (aref object i j))))
+                             handle))))
+
+(defun make-2d-array-plotting-detector ()
+  (make-instance 'detector
+                 :title "&Plot"
+                 :test-function #'(lambda (object)
+                                    (and (arrayp object)
+                                         (= 2 (array-rank object))
+                                         (loop for i below (array-total-size object)
+                                               always (realp (row-major-aref object i)))))
+                 :view #'(lambda (object)
+                           (let ((handle (iup-controls:cells
+                                          :ncols_cb (lambda (handle) (elt (array-dimensions object) 1))
+                                          :nlines_cb (lambda (handle) (elt (array-dimensions object) 0))
+                                          :draw_cb (lambda (handle i j xmin xmax ymin ymax canvas)
+                                                     ;; FIXME put a nice gradient scale here
+                                                     (ecase (random 2)
+                                                       (1 (setf (cd:foreground canvas) cd:+white+))
+                                                       (0 (setf (cd:foreground canvas) cd:+blue+)))
+                                                     (cd:box canvas xmin xmax ymin ymax)
+                                                     iup:+default+)
+                                          :mouseclick_cb (lambda (handle button pressed line column x y status)
+                                                           (iup:message (format nil "Value at ~A, ~A" (1- line) (1- column))
+                                                                        (write-to-string (aref object (1- line) (1- column))))
+                                                           iup:+default+))))
+                             handle))))
 (defun inspector ()
   (iup:with-iup ()
     (iup-controls:open)
@@ -95,13 +149,22 @@
                        (make-list-detector)
                        (make-vector-detector)
                        (make-list-plotting-detector)
-                       ))
-           (object (loop for i from 0 below (* 2 pi) by 0.1
+                       (make-2d-array-detector)
+                       (make-2d-array-plotting-detector)))
+           (object
+             (let ((array #2A ((1 2 3 3)
+                               (1 2 3 3)
+                               (1 2 3 3)
+                               (1 2 3 3))))
+               (loop for i below (array-total-size array)
+                     do (setf (row-major-aref array i) (* (row-major-aref array i) (random 1.0)))
+                     finally (return array)))
+             #+nil (loop for i from 0 below (* 2 pi) by 0.1
                          collect (cos i))
              #+nil (iup-im:load-image (asdf:system-relative-pathname "iup" "examples/lispalien.ico"))
-                   #+nil *features*
-                   #+nil '(1.0 2 #C (4 5.0))
-                   #+nil (make-array 4 :initial-contents (list 1 "matthew" 2 3)))
+             #+nil *features*
+             #+nil '(1.0 2 #C (4 5.0))
+             #+nil (make-array 4 :initial-contents (list 1 "matthew" 2 3)))
            (applicable-detectors (print (remove-if-not #'(lambda (detector)
                                                            (funcall (test-function detector) object))
                                                        detectors)))
