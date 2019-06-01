@@ -1,5 +1,5 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "iup-controls" "im" "iup-im" "iup-plot")))
+  (ql:quickload '("iup" "iup-controls" "im" "iup-im" "iup-plot" "closer-mop")))
 
 (defpackage #:iup-examples.inspector
   (:use #:common-lisp)
@@ -183,12 +183,75 @@
                                                            iup:+default+))))
                              handle))))
 
+(defun make-package-detector ()
+  (make-instance 'detector
+                 :title "&Package"
+                 :test-function #'packagep
+                 :view #'(lambda (object)
+                           (with-package-iterator (iterator object :internal :external)
+                             (loop
+                               (multiple-value-bind
+                                     (more-p symbol accessibility package)
+                                   (iterator)
+                                 (if more-p
+                                     (print (list more-p symbol accessibility package))
+                                     (return)))))
+
+                           (let ((handle (iup-controls:matrix :numcol 2)))
+
+                             handle))))
+
 (defun make-string-detector ()
   (make-instance 'detector
                  :title "&String"
                  :test-function #'stringp
                  :view (lambda (object)
-                         ())))
+                         (iup:label :title "TBD"))))
+
+(defun make-class-detector ()
+  (make-instance 'detector
+                 :title "&Class"
+                 :test-function #'c2cl:classp
+                 :view (lambda (object)
+                         (iup:label :title "TBD"))))
+
+(defclass vec2 ()
+  ((x :initarg :x :initform 0.0 :type single-float :reader x :reader a)
+   (y :initarg :y :accessor y)))
+
+(defclass pos (vec2)
+  ((label :initarg :label :reader label)))
+
+(defclass ship ()
+  ((pos :type pos)
+   (dir :type vec2)))
+
+(defun make-class-slots-detector ()
+  (make-instance 'detector
+                 :title "&Slots"
+                 :test-function #'c2cl:classp
+                 :view (lambda (object)
+                         (let* ((class-slots (c2mop:class-direct-slots object))
+                                (handle (iup-controls:matrix :numlin (length class-slots)
+                                                             :numcol 7))
+                                (slot-metadata '(("Name" c2mop:slot-definition-name)
+                                                 ("Type" c2mop:slot-definition-type)
+                                                 ("Readers" c2mop:slot-definition-readers)
+                                                 ("Writers" c2mop:slot-definition-writers)
+                                                 ("Initargs" c2mop:slot-definition-initargs)
+                                                 ("Initforms" c2mop:slot-definition-initform)
+                                                 ("Allocation" c2mop:slot-definition-allocation))))
+                           (loop for ((heading function)) on slot-metadata
+                                 for c from 1
+                                 do (setf (iup:attribute handle (format nil "0:~A" c)) heading))
+                           (loop for slot-definition in class-slots
+                                 for r from 1
+                                 do (loop for ((heading function))  on slot-metadata
+                                          for c from 1
+                                          do (setf (iup:attribute-id handle :alignment c) :aleft
+                                                   (iup:attribute handle (format nil "~A:~A" r c)) (write-to-string (funcall function slot-definition)))))
+                           handle))))
+
 (defun inspector ()
   (iup:with-iup ()
     (iup-controls:open)
@@ -201,9 +264,15 @@
                        (make-vector-detector)
                        (make-list-plotting-detector)
                        (make-2d-array-detector)
-                       (make-2d-array-plotting-detector)))
+                       (make-2d-array-plotting-detector)
+                       (make-package-detector)
+                       (make-string-detector)
+                       (make-class-detector)
+                       (make-class-slots-detector)))
            (object
-             '(:foo "bar" :baz 43)
+             (find-class 'ship)
+             #+nil (find-package "ALEXANDRIA")
+             #+nil '(:foo "bar" :baz 43)
              #+nil '(("foo" . "bar")
                ("baz" 42)
                ("quux")
@@ -227,11 +296,14 @@
            (views (mapcar #'(lambda (detector)
                               (funcall (view detector) object))
                           applicable-detectors))
-           (dialog (iup:dialog (loop with tabs = (iup:tabs views)
-                                     for detector in applicable-detectors
-                                     for i from 0
-                                     do (setf (iup:attribute-id tabs :tabtitle i) (title detector))
-                                     finally (return tabs))
+           (vbox (iup:vbox (list (loop with tabs = (iup:tabs views)
+                                                for detector in applicable-detectors
+                                                for i from 0
+                                                do (setf (iup:attribute-id tabs :tabtitle i) (title detector))
+                                       finally (return tabs))
+                                 (iup:label :title (format nil "Inspecting ~S" object)
+                                            :expand :horizontal))))
+           (dialog (iup:dialog vbox
                                :title "Inspector, World!")))
       (iup:show dialog)
       (iup:main-loop))))
