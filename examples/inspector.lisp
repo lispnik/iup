@@ -21,7 +21,9 @@
     (remf matrix-ex-args :column-default-alignment)
     (let* ((handle (apply #'iup-controls:matrix-ex matrix-ex-args)))
       (setf (iup:attribute-id handle :alignmentlin 0) :aleft
-            (iup:attribute handle :resizematrix) :yes)
+            (iup:attribute handle :resizematrix) :yes
+            (iup:attribute handle :limitexpand) :yes
+            (iup:attribute handle :numcol_visible_last) :yes)
       (loop for header in headers
             for c from 1
             do (setf
@@ -363,15 +365,14 @@
            (views (mapcar #'(lambda (detector)
                               (funcall (view detector) object))
                           applicable-detectors))
-           (vbox (iup:vbox (list (loop with tabs = (iup:tabs views)
+           (vbox (iup:vbox (list (loop with tabs = (iup:tabs views :expand :vertical)
                                        for detector in applicable-detectors
                                        for i from 0
                                        do (setf (iup:attribute-id tabs :tabtitle i) (title detector))
                                        finally (return tabs))
                                  (iup:label :title (format nil "Inspecting ~S" object)
                                             :expand :horizontal))))
-           (dialog (iup:dialog vbox
-                               :title "Inspector, World!")))
+           (dialog (iup:dialog vbox :title "Inspector, World!")))
       (iup:show dialog)
       (iup:main-loop))))
 
