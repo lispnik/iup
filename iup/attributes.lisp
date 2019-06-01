@@ -48,14 +48,14 @@
   new-value)
 
 (defun attribute-id-2 (handle attribute line column &optional (type 'string))
-  (let ((value (iup-cffi::%iup-get-attribute-id-2 handle attribute line column)))
+  (let ((value (iup-cffi::%iup-get-attribute-id-2 handle (or attribute "") line column)))
     (ecase type
       (number (parse-number:parse-number value))
       (string value))))
 
 (defun (setf attribute-id-2) (new-value handle attribute line column)
   (iup-cffi::%iup-set-str-attribute-id-2
-   handle attribute line column (if new-value (princ-to-string new-value) (cffi:null-pointer)))
+   handle (or attribute "") line column (if new-value (princ-to-string new-value) (cffi:null-pointer)))
   new-value)
 
 (defun classname-names (classname name-producer)
