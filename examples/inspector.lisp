@@ -7,7 +7,6 @@
 
 (in-package #:iup-examples.inspector)
 
-
 ;;; https://core.ac.uk/download/pdf/4404837.pdf
 
 (defclass detector ()
@@ -22,7 +21,6 @@
     (let* ((handle (apply #'iup-controls:matrix-ex matrix-ex-args)))
       (setf (iup:attribute-id handle :alignmentlin 0) :aleft
             (iup:attribute handle :resizematrix) :yes
-            (iup:attribute handle :limitexpand) :yes
             (iup:attribute handle :numcol_visible_last) :yes)
       (loop for header in headers
             for c from 1
@@ -190,6 +188,35 @@
                                    (iup:attribute-id-2 handle nil 3 1) "Uses"
                                    (iup:attribute-id-2 handle nil 4 1) "Used by")
                              handle))))
+
+(defun format-engineering (stream x)
+  (let* ((base (log (abs x) 10))
+         (scale (1+ (round (mod base 3))))
+         (format-string (format nil "~~,,,~DE" scale)))
+    (format stream format-string x)))
+
+(defun make-float-detector ()
+  (make-instance 'detector
+                 :title "&Float"
+                 :test-function #'floatp
+                 :view #'(lambda (object)
+                           (let ((handle (create-matrix :numcol 2 :numlin 8 :headers '("Attribute" "Value"))))
+                             (multiple-value-bind
+                                   (significand exponent sign)
+                                 (decode-float object)
+                               (loop for label in '("Type" "Scientific" "Engineering" "Sign" "Significand" "Exponent" "Precision" "Digits")
+                                     for r from 1
+                                     do (setf (iup:attribute-id-2 handle nil r 1) label))
+                               (setf (iup:attribute-id-2 handle nil 1 2) (write-to-string (type-of object))
+                                     (iup:attribute-id-2 handle nil 2 2) (princ-to-string (format nil "~E" object))
+                                     (iup:attribute-id-2 handle nil 3 2) (princ-to-string (format-engineering nil object))
+                                     (iup:attribute-id-2 handle nil 4 2) sign
+                                     (iup:attribute-id-2 handle nil 5 2) significand
+                                     (iup:attribute-id-2 handle nil 6 2) exponent
+                                     (iup:attribute-id-2 handle nil 7 2) (float-precision object)
+                                     (iup:attribute-id-2 handle nil 8 2) (float-digits object)))
+                             handle))))
+
 (defun make-package-symbols-detector ()
   (make-instance 'detector
                  :title "&Symbols"
@@ -262,13 +289,13 @@
                                                  ("Allocation" c2mop:slot-definition-allocation))))
                            (loop for ((heading function)) on slot-metadata
                                  for c from 1
-                                 do (setf (iup:attribute handle (format nil "0:~A" c)) heading))
+                                 do (setf (iup:attribute-id-2 handle nil 0 c) heading))
                            (loop for slot-definition in class-slots
                                  for r from 1
-                                 do (loop for ((heading function))  on slot-metadata
+                                 do (loop for ((heading function)) on slot-metadata
                                           for c from 1
                                           do (setf (iup:attribute-id handle :alignment c) :aleft
-                                                   (iup:attribute handle (format nil "~A:~A" r c)) (write-to-string (funcall function slot-definition)))))
+                                                   (iup:attribute-id-2 handle nil r c) (write-to-string (funcall function slot-definition)))))
                            handle))))
 
 (defun make-integer-detector ()
@@ -323,6 +350,7 @@
     (let* ((detectors (list
                        (make-integer-detector)
                        (make-complex-detector)
+                       (make-float-detector)
                        (make-cons-detector)
                        (make-list-detector)
                        (make-alist-detector)
@@ -358,14 +386,18 @@
              #+nil *features*
              #+nil '(1.0 2 #C (4 5.0))
              #+nil (make-array 4 :initial-contents (list 1 "matthew" 2 3))
-              most-negative-fixnum)
+             #+nil most-negative-fixnum
+             ;;             #c(4 3)
+             #+nil (- 220.0)
+             most-positive-long-float
+             )
            (applicable-detectors (print (remove-if-not #'(lambda (detector)
                                                            (funcall (test-function detector) object))
                                                        detectors)))
            (views (mapcar #'(lambda (detector)
                               (funcall (view detector) object))
                           applicable-detectors))
-           (vbox (iup:vbox (list (loop with tabs = (iup:tabs views :expand :vertical)
+           (vbox (iup:vbox (list (loop with tabs = (iup:tabs views)
                                        for detector in applicable-detectors
                                        for i from 0
                                        do (setf (iup:attribute-id tabs :tabtitle i) (title detector))
