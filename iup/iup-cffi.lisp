@@ -538,7 +538,8 @@
 (cffi:defcfun (%iup-layout-dialog "IupLayoutDialog") ihandle
   (dialog ihandle))
 
-;; Ihandle* IupElementPropertiesDialog(Ihandle* elem);
+(cffi:defcfun (%iup-element-properties-dialog "IupElementPropertiesDialog") ihandle
+  (element ihandle))
 
 (cffi:defcfun (%iup-image "IupImage") ihandle
   (width :int)

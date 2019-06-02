@@ -31,6 +31,7 @@
 	   #:get-parent
 	   #:get-dialog
 	   #:get-dialog-child
+           #:children
 	   #:reparent
 	   #:popup
 	   #:show
@@ -93,6 +94,7 @@
 	   #:handle
 	   #:platform
 
+           #:element-properties-dialog
 	   #:layout-dialog)
   (:shadow #:open
 	   #:close

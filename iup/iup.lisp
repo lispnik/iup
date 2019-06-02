@@ -67,3 +67,9 @@
 (defalias alarm         #'iup-cffi::%iup-alarm)
 
 (defalias layout-dialog #'iup-cffi::%iup-layout-dialog)
+(defalias element-properties-dialog #'iup-cffi::%iup-element-properties-dialog)
+
+(defun children (handle)
+  (let ((count (get-child-count handle)))
+    (loop for pos below count
+          collect (get-child handle pos))))
