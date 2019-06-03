@@ -1,18 +1,49 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "iup-controls" "im" "iup-im" "iup-plot" "closer-mop" "cl-prime-maker" "serapeum")))
+  (ql:quickload '("iup" "iup-controls" "im" "iup-im" "iup-plot" "closer-mop" "cl-prime-maker" "alexandria" "serapeum")))
 
 (defpackage #:iup-examples.inspector
-  (:use #:common-lisp)
-  (:export #:inspector))
+  (:use #:common-lisp
+	#:alexandria
+	#:serapeum)
+  (:export #:inspect
+	   #:inspect
+	   #:*registered-detectors*
+	   #:define-detector)
+  (:import-from #:cl-prime-maker #:primep)
+  (:shadow #:inspect))
 
 (in-package #:iup-examples.inspector)
 
 ;;; https://core.ac.uk/download/pdf/4404837.pdf
 
+(defvar *registered-detectors-plist* nil
+  "Plist of currently registered detectors.")
+
 (defclass detector ()
-  ((title :initarg :title :reader title)
-   (test-function :initarg :test-function :reader test-function)
-   (view :initarg :view :reader view)))
+  ((name :initarg :name
+	 :reader name)
+   (title :initarg :title
+	  :reader title)
+   (test-function :initarg :test-function
+		  :reader test-function)
+   (view-function :initarg :view-function
+		  :reader view-function)))
+
+(defmacro define-detector ((name title) &body body &key test-function view-function)
+  (declare (ignore body))
+  (let ((detector (gensym))
+	(detector-name (gensym)))
+    `(let* ((,detector-name ',name)
+	    (,detector
+	      (make-instance 'detector
+			     :title ,title
+			     :name ,detector-name
+			     :test-function ,test-function
+			     :view-function ,view-function)))
+       (if (getf *registered-detectors-plist* ,detector-name)
+	   (setf (getf *registered-detectors-plist* ,detector-name) ,detector)
+	   (appendf *registered-detectors-plist* (list ,detector-name ,detector)))
+       ,detector-name)))
 
 (defun create-matrix (&rest rest &key headers (column-default-alignment :aleft) &allow-other-keys)
   (let ((matrix-ex-args (copy-list rest)))
@@ -30,339 +61,414 @@
       handle)))
 
 (defun write-briefly (object &rest rest &key &allow-other-keys)
-  (apply #'write-to-string object (append rest '(:level 2 :lines 1))))
+  (apply #'write-to-string
+	 object
+	 (append rest '(:level 2 :lines 1))))
 
-(defun make-cons-detector ()
-  (make-instance 'detector
-                 :title "&Cons"
-                 :test-function #'consp
-                 :view (lambda (object)
-                         (let ((handle (create-matrix :numlin 2 :numcol 2 :headers '("Place" "Value"))))
-                           (setf (iup:attribute-id-2 handle nil 1 1) "CAR"
-                                 (iup:attribute-id-2 handle nil 2 1) "CDR"
-                                 (iup:attribute-id handle :alignment 1) :aleft
-                                 (iup:attribute-id handle :alignment 2) :aleft)
-                           (setf (iup:attribute-id-2 handle nil 1 2) (write-briefly (car object))
-                                 (iup:attribute-id-2 handle nil 2 2) (write-briefly (cdr object)))
-                           handle))))
+(defvar *unbound-label* "")
 
-(defun make-list-detector ()
-  (make-instance 'detector
-                 :title "&List"
-                 :test-function #'listp
-                 :view (lambda (object)
-                         (let* ((length (length object))
-                                (handle (create-matrix :numcol 2
-                                                       :numlin length
-                                                       :headers '("Index" "Value")
-                                                       :menucontext_cb (lambda (handle menu-handle lin col)
-                                                                         (iup:append menu-handle (iup:item :title "Holy crap"))
-;;                                                                         (iup:popup (iup:layout-dialog menu-handle) iup:+center+ iup:+center+)
-                                                                         #+nil (iup:message "hurray"
-                                                                                      ()
-                                                                                      (format nil "~A,~A,~A,~A,~A"
-                                                                                              handle
-                                                                                              menu-handle
-                                                                                              lin
-                                                                                              col
-                                                                                              (loop :for child :in (iup:children menu-handle)
-                                                                                                    :collect (cons child (iup:attribute child :name)))))
+(define-detector (:symbol-detector "&Symbol")
+  :test-function #'symbolp
+  :view-function
+  (lambda (symbol)
+    (let ((handle (create-matrix :numcol 2 :numlin 7 :headers '("Attribute" "Value"))))
+      (setf (iup:attribute-id-2 handle nil 1 1) "Name"
+	    (iup:attribute-id-2 handle nil 2 1) "Variable"
+	    (iup:attribute-id-2 handle nil 3 1) "Variable Documentation"
+	    (iup:attribute-id-2 handle nil 4 1) "Function"
+	    (iup:attribute-id-2 handle nil 5 1) "Function Documentation"
+	    (iup:attribute-id-2 handle nil 6 1) "Property List"
+	    (iup:attribute-id-2 handle nil 7 1) "Class"
+	    (iup:attribute-id-2 handle nil 8 1) "Type"
+	    (iup:attribute-id-2 handle nil 9 1) "Type Specifier"
+	    (iup:attribute-id-2 handle nil 1 2) (write-briefly (symbol-name symbol))
+	    (iup:attribute-id-2 handle nil 2 2) (if (boundp symbol)
+						    (write-briefly (symbol-value symbol))
+						    *unbound-label*)
+	    ;; (iup:attribute-id-2 handle nil 3 2) 
+	    ;; (iup:attribute-id-2 handle nil 4 2) (write-briefly (if (fboundp symbol)
+	    ;; 							   (symbol-function symbol)
+	    ;; 							   *unbound-label*))
+	    
+	    ;; (iup:attribute-id-2 handle nil 5 2) (write-briefly (ignore-errors (find-class symbol)))
+	    ;; (iup:attribute-id-2 handle nil 6 2) "TODO"
+	    ;; (iup:attribute-id-2 handle nil 7 2) "TODO"
+	    ;; (iup:attribute-id-2 handle nil 8 2) "TODO"
+	    )
+      handle)))
 
-                                                                         iup:+default+))))
-                           (setf (iup:attribute-id handle :alignment 1) :aleft
-                                 (iup:attribute-id handle :alignment 2) :aleft)
-                           (loop :for i :from 0 :below length
-                                 :for l :from 1
-                                 :do (setf (iup:attribute-id-2 handle nil l 1) i
-                                           (iup:attribute-id-2 handle nil l 2) (write-briefly (elt object i))))
-                           handle))))
+(define-detector (:cons-detector "&Cons")
+  :test-function #'consp
+  :view-function
+  (lambda (object)
+    (let ((handle (create-matrix :numcol 2 :numlin 2 :headers '("Place" "Value"))))
+      (setf (iup:attribute-id-2 handle nil 1 1) "CAR"
+	    (iup:attribute-id-2 handle nil 2 1) "CDR"
+	    (iup:attribute-id handle :alignment 1) :aleft
+	    (iup:attribute-id handle :alignment 2) :aleft)
+      (setf (iup:attribute-id-2 handle nil 1 2) (write-briefly (car object))
+	    (iup:attribute-id-2 handle nil 2 2) (write-briefly (cdr object)))
+      handle)))
 
-(defun make-alist-detector ()
-  (make-instance 'detector
-                 :title "&Alist"
-                 :test-function #'(lambda (object)
-                                    (and (listp object)
-                                         (every #'consp object)))
-                 :view (lambda (object)
-                         (let* ((length (length object))
-                                (handle (create-matrix :numcol 2 :numlin length :headers '("Attribute" "Value"))))
-                           (setf (iup:attribute-id handle :alignment 1) :aleft
-                                 (iup:attribute-id handle :alignment 2) :aleft)
-                           (loop :for ((car . cdr)) :on object
-                                 :for l :from 1
-                                 :do (setf (iup:attribute-id-2 handle nil l 1) (write-to-string car)
-                                           (iup:attribute-id-2 handle nil l 2) (write-to-string cdr)))
-                           handle))))
+(define-detector (:list-detector "&List")
+  :test-function #'proper-list-p
+  :view-function
+  (lambda (list)
+    (let* ((length
+	     (length list))
+	   (handle
+	     (create-matrix :numcol 2
+			    :numlin length
+			    :headers '("Index" "Value")
+			    :menucontext_cb (lambda (handle menu-handle lin col)
+					      (declare (ignore handle menu-handle lin col))
+					      iup:+default+))))
+      (setf (iup:attribute-id handle :alignment 1) :aleft
+	    (iup:attribute-id handle :alignment 2) :aleft)
+      (loop :for i :from 0 :below length
+	    :for l :from 1
+	    :for e in list
+	    :do (setf (iup:attribute-id-2 handle nil l 1) i
+		      (iup:attribute-id-2 handle nil l 2) (write-briefly e)))
+      handle)))
 
-(defun make-plist-detector ()
-  (make-instance 'detector
-                 :title "&Plist"
-                 :test-function #'(lambda (object)
-                                    (and (listp object)
-                                         (evenp (length object))))
-                 :view (lambda (object)
-                         (let* ((length (length object))
-                                (handle (create-matrix :numcol 2 :numlin (/ length 2) :headers '("Attribute" "Value"))))
-                           (setf (iup:attribute-id handle :alignment 1) :aleft
-                                 (iup:attribute-id handle :alignment 2) :aleft)
-                           (loop :for (car cdr) :on object :by #'cddr
-                                 :for l :from 1
-                                 :do (setf (iup:attribute-id-2 handle nil l 1) (write-briefly car)
-                                           (iup:attribute-id-2 handle nil l 2) (write-briefly cdr)))
-                           handle))))
+(define-detector (:plist-detector "&Plist")
+  :test-function 
+  (lambda (object) 
+    (and (listp object)
+	 (proper-list-p object)
+	 (evenp (length object))))
+  :view-function
+  (lambda (plist)
+    (let* ((length (length plist))
+	   (handle (create-matrix :numcol 2
+				  :numlin (/ length 2)
+				  :headers '("Attribute" "Value"))))
+      (setf (iup:attribute-id handle :alignment 1) :aleft
+	    (iup:attribute-id handle :alignment 2) :aleft)
+      (loop :for (key value) :on plist :by #'cddr
+	    :for l :from 1
+	    :do (setf (iup:attribute-id-2 handle nil l 1) (write-briefly key)
+		      (iup:attribute-id-2 handle nil l 2) (write-briefly value)))
+      handle)))
 
-(defun make-vector-detector ()
-  (make-instance 'detector
-                 :title "&Vector"
-                 :test-function #'vectorp
-                 :view (lambda (object)
-                         (let* ((length (length object))
-                                (handle (create-matrix :numcol 2 :numlin length :headers '("Index" "Value"))))
-                           (loop :for i :from 0 :below length
-                                 :for l :from 1
-                                 :for e :across object
-                                 :do (setf (iup:attribute-id-2 handle nil l 1) i
-                                           (iup:attribute-id-2 handle nil l 2) (write-briefly e)))
-                           handle))))
+(define-detector (:vector-detector "&Vector")
+  :test-function #'vectorp
+  :view-function
+  (lambda (vector)
+    (let* ((length (length vector))
+	   (handle (create-matrix :numcol 2 :numlin length :headers '("Index" "Value"))))
+      (loop :for i :from 0 :below length
+	    :for l :from 1
+	    :for e :across vector
+	    :do (setf (iup:attribute-id-2 handle nil l 1) i
+		      (iup:attribute-id-2 handle nil l 2) (write-briefly e)))
+      handle)))
 
-(defun make-list-plotting-detector ()
-  (make-instance 'detector
-                 :title "&Plot"
-                 :test-function #'(lambda (object) (and (listp object) (every #'realp object)))
-                 :view (lambda (object)
-                         (let ((handle (iup-plot:plot)))
-                           (iup-plot:with-plot (handle)
-                             (loop :for i :from 0
-                                   :for e :in object
-                                   :do (iup-plot:add handle i e)))
-                           handle))))
+(define-detector (:list-plotting-detector "&Plot")
+  :test-function
+  (lambda (object)
+    (and (proper-list-p object) (every #'realp object)))
+  :view-function
+  (lambda (list)
+    (let ((handle (iup-plot:plot)))
+      (iup-plot:with-plot (handle)
+	(loop :for i :from 0
+	      :for e :in list
+	      :do (iup-plot:add handle i e)))
+      handle)))
 
-(defun make-2d-array-detector ()
-  (make-instance 'detector
-                 :title "&Array"
-                 :test-function #'(lambda (object)
-                                    (and (arrayp object)
-                                         (= 2 (array-rank object))
-                                         (loop for i below (array-total-size object)
-                                               always (realp (row-major-aref object i)))))
-                 :view #'(lambda (object)
-                           (let* ((numcol (elt (array-dimensions object) 1))
-                                  (numlin (elt (array-dimensions object) 0))
-                                  (handle (create-matrix :numcol numcol :numlin numlin)))
-                             (loop :for i :below numlin
-                                   :for l = (1+ i)
-                                   :do (setf (iup:attribute-id-2 handle nil l 0) i))
-                             (loop :for j :below numcol
-                                   :for c = (1+ j)
-                                   :do (setf (iup:attribute-id-2 handle nil 0 c) j
-                                             (iup:attribute-id handle :alignment c) :aright))
-                             (loop :for i :below (elt (array-dimensions object) 0)
-                                   :for l = (1+ i)
-                                   :do (loop :for j :below (elt (array-dimensions object) 1)
-                                             :for c = (1+ j)
-                                             :do (setf (iup:attribute-id-2 handle nil l c) (write-briefly (aref object i j)))))
-                             handle))))
+(define-detector (:2d-array-detector "&Array") 
+  :test-function
+  (lambda (object)
+    (and (arrayp object)
+	 (= 2 (array-rank object))
+	 (loop for i below (array-total-size object)
+	       always (realp (row-major-aref object i)))))
+  :view-function
+  (lambda (object)
+    (let* ((numcol (elt (array-dimensions object) 1))
+	   (numlin (elt (array-dimensions object) 0))
+	   (handle (create-matrix :numcol numcol :numlin numlin)))
+      (loop :for i :below numlin
+	    :for l :from 1
+	    :do (setf (iup:attribute-id-2 handle nil l 0) i))
+      (loop :for j :below numcol
+	    :for c :from 1
+	    :do (setf (iup:attribute-id-2 handle nil 0 c) j
+		      (iup:attribute-id handle :alignment c) :aright))
+      (loop :for i :below (elt (array-dimensions object) 0)
+	    :for l :from 1
+	    :do (loop :for j :below (elt (array-dimensions object) 1)
+		      :for c :from 1
+		      :do (setf (iup:attribute-id-2 handle nil l c)
+				(write-briefly (aref object i j)))))
+      handle)))
 
-(defun make-2d-array-plotting-detector ()
-  (make-instance 'detector
-                 :title "&Plot"
-                 :test-function #'(lambda (object)
-                                    (and (arrayp object)
-                                         (= 2 (array-rank object))
-                                         (loop :for i :below (array-total-size object)
-                                               :always (realp (row-major-aref object i)))))
-                 :view #'(lambda (object)
-                           (let ((handle (iup-controls:cells
-                                          :ncols_cb (lambda (handle) (elt (array-dimensions object) 1))
-                                          :nlines_cb (lambda (handle) (elt (array-dimensions object) 0))
-                                          :draw_cb (lambda (handle i j xmin xmax ymin ymax canvas)
-                                                     ;; FIXME put a nice gradient scale here
-                                                     (ecase (random 2)
-                                                       (1 (setf (cd:foreground canvas) cd:+white+))
-                                                       (0 (setf (cd:foreground canvas) cd:+blue+)))
-                                                     (cd:box canvas xmin xmax ymin ymax)
-                                                     iup:+default+)
-                                          :mouseclick_cb (lambda (handle button pressed line column x y status)
-                                                           (iup:message (format nil "Value at ~A, ~A" (1- line) (1- column))
-                                                                        (write-to-string (aref object (1- line) (1- column))))
-                                                           iup:+default+))))
-                             handle))))
+(define-detector (:2d-array-plotting-detector "&Plot")
+  :test-function
+  (lambda (object)
+    (and (arrayp object)
+	 (= 2 (array-rank object))
+	 (loop :for i :below (array-total-size object)
+	       :always (realp (row-major-aref object i)))))
+  :view-function
+  (lambda (object)
+    (let ((handle
+	    (iup-controls:cells
+	     :ncols_cb (lambda (handle)
+			 (declare (ignore handle))
+			 (elt (array-dimensions object) 1))
+	     :nlines_cb (lambda (handle)
+			  (declare (ignore handle))
+			  (elt (array-dimensions object) 0))
+	     :draw_cb (lambda (handle i j xmin xmax ymin ymax canvas)
+			(declare (ignore handle i j))
+			;; FIXME put a nice gradient scale here
+			(ecase (random 2)
+			  (1 (setf (cd:foreground canvas) cd:+white+))
+			  (0 (setf (cd:foreground canvas) cd:+blue+)))
+			(cd:box canvas xmin xmax ymin ymax)
+			iup:+default+)
+	     :mouseclick_cb (lambda (handle button pressed line column x y status)
+			      (declare (ignore handle button pressed x y status))
+			      (iup:message
+			       (format nil "Value at ~A, ~A" (1- line) (1- column))
+			       (write-to-string (aref object (1- line) (1- column))))
+			      iup:+default+))))
+      handle)))
 
-(defun make-package-detector ()
-  (make-instance 'detector
-                 :title "&Package"
-                 :test-function #'packagep
-                 :view #'(lambda (object)
-                           (let ((handle
-                                   (create-matrix :numcol 2 :numlin 4 :headers '("Attribute" "Value")
-                                                  :map_cb #'(lambda (handle)
-                                                              (setf (iup:attribute-id-2 handle nil 1 2) (write-briefly (package-name object))
-                                                                    (iup:attribute-id-2 handle nil 2 2) (write-briefly (package-nicknames object))
-                                                                    (iup:attribute-id-2 handle nil 3 2) (write-briefly (package-use-list object))
-                                                                    (iup:attribute-id-2 handle nil 4 2) (write-briefly (package-used-by-list object)))
-                                                              iup:+default+))))
-                             (setf (iup:attribute-id-2 handle nil 1 1) "Name"
-                                   (iup:attribute-id-2 handle nil 2 1) "Nicknames"
-                                   (iup:attribute-id-2 handle nil 3 1) "Uses"
-                                   (iup:attribute-id-2 handle nil 4 1) "Used by")
-                             handle))))
+(define-detector (:package-detector "&Package")
+  :test-function #'packagep
+  :view-function
+  (lambda (object)
+    (let ((handle
+	    (create-matrix
+	     :numcol 2
+	     :numlin 4
+	     :headers '("Attribute" "Value")
+	     :map_cb #'(lambda (handle)
+			 (setf (iup:attribute-id-2 handle nil 1 2)
+			       (write-briefly (package-name object))
+			       (iup:attribute-id-2 handle nil 2 2)
+			       (write-briefly (package-nicknames object))
+			       (iup:attribute-id-2 handle nil 3 2)
+			       (write-briefly (package-use-list object))
+			       (iup:attribute-id-2 handle nil 4 2)
+			       (write-briefly (package-used-by-list object)))
+			 iup:+default+))))
+      (setf (iup:attribute-id-2 handle nil 1 1) "Name"
+	    (iup:attribute-id-2 handle nil 2 1) "Nicknames"
+	    (iup:attribute-id-2 handle nil 3 1) "Uses"
+	    (iup:attribute-id-2 handle nil 4 1) "Used by")
+      handle)))
 
-(defun make-float-detector ()
-  (flet ((format-engineering (stream x)
-           (let* ((base (log (abs x) 10))
-                  (scale (1+ (round (mod base 3))))
-                  (format-string (format nil "~~,,,~DE" scale)))
-             (format stream format-string x))))
-    (make-instance 'detector
-                   :title "&Float"
-                   :test-function #'floatp
-                   :view #'(lambda (object)
-                             (let ((handle (create-matrix :numcol 2 :numlin 8 :headers '("Attribute" "Value"))))
-                               (multiple-value-bind
-                                     (significand exponent sign)
-                                   (decode-float object)
-                                 (loop for label in '("Type" "Scientific" "Engineering" "Sign" "Significand" "Exponent" "Precision" "Digits")
-                                       for r from 1
-                                       do (setf (iup:attribute-id-2 handle nil r 1) label))
-                                 (setf (iup:attribute-id-2 handle nil 1 2) (write-briefly (type-of object))
-                                       (iup:attribute-id-2 handle nil 2 2) (princ-briefly (format nil "~E" object))
-                                       (iup:attribute-id-2 handle nil 3 2) (princ-briefly (format-engineering nil object))
-                                       (iup:attribute-id-2 handle nil 4 2) sign
-                                       (iup:attribute-id-2 handle nil 5 2) significand
-                                       (iup:attribute-id-2 handle nil 6 2) exponent
-                                       (iup:attribute-id-2 handle nil 7 2) (float-precision object)
-                                       (iup:attribute-id-2 handle nil 8 2) (float-digits object)))
-                               handle)))))
+(define-detector (:float-detector "&Float")
+  :test-function #'floatp
+  :view-function
+  (lambda (float)  
+    (flet ((format-engineering (stream x)
+	     (let* ((base (log (abs x) 10))
+		    (scale (1+ (round (mod base 3))))
+		    (format-string (format nil "~~,,,~DE" scale)))
+	       (format stream format-string x))))
+      (let ((handle (create-matrix :numcol 2 :numlin 8 :headers '("Attribute" "Value"))))
+	(multiple-value-bind
+	      (significand exponent sign)
+	    (decode-float float)
+	  (loop :for label :in '("Type"
+				 "Scientific"
+				 "Engineering"
+				 "Sign"
+				 "Significand"
+				 "Exponent"
+				 "Precision"
+				 "Digits")
+		:for r :from 1
+		:do (setf (iup:attribute-id-2 handle nil r 1) label))
+	  (setf (iup:attribute-id-2 handle nil 1 2) (write-briefly (type-of float))
+		(iup:attribute-id-2 handle nil 2 2) (format nil "~E" float)
+		(iup:attribute-id-2 handle nil 3 2) (format-engineering nil float)
+		(iup:attribute-id-2 handle nil 4 2) sign
+		(iup:attribute-id-2 handle nil 5 2) significand
+		(iup:attribute-id-2 handle nil 6 2) exponent
+		(iup:attribute-id-2 handle nil 7 2) (float-precision float)
+		(iup:attribute-id-2 handle nil 8 2) (float-digits float)))
+	handle))))
 
-(defun make-package-symbols-detector ()
-  (make-instance 'detector
-                 :title "&Symbols"
-                 :test-function #'packagep
-                 :view #'(lambda (object)
-                           (let ((handle
-                                   (create-matrix :numcol 3
-                                                  :headers '("Symbol" "Accessibility" "Package")
-                                                  :map_cb (lambda (handle)
-                                                            (with-package-iterator (iterator object :external :internal :inherited)
-                                                              (loop for r from 1
-                                                                    do (multiple-value-bind
-                                                                             (more-p symbol accessibility package)
-                                                                           (iterator)
-                                                                         (if more-p
-                                                                             (progn
-                                                                               (setf (iup:attribute handle :addlin) r)
-                                                                               (setf (iup:attribute-id-2 handle nil r 1) (write-to-string (symbol-name symbol))
-                                                                                     (iup:attribute-id-2 handle nil r 3) (write-to-string (package-name package))
-                                                                                     (iup:attribute-id-2 handle nil r 2) (write-to-string accessibility)))
-                                                                             (return)))))
-                                                            iup:+default+))))
-                             (setf (iup:attribute-id handle :alignment 1) :aleft
-                                   (iup:attribute-id handle :alignment 2) :aleft
-                                   (iup:attribute-id handle :alignment 3) :aleft)
-                             handle))))
+(define-detector (:package-symbols-detector "&Symbols")
+  :test-function #'packagep
+  :view-function
+  (lambda (package)
+    (let ((handle
+	    (create-matrix
+	     :numcol 3
+	     :headers '("Symbol" "Accessibility" "Package")
+	     :map_cb (lambda (handle)
+		       (with-package-iterator
+			   (iterator package :external :internal :inherited)
+			 (loop for r from 1
+			       do (multiple-value-bind
+					(more-p symbol accessibility package)
+				      (iterator)
+				    (if more-p
+					(progn
+					  (setf (iup:attribute handle :addlin) r
+						(iup:attribute-id-2 handle nil r 1)
+						(write-to-string (symbol-name symbol))
+						(iup:attribute-id-2 handle nil r 3)
+						(write-to-string (package-name package))
+						(iup:attribute-id-2 handle nil r 2)
+						(write-to-string accessibility)))
+					(return)))))
+		       iup:+default+))))
+      (setf (iup:attribute-id handle :alignment 1) :aleft
+	    (iup:attribute-id handle :alignment 2) :aleft
+	    (iup:attribute-id handle :alignment 3) :aleft)
+      handle)))
 
-(defun make-string-detector ()
-  (make-instance 'detector
-                 :title "&String"
-                 :test-function #'stringp
-                 :view (lambda (object)
-                         (iup:label :title "TBD"))))
+(define-detector (:string-detector "&String")
+  :test-function #'stringp
+  :view-function
+  (lambda (string)
+    (let ((handle (create-matrix :numcol 2 :numlin 3 :headers '("Attribute" "Value"))))
+      (setf (iup:attribute-id-2 handle nil 1 1) "Type"
+	    (iup:attribute-id-2 handle nil 2 1) "Length"
+	    (iup:attribute-id-2 handle nil 3 1) "Escaped (Lisp)"	    
+	    (iup:attribute-id-2 handle nil 4 1) "Uppercase"
+	    (iup:attribute-id-2 handle nil 5 1) "Lowercase"
+	    (iup:attribute-id-2 handle nil 6 1) "Capitalize"
+	    (iup:attribute-id-2 handle nil 1 2) (write-briefly (type-of string))
+	    (iup:attribute-id-2 handle nil 2 2) (length string)
+	    (iup:attribute-id-2 handle nil 3 2) (write-to-string string :escape t :lines 1)
+	    (iup:attribute-id-2 handle nil 4 2) (write-briefly (string-upcase string))
+	    (iup:attribute-id-2 handle nil 5 2) (write-briefly (string-downcase string))
+	    (iup:attribute-id-2 handle nil 6 2) (write-briefly (string-capitalize string)))
+      handle)))
 
-(defun make-class-detector ()
-  (make-instance 'detector
-                 :title "&Class"
-                 :test-function #'c2cl:classp
-                 :view (lambda (object)
-                         (iup:label :title "TBD"))))
+;; (defun make-class-detector ()
+;;   (make-instance 'detector
+;;                  :title "&Class"
+;;                  :test-function #'c2cl:classp
+;;                  :view (lambda (object)
+;;                          (iup:label :title "TBD"))))
 
-(defun make-class-precedence-list-detector ()
-  (make-instance 'detector
-                 :title "&Precendence"
-                 :test-function #'c2cl:classp
-                 :view (lambda (object)
-                         (let* ((precedence-list (c2mop:class-precedence-list (find-class 'c2mop:slot-definition)))
-                                (handle (create-matrix :numcol 1 :numlin (length precedence-list))))
-                           (setf (iup:attribute-id-2 handle nil 0 1) "Class"
-                                 (iup:attribute handle :fittotext) "C1")
-                           (loop for class in precedence-list
-                                 for r from 1
-                                 do (setf (iup:attribute-id-2 handle nil r 1) (write-briefly class)
-                                          (iup:attribute-id handle :alignment r) :aleft))
-                           handle))))
+;; (defun make-class-precedence-list-detector ()
+;;   (make-instance 'detector
+;;                  :title "&Precendence"
+;;                  :test-function #'c2cl:classp
+;;                  :view (lambda (object)
+;;                          (let* ((precedence-list (c2mop:class-precedence-list (find-class 'c2mop:slot-definition)))
+;;                                 (handle (create-matrix :numcol 1 :numlin (length precedence-list))))
+;;                            (setf (iup:attribute-id-2 handle nil 0 1) "Class"
+;;                                  (iup:attribute handle :fittotext) "C1")
+;;                            (loop for class in precedence-list
+;;                                  for r from 1
+;;                                  do (setf (iup:attribute-id-2 handle nil r 1) (write-briefly class)
+;;                                           (iup:attribute-id handle :alignment r) :aleft))
+;;                            handle))))
 
-(defun make-class-slots-detector ()
-  (make-instance 'detector
-                 :title "&Slots"
-                 :test-function #'c2cl:classp
-                 :view (lambda (object)
-                         (let* ((class-slots (c2mop:class-direct-slots object))
-                                (handle (create-matrix :numcol 7 :numlin (length class-slots)))
-                                (slot-metadata '(("Name" c2mop:slot-definition-name)
-                                                 ("Type" c2mop:slot-definition-type)
-                                                 ("Readers" c2mop:slot-definition-readers)
-                                                 ("Writers" c2mop:slot-definition-writers)
-                                                 ("Initargs" c2mop:slot-definition-initargs)
-                                                 ("Initform" c2mop:slot-definition-initform)
-                                                 ("Allocation" c2mop:slot-definition-allocation))))
-                           (loop for ((heading function)) on slot-metadata
-                                 for c from 1
-                                 do (setf (iup:attribute-id-2 handle nil 0 c) heading))
-                           (loop for slot-definition in class-slots
-                                 for r from 1
-                                 do (loop for ((heading function)) on slot-metadata
-                                          for c from 1
-                                          do (setf (iup:attribute-id handle :alignment c) :aleft
-                                                   (iup:attribute-id-2 handle nil r c) (write-briefly (funcall function slot-definition)))))
-                           handle))))
+;; (defun make-class-slots-detector ()
+;;   (make-instance 'detector
+;;                  :title "&Slots"
+;;                  :test-function #'c2cl:classp
+;;                  :view (lambda (object)
+;;                          (let* ((class-slots (c2mop:class-direct-slots object))
+;;                                 (handle (create-matrix :numcol 7 :numlin (length class-slots)))
+;;                                 (slot-metadata '(("Name" c2mop:slot-definition-name)
+;;                                                  ("Type" c2mop:slot-definition-type)
+;;                                                  ("Readers" c2mop:slot-definition-readers)
+;;                                                  ("Writers" c2mop:slot-definition-writers)
+;;                                                  ("Initargs" c2mop:slot-definition-initargs)
+;;                                                  ("Initform" c2mop:slot-definition-initform)
+;;                                                  ("Allocation" c2mop:slot-definition-allocation))))
+;;                            (loop for ((heading function)) on slot-metadata
+;;                                  for c from 1
+;;                                  do (setf (iup:attribute-id-2 handle nil 0 c) heading))
+;;                            (loop for slot-definition in class-slots
+;;                                  for r from 1
+;;                                  do (loop for ((heading function)) on slot-metadata
+;;                                           for c from 1
+;;                                           do (setf (iup:attribute-id handle :alignment c) :aleft
+;;                                                    (iup:attribute-id-2 handle nil r c) (write-briefly (funcall function slot-definition)))))
+;;                            handle))))
 
-(defun make-integer-detector ()
-  (make-instance 'detector
-                 :title "&Integer"
-                 :test-function #'integerp
-                 :view (lambda (object)
-                         (let* ((handle (create-matrix :numcol 2
-                                                       :numlin 5
-                                                       :headers '("Attribute" "Value")
-                                                       :map_cb #'(lambda (handle)
-                                                                   (when (and (plusp object) (serapeum:fixnump object))
-                                                                     (setf (iup:attribute handle :addlin) 6
-                                                                           (iup:attribute-id-2 handle nil 6 1) "Prime?"
-                                                                           (iup:attribute-id-2 handle nil 6 2) (write-briefly (cl-prime-maker:primep object))))
-                                                                   iup:+default+))))
-                           (setf (iup:attribute-id handle :alignment 2) :aright
-                                 (iup:attribute-id-2 handle nil 1 1) "Binary"
-                                 (iup:attribute-id-2 handle nil 2 1) "Octal"
-                                 (iup:attribute-id-2 handle nil 3 1) "Decimal"
-                                 (iup:attribute-id-2 handle nil 4 1) "Hexidecimal"
-                                 (iup:attribute-id-2 handle nil 5 1) "Length"
-                                 (iup:attribute-id-2 handle nil 1 2) (write-briefly object :radix t :base 2)
-                                 (iup:attribute-id-2 handle nil 2 2) (write-briefly object :radix t :base 8)
-                                 (iup:attribute-id-2 handle nil 3 2) (write-briefly object :base 10)
-                                 (iup:attribute-id-2 handle nil 4 2) (write-briefly object :radix t :base 16)
-                                 (iup:attribute-id-2 handle nil 5 2) (write-briefly (integer-length object)))
-                           handle))))
+(define-detector (:integer-detector "&Integer")
+  :test-function #'integerp
+  :view-function
+  (lambda (object)
+    (let* ((handle
+	     (create-matrix :numcol 2
+			    :numlin 5
+			    :headers '("Attribute" "Value")
+			    :map_cb (lambda (handle)
+					(when (and (plusp object) (serapeum:fixnump object))
+					  (setf (iup:attribute handle :addlin) 6
+						(iup:attribute-id-2 handle nil 6 1)
+						"Prime?"
+						(iup:attribute-id-2 handle nil 6 2)
+						(write-briefly (primep object))))
+					iup:+default+))))
+      (setf (iup:attribute-id-2 handle nil 1 1) "Binary"
+	    (iup:attribute-id-2 handle nil 2 1) "Octal"
+	    (iup:attribute-id-2 handle nil 3 1) "Decimal"
+	    (iup:attribute-id-2 handle nil 4 1) "Hexidecimal"
+	    (iup:attribute-id-2 handle nil 5 1) "Length"
+	    (iup:attribute-id-2 handle nil 1 2) (write-briefly object :radix t :base 2)
+	    (iup:attribute-id-2 handle nil 2 2) (write-briefly object :radix t :base 8)
+	    (iup:attribute-id-2 handle nil 3 2) (write-briefly object :base 10)
+	    (iup:attribute-id-2 handle nil 4 2) (write-briefly object :radix t :base 16)
+	    (iup:attribute-id-2 handle nil 5 2) (write-briefly (integer-length object)))
+      handle)))
 
+(define-detector (:complex-detector "&Complex")
+  :test-function #'complexp
+  :view-function
+  (lambda (object)
+    (let* ((handle (create-matrix :numcol 2 :numlin 5 :headers '("Component" "Value"))))
+      (setf (iup:attribute-id-2 handle nil 1 1) "Real"
+	    (iup:attribute-id-2 handle nil 2 1) "Imaginary"
+	    (iup:attribute-id-2 handle nil 3 1) "Magnitude)"
+	    (iup:attribute-id-2 handle nil 4 1) "Phase (radian)"
+	    (iup:attribute-id-2 handle nil 5 1) "Phase (degree)"
+	    (iup:attribute-id-2 handle nil 1 2) (realpart object)
+	    (iup:attribute-id-2 handle nil 2 2) (imagpart object)
+	    (iup:attribute-id-2 handle nil 3 2) (abs object)
+	    (iup:attribute-id-2 handle nil 4 2) (phase object)
+	    (iup:attribute-id-2 handle nil 5 2) (* (/ 180 pi) (phase object)))
+      handle)))
 
-(defun make-complex-detector ()
-  (make-instance 'detector
-                 :title "&Complex"
-                 :test-function #'complexp
-                 :view (lambda (object)
-                         (let* ((handle (create-matrix :numcol 2 :numlin 5 :headers '("Component" "Value"))))
-                           (setf (iup:attribute-id handle :alignment 2) :aright
-                                 (iup:attribute-id-2 handle nil 1 1) "Real"
-                                 (iup:attribute-id-2 handle nil 2 1) "Imaginary"
-                                 (iup:attribute-id-2 handle nil 3 1) "Magnitude)"
-                                 (iup:attribute-id-2 handle nil 4 1) "Phase (radian)"
-                                 (iup:attribute-id-2 handle nil 5 1) "Phase (degree)"
-                                 (iup:attribute-id-2 handle nil 1 2) (realpart object)
-                                 (iup:attribute-id-2 handle nil 2 2) (imagpart object)
-                                 (iup:attribute-id-2 handle nil 3 2) (abs object)
-                                 (iup:attribute-id-2 handle nil 4 2) (phase object)
-                                 (iup:attribute-id-2 handle nil 5 2) (* (/ 180 pi) (phase object)))
-                           handle))))
+(defvar *inspector-count* 0)
 
+(defun inspect (object)
+  (let* ((applicable-detectors
+	   (remove-if-not #'(lambda (detector)
+			      (funcall (test-function detector) object))
+			  (plist-values *registered-detectors-plist*)))
+	 (views
+	   (mapcar #'(lambda (detector)
+		       (funcall (view-function detector) object))
+		   applicable-detectors))
+	 (vbox
+	   (iup:vbox (list (loop :with tabs := (iup:tabs views)
+				 :for detector :in applicable-detectors
+				 :for i :from 0
+				 :do (setf (iup:attribute-id tabs :tabtitle i)
+					   (title detector))
+				 :finally (return tabs))
+			   (iup:label :title (format nil "Inspecting ~A"
+						     (write-briefly object))
+				      :expand :horizontal))))
+	 (dialog (iup:dialog vbox :title (format nil "Inspector ~A" *inspector-count*))))
+    (incf *inspector-count*)
+    (iup:show dialog)))
 
+(defun inspector-test ()
+  (iup:with-iup ()
+    (iup-controls:open)
+    (iup-plot:open)
+    (inspect 'cons)
+    (iup:main-loop)))
 
 (defvar *test-object*
   (list 
@@ -392,49 +498,9 @@
    (- 220.0)
    most-positive-long-float))
 
-(defun inspector ()
-  (iup:with-iup ()
-    (iup-controls:open)
-    (iup-plot:open)
-    (let* ((detectors (list
-                       (make-integer-detector)
-                       (make-complex-detector)
-                       (make-float-detector)
-                       (make-cons-detector)
-                       (make-list-detector)
-                       (make-alist-detector)
-                       (make-plist-detector)
-                       (make-vector-detector)
-                       (make-list-plotting-detector)
-                       (make-2d-array-detector)
-                       (make-2d-array-plotting-detector)
-                       (make-package-detector)
-                       (make-package-symbols-detector)
-                       (make-string-detector)
-                       (make-class-detector)
-                       (make-class-slots-detector)
-                       (make-class-precedence-list-detector)))
-           (object *test-object*)
-           (applicable-detectors (print (remove-if-not #'(lambda (detector)
-                                                           (funcall (test-function detector) object))
-                                                       detectors)))
-           (views (mapcar #'(lambda (detector)
-                              (funcall (view detector) object))
-                          applicable-detectors))
-           (vbox (iup:vbox (list (loop with tabs = (iup:tabs views)
-                                       for detector in applicable-detectors
-                                       for i from 0
-                                       do (setf (iup:attribute-id tabs :tabtitle i) (title detector))
-                                       finally (return tabs))
-                                 (iup:label :title (format nil "Inspecting ~A" (write-briefly object))
-                                            :expand :horizontal))))
-           (dialog (iup:dialog vbox :title "Inspector, World!")))
-      (iup:show dialog)
-      (iup:main-loop))))
-
-#-sbcl (inspector)
+#-sbcl (inspector-test)
 
 #+sbcl
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)
-  (inspector))
+  (inspector-test))
