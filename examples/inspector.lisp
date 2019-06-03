@@ -1,5 +1,5 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "iup-controls" "im" "iup-im" "iup-plot" "closer-mop" "cl-prime-maker" "alexandria" "serapeum")))
+  (ql:quickload '("iup" "iup-controls" "im" "iup-im" "iup-imglib" "iup-plot" "closer-mop" "cl-prime-maker" "alexandria" "serapeum")))
 
 (defpackage #:iup-examples.inspector
   (:use #:common-lisp
@@ -121,7 +121,12 @@
 			    :numlin length
 			    :headers '("Index" "Value")
 			    :menucontext_cb (lambda (handle menu-handle lin col)
-					      (declare (ignore handle menu-handle lin col))
+                                              (iup:insert menu-handle
+                                                          (iup:get-child menu-handle 0)
+                                                          (iup:item :title "Inspect"
+                                                                    :action (lambda (handle)
+                                                                              (inspect (elt list (1- lin)))
+                                                                              iup:+default+)))
 					      iup:+default+))))
       (setf (iup:attribute-id handle :alignment 1) :aleft
 	    (iup:attribute-id handle :alignment 2) :aleft)
@@ -467,7 +472,8 @@
   (iup:with-iup ()
     (iup-controls:open)
     (iup-plot:open)
-    (inspect 'cons)
+    (inspect (loop for i from 0 below (* 2 pi) by 0.1
+                   collect (cos i)))
     (iup:main-loop)))
 
 (defvar *test-object*
@@ -504,3 +510,21 @@
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)
   (inspector-test))
+
+;;; other ideas
+
+;;; inspectors for:
+;;; hashtable inspector
+;;; readtable inspector
+;;; filenames/pathnames
+;;; streams
+;;; ratio
+;;; hex dump like thing for arrays or 2d arrays of unsigned-bytes
+;;; cffi foregin pointers - hex dumps too?
+
+;;; context menu ideas
+
+;;; Inspect (same as double click)
+;;; Set value
+;;;  - same as in place edit, but takes expressions
+;;; Remove key (hash-table)
