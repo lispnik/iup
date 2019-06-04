@@ -112,6 +112,7 @@
 	    (iup:attribute-id handle :alignment 2) :aleft)
       (setf (iup:attribute-id-2 handle nil 1 2) (write-briefly (car object))
 	    (iup:attribute-id-2 handle nil 2 2) (write-briefly (cdr object)))
+      
       handle)))
 
 (define-detector (:list-detector "&List")
@@ -125,8 +126,9 @@
 			    :numlin length
 			    :headers '("Index" "Value")
 			    :menucontext_cb (lambda (handle menu-handle lin col)
-                                              (iup:insert menu-handle
-                                                          (iup:get-child menu-handle 0)
+                                              (loop :for handle in (iup:children menu-handle)
+                                                    :do (iup:detach handle))
+                                              (iup:append menu-handle
                                                           (iup:item :title "Inspect"
                                                                     :action (lambda (handle)
                                                                               (inspect (elt list (1- lin)))
@@ -149,10 +151,14 @@
 	 (evenp (length object))))
   :view-function
   (lambda (plist)
-    (let* ((length (length plist))
-	   (handle (create-matrix :numcol 2
-				  :numlin (/ length 2)
-				  :headers '("Attribute" "Value"))))
+    (let* ((length
+             (length plist))
+	   (handle
+             (create-matrix :numcol 2
+			    :numlin (/ length 2)
+			    :headers '("Attribute" "Value")
+                            :menucontext_cb (lambda (handle menu-handle lin col)
+                                              iup:+default+))))
       (setf (iup:attribute-id handle :alignment 1) :aleft
 	    (iup:attribute-id handle :alignment 2) :aleft)
       (loop :for (key value) :on plist :by #'cddr
@@ -449,7 +455,7 @@
 
 (defvar *inspector-count* 0)
 
-(defun inspect (object)
+(defun create-inspector (object)
   (let* ((applicable-detectors
 	   (remove-if-not #'(lambda (detector)
 			      (funcall (test-function detector) object))
@@ -469,12 +475,14 @@
 			   (iup:label :title (let ((*print-right-margin* *status-bar-length*)
 						   (*print-lines* 1))
 					       (with-output-to-string (stream)
-						 (write-string "Inspecting " stream)
 						 (pprint object stream)))
-				      :expand :horizontal))))
-	 (dialog (iup:dialog vbox :title (format nil "Inspector ~A" *inspector-count*))))
-    (incf *inspector-count*)
-    (iup:show dialog)))
+				      :expand :horizontal)))))
+    vbox))
+
+(defun inspect (object)
+  (let ((dialog (iup:dialog (create-inspector object) :title (format nil "Inspector ~A" *inspector-count*))))
+    (iup:show dialog)
+    (incf *inspector-count*)))
 
 (defun inspector-test ()
   (iup:with-iup ()
