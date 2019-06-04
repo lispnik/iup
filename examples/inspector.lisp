@@ -19,6 +19,10 @@
 (defvar *registered-detectors-plist* nil
   "Plist of currently registered detectors.")
 
+(defvar *status-bar-length* 80
+  "Length (in ems) for the status bar pretty-printed representation
+  for the object under inspection.")
+
 (defclass detector ()
   ((name :initarg :name
 	 :reader name)
@@ -53,11 +57,11 @@
       (setf (iup:attribute-id handle :alignmentlin 0) :aleft
             (iup:attribute handle :resizematrix) :yes
             (iup:attribute handle :numcol_visible_last) :yes)
-      (loop for header in headers
-            for c from 1
-            do (setf
-                (iup:attribute-id handle :alignment c) column-default-alignment
-                (iup:attribute-id-2 handle nil 0 c) header))
+      (loop :for header :in headers
+            :for c :from 1
+            :do (setf
+		 (iup:attribute-id handle :alignment c) column-default-alignment
+		 (iup:attribute-id-2 handle nil 0 c) header))
       handle)))
 
 (defun write-briefly (object &rest rest &key &allow-other-keys)
@@ -461,8 +465,12 @@
 				 :do (setf (iup:attribute-id tabs :tabtitle i)
 					   (title detector))
 				 :finally (return tabs))
-			   (iup:label :title (format nil "Inspecting ~A"
-						     (write-briefly object))
+			   ;; FIXME clean up pretty printing:
+			   (iup:label :title (let ((*print-right-margin* *status-bar-length*)
+						   (*print-lines* 1))
+					       (with-output-to-string (stream)
+						 (write-string "Inspecting " stream)
+						 (pprint object stream)))
 				      :expand :horizontal))))
 	 (dialog (iup:dialog vbox :title (format nil "Inspector ~A" *inspector-count*))))
     (incf *inspector-count*)
