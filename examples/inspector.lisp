@@ -15,6 +15,15 @@
 (in-package #:iup-examples.inspector)
 
 ;;; https://core.ac.uk/download/pdf/4404837.pdf
+;;;   - detectors/recognizers
+;;; http://scg.unibe.ch/archive/papers/Chis15a-MoldableInspector.pdf
+;;;   - view widgets, images
+;;; https://duckduckgo.com/?q=lispworks+inspector&t=hi&iax=images&ia=images
+;;;   - mutliple views of the same thing
+;;; https://duckduckgo.com/?q=acl+allegro+common+lisp+inspector&t=hi&iar=images&iax=images&ia=images
+;;;   - acl inspector
+;;; https://common-lisp.net/project/mcclim/static/documents/mcclim.pdf
+;;;   - section on extending the inspector, cons diagrams
 
 (defvar *registered-detectors-plist* nil
   "Plist of currently registered detectors.")
@@ -126,7 +135,7 @@
 			    :numlin length
 			    :headers '("Index" "Value")
 			    :menucontext_cb (lambda (handle menu-handle lin col)
-                                              (loop :for handle in (iup:children menu-handle)
+                                              (loop :for handle :in (iup:children menu-handle)
                                                     :do (iup:detach handle))
                                               (iup:append menu-handle
                                                           (iup:item :title "Inspect"
