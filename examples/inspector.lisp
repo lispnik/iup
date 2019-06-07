@@ -24,6 +24,8 @@
 ;;;   - acl inspector
 ;;; https://common-lisp.net/project/mcclim/static/documents/mcclim.pdf
 ;;;   - section on extending the inspector, cons diagrams
+;;; visual studio "visualizers"
+;;;   - e.g. https://marketplace.visualstudio.com/items?itemName=ILNumericsGmbH.ILNumericsArrayVisualizer
 
 (defvar *registered-detectors-plist* nil
   "Plist of currently registered detectors.")
@@ -118,39 +120,64 @@
       (setf (iup:attribute-id-2 handle nil 1 1) "CAR"
 	    (iup:attribute-id-2 handle nil 2 1) "CDR"
 	    (iup:attribute-id handle :alignment 1) :aleft
-	    (iup:attribute-id handle :alignment 2) :aleft)
-      (setf (iup:attribute-id-2 handle nil 1 2) (write-briefly (car object))
+	    (iup:attribute-id handle :alignment 2) :aleft
+            (iup:attribute-id-2 handle nil 1 2) (write-briefly (car object))
 	    (iup:attribute-id-2 handle nil 2 2) (write-briefly (cdr object)))
-      
       handle)))
+
+(defun create-context-menu (matrix-handle matrix-hash)
+  (lambda (handle menu-handle lin col)
+    (loop :for handle :in (iup:children menu-handle) :do (iup:destroy handle))
+    (let* ((key (cons lin col))
+           (object (gethash key matrix-hash 'not-found)))
+      (unless (eq object 'not-found)
+        (iup:append menu-handle
+                    (iup:item :title "&Inspect	Ctrl+I"
+                              :action (lambda (handle)
+                                        (let* ((dialog (iup:get-dialog handle))
+                                               (dialog-child (iup:get-child dialog 0)))
+                                          (iup:destroy dialog-child)
+                                          (let ((new-dialog-child (create-inspector object)))
+                                            (iup:append dialog new-dialog-child)
+                                            (iup:map new-dialog-child)
+                                            (iup:refresh new-dialog-child)))
+                                        iup:+default+)))
+        (iup:append menu-handle
+                    (iup:item :title "Inspect &New	Ctrl+Shift+I"
+                              :action (lambda (handle)
+                                        (inspect object)
+                                        iup:+default+))))
+      (iup:append menu-handle (iup:separator))
+      (iup:append menu-handle (iup:item :title "&Copy	Ctrl+C"
+                                        :action (lambda (handle)
+                                                  (setf (iup:attribute matrix-handle :copy) :marked)))))
+    iup:+default+))
 
 (define-detector (:list-detector "&List")
   :test-function #'proper-list-p
   :view-function
   (lambda (list)
-    (let* ((length
-	     (length list))
-	   (handle
-	     (create-matrix :numcol 2
-			    :numlin length
-			    :headers '("Index" "Value")
-			    :menucontext_cb (lambda (handle menu-handle lin col)
-                                              (loop :for handle :in (iup:children menu-handle)
-                                                    :do (iup:detach handle))
-                                              (iup:append menu-handle
-                                                          (iup:item :title "Inspect"
-                                                                    :action (lambda (handle)
-                                                                              (inspect (elt list (1- lin)))
-                                                                              iup:+default+)))
-					      iup:+default+))))
-      (setf (iup:attribute-id handle :alignment 1) :aleft
-	    (iup:attribute-id handle :alignment 2) :aleft)
-      (loop :for i :from 0 :below length
-	    :for l :from 1
-	    :for e in list
-	    :do (setf (iup:attribute-id-2 handle nil l 1) i
-		      (iup:attribute-id-2 handle nil l 2) (write-briefly e)))
-      handle)))
+    (let ((matrix-hash (make-hash-table)))
+      (loop :for object :in list
+            :for l from 1
+            :do (setf (gethash (cons l 2) matrix-hash)
+                      object))
+      (let* ((length
+               (length list))
+             (handle
+               (create-matrix :numcol 2
+                              :numlin length
+                              :headers '("Index" "Value"))))
+        (setf (iup:callback handle :menucontext_cb)
+              (create-context-menu handle matrix-hash))
+        (setf (iup:attribute-id handle :alignment 1) :aleft
+              (iup:attribute-id handle :alignment 2) :aleft)
+        (loop :for i :from 0 :below length
+              :for l :from 1
+              :for e in list
+              :do (setf (iup:attribute-id-2 handle nil l 1) i
+                        (iup:attribute-id-2 handle nil l 2) (write-briefly e)))
+        handle))))
 
 (define-detector (:plist-detector "&Plist")
   :test-function 
@@ -497,8 +524,7 @@
   (iup:with-iup ()
     (iup-controls:open)
     (iup-plot:open)
-    (inspect (loop for i from 0 below (* 2 pi) by 0.1
-                   collect (cos i)))
+    (inspect *test-object*)
     (iup:main-loop)))
 
 (defvar *test-object*
