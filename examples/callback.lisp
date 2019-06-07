@@ -26,7 +26,7 @@
         (iup:show dialog)
         (iup:main-loop))))
 
-#-sbcl (hello)
+#-sbcl (callback)
 
 #+sbcl
 (sb-int:with-float-traps-masked
