@@ -31,3 +31,6 @@
 (defun find-callback (name handle)
   (check-type handle tecgraf-base:ihandle)
   (genhash:hashref (make-callback :name name :handle handle) *registered-callbacks*))
+
+(defun unregister-all-callbacks ()
+  (genhash:hashclr *registered-callbacks*))

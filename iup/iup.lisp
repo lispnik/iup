@@ -15,6 +15,7 @@
   (unwind-protect
        (progn
 	 (funcall func))
+    (iup::unregister-all-callbacks)
     (iup:close)))
 
 (defmacro with-iup (() &body body)
