@@ -13,7 +13,8 @@
     (#\n . tecgraf-base:ihandle)))
 
 (defun class-callback-name (classname callback-name package)
-  (intern (format nil "~:@(~A-~A~)" classname callback-name) package))
+  (declare (ignore package))
+  (make-keyword (format nil "~:@(~A-~A~)" classname callback-name)))
 
 (defun check-callback-args (action args-list)
   (declare (ignore action args-list))
