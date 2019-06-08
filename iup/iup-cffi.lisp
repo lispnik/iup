@@ -222,7 +222,6 @@
   (handle ihandle)
   (name attr-name))
 
-
 (cffi:defcfun (%iup-get-function "IupGetFunction") :pointer
   (name attr-name))
 

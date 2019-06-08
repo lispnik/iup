@@ -12,6 +12,7 @@
     :components ((:file "packages")
                  (:file "constants")
                  (:file "callback")
+                 (:file "global-callback")
                  (:file "classes")
 ;;                 (:file "config")
                  (:file "attributes")
