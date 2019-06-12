@@ -1,6 +1,7 @@
 (defpackage #:iup-cffi
   (:use #:common-lisp
-	#:alexandria))
+        #:alexandria)
+  (:import-from #:tecgraf-base #:ihandle))
 
 (in-package #:iup-cffi)
 
@@ -11,17 +12,14 @@
 
 (cffi:use-foreign-library iup)
 
-(cffi:define-foreign-type ihandle ()
-  ()
-  (:actual-type :pointer)
-  (:simple-parser ihandle))
-
-(defmethod cffi:translate-from-foreign (value (type ihandle))
-  (unless (cffi:null-pointer-p value)
-    value))
-
-(defmethod cffi:translate-to-foreign (value (type ihandle))
-  (or value (cffi:null-pointer)))
+(defmethod print-object ((object ihandle) stream)
+  (print-unreadable-object (object stream :type t)
+    (let ((pointer (pffft:pointer object)))
+      (if (cffi:null-pointer-p pointer)
+          (write-string "NULL" stream)
+          (format stream "~S ~X"
+                  (iup-cffi::%iup-get-class-name object)
+                  (cffi:pointer-address pointer))))))
 
 (defun attr-name-from-c (value)
   (if (cffi:null-pointer-p value) nil value))
@@ -29,9 +27,9 @@
 (defun attr-name-to-c (value)
   (if value
       (etypecase value
-	(symbol (symbol-name value))
-	(string value)
-	(integer (write-to-string value)))
+        (symbol (symbol-name value))
+        (string value)
+        (integer (write-to-string value)))
       (cffi:null-pointer)))
 
 (cffi:defctype attr-name
@@ -148,14 +146,16 @@
 (cffi:defcfun (%iup-unmap "IupUnmap") :void
   (handle ihandle))
 
-(cffi:defcfun (%iup-reset-attribute "IupResetAttribute") :void
-  (handle ihandle)
-  (name attr-name))
-
 (cffi:defcfun (%iup-get-all-attributes "IupGetAllAttributes") :int
   (handle ihandle)
   (names :pointer)
   (n :int))
+
+(cffi:defcfun (%iup-reset-attribute "IupResetAttribute") :void
+  (handle ihandle)
+  (name attr-name))
+
+;;; attribute
 
 (cffi:defcfun (%iup-set-str-attribute "IupSetStrAttribute") :void
   (handle ihandle)
@@ -166,15 +166,7 @@
   (handle ihandle)
   (name attr-name))
 
-(cffi:defcfun (%iup-set-attribute "IupSetAttribute") :void
-  (handle ihandle)
-  (name attr-name)
-  (value :pointer))
-
-(cffi:defcfun (%iup-get-pointer-attribute "IupGetAttribute") :pointer
-  ;; same thing, no conversion
-  (handle ihandle)
-  (name attr-name))
+;;; attribute-id
 
 (cffi:defcfun (%iup-set-str-attribute-id "IupSetStrAttributeId") :void
   (handle ihandle)
@@ -182,11 +174,12 @@
   (id :int)
   (value :string))
 
-(cffi:defcfun (%iup-get-attribute-id-2 "IupGetAttributeId2") :string
+(cffi:defcfun (%iup-get-attribute-id "IupGetAttributeId") :void
   (handle ihandle)
   (name attr-name)
-  (line :int)
-  (column :int))
+  (id :int))
+
+;;; attribute-id-2
 
 (cffi:defcfun (%iup-set-str-attribute-id-2 "IupSetStrAttributeId2") :void
   (handle ihandle)
@@ -195,77 +188,18 @@
   (column :int)
   (value :string))
 
-(cffi:defcfun (%iup-set-int-attribute "IupSetInt") :void
-  (handle ihandle)
-  (name attr-name)
-  (value :int))
-
-(cffi:defcfun (%iup-set-float-attribute "IupSetFloat") :void
-  (handle ihandle)
-  (name attr-name)
-  (value :float))
-
-(cffi:defcfun (%iup-set-double-attribute "IupSetDouble") :void
-  (handle ihandle)
-  (name attr-name)
-  (value :double))
-
-(cffi:defcfun (%iup-get-int-attribute "IupGetInt") :int
-  (handle ihandle)
-  (name attr-name))
-
-(cffi:defcfun (%iup-get-float-attribute "IupGetFloat") :float
-  (handle ihandle)
-  (name attr-name))
-
-(cffi:defcfun (%iup-get-double-attribute "IupGetDouble") :double
-  (handle ihandle)
-  (name attr-name))
-
-(cffi:defcfun (%iup-set-int-attribute-id-2 "IupSetIntId2") :void
-  (handle ihandle)
-  (name attr-name)
-  (line :int)
-  (column :int)
-  (value :int))
-
-(cffi:defcfun (%iup-set-float-attribute-id-2 "IupSetFloat") :void
-  (handle ihandle)
-  (name attr-name)
-  (line :int)
-  (column :int)
-  (value :float))
-
-(cffi:defcfun (%iup-set-double-attribute-id-2 "IupSetDouble") :void
-  (handle ihandle)
-  (name attr-name)
-  (line :int)
-  (column :int)
-  (value :double))
-
-(cffi:defcfun (%iup-get-int-attribute-id-2 "IupGetInt") :int
+(cffi:defcfun (%iup-get-attribute-id-2 "IupGetAttributeId2") :string
   (handle ihandle)
   (name attr-name)
   (line :int)
   (column :int))
 
-(cffi:defcfun (%iup-get-float-attribute-id-2  "IupGetFloat") :float
-  (handle ihandle)
-  (name attr-name)
-  (line :int)
-  (column :int))
-
-(cffi:defcfun (%iup-get-double-attribute-id-2 "IupGetDouble") :double
-  (handle ihandle)
-  (name attr-name)
-  (line :int)
-  (column :int))
 
 (cffi:defcfun (%iup-set-str-global "IupSetStrGlobal") :void
   (name attr-name)
-  (value :string))
+  (value :pointer))
 
-(cffi:defcfun (%iup-get-global "IupGetGlobal") :string
+(cffi:defcfun (%iup-get-global "IupGetGlobal") :pointer
   (name attr-name))
 
 (cffi:defcfun (%iup-set-focus "IupSetFocus") ihandle
@@ -287,7 +221,6 @@
 (cffi:defcfun (%iup-get-callback "IupGetCallback") :pointer
   (handle ihandle)
   (name attr-name))
-
 
 (cffi:defcfun (%iup-get-function "IupGetFunction") :pointer
   (name attr-name))
@@ -345,7 +278,6 @@
 (cffi:defcfun (%iup-save-class-attributes "IupSaveClassAttributes") :void
   (handle ihandle))
 
-
 (cffi:defcfun (%iup-copy-class-attributes "IupCopyClassAttributes") :void
   (source-handle ihandle)
   (destination-handle ihandle))
@@ -357,11 +289,8 @@
 
 ;; int       IupClassMatch(Ihandle* ih, const char* classname);
 
-(cffi:defcfun (%iup-create "IupCreate") iup-cffi::ihandle
+(cffi:defcfun (%iup-create "IupCreate") ihandle
   (classname :string))
-
-;; /* String compare utility */
-;; int IupStringCompare(const char* str1, const char* str2, int casesensitive, int lexicographic);
 
 ;; /* IupImage utility */
 ;; int IupSaveImageAsText(Ihandle* ih, const char* file_name, const char* format, const char* name);
@@ -418,8 +347,6 @@
 ;; Ihandle*  IupParamBox(Ihandle* param, ...);
 ;; Ihandle*  IupParamBoxv(Ihandle* *param_array);
 
-;; Ihandle* IupLayoutDialog(Ihandle* dialog);
-;; Ihandle* IupElementPropertiesDialog(Ihandle* elem);
 
 ;; /************************************************************************/
 ;; /*               SHOW_CB Callback Values                                */
@@ -587,7 +514,7 @@
 (cffi:defcfun (%iup-config-copy "IupConfigCopy") :void
   (from-handle ihandle)
   (to-handle ihandle)
-  (exclude-prefix :pointer))		;FIXME in wrapper, can be nullable
+  (exclude-prefix :pointer))            ;FIXME in wrapper, can be nullable
 
 ;; void IupConfigSetListVariable(Ihandle* ih, const char *group, const char* key, const char* value, int add);
 
@@ -609,6 +536,8 @@
 
 (cffi:defcfun (%iup-layout-dialog "IupLayoutDialog") ihandle
   (dialog ihandle))
+
+;; Ihandle* IupElementPropertiesDialog(Ihandle* elem);
 
 (cffi:defcfun (%iup-image "IupImage") ihandle
   (width :int)

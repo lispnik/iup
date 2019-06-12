@@ -2,4 +2,5 @@
   :pathname "tuio"
   :components ((:file "tuio-cffi"))
   :depends-on (#:iup-cffi
+               #:tecgraf-base
 	       #:cffi))

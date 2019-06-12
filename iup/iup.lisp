@@ -15,6 +15,7 @@
   (unwind-protect
        (progn
 	 (funcall func))
+    (iup::unregister-all-callbacks)
     (iup:close)))
 
 (defmacro with-iup (() &body body)
@@ -33,7 +34,6 @@
 (defalias redraw                  #'iup-cffi::%iup-redraw)
 (defalias refresh                 #'iup-cffi::%iup-refresh)
 (defalias refresh-children        #'iup-cffi::%iup-refresh-children)
-(defalias play-input              #'iup-cffi::%iup-play-input)
 (defalias version                 #'iup-cffi::%iup-version)
 (defalias version-date            #'iup-cffi::%iup-version-date)
 (defalias version-number          #'iup-cffi::%iup-version-number)
@@ -57,30 +57,10 @@
 (defalias map                     #'iup-cffi::%iup-map)
 (defalias unmap                   #'iup-cffi::%iup-unmap)
 (defalias reset-attribute         #'iup-cffi::%iup-reset-attribute)
-(defalias set-global              #'iup-cffi::%iup-set-str-global)
-(defalias get-global              #'iup-cffi::%iup-get-global)
 (defalias set-focus               #'iup-cffi::%iup-set-focus)
 (defalias get-focus               #'iup-cffi::%iup-get-focus)
 (defalias previous-field          #'iup-cffi::%iup-previous-field)
 (defalias next-field              #'iup-cffi::%iup-next-field)
-
-(defun image (width height pixels)
-  (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height))))
-    (unwind-protect
-	 (iup-cffi::%iup-image width height array)
-      (cffi:foreign-free array))))
-
-(defun image-rgb (width height pixels)
-  (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height 3))))
-    (unwind-protect
-	 (iup-cffi::%iup-image-rgb width height array)
-      (cffi:foreign-free array))))
-
-(defun image-rgba (width height pixels)
-  (let ((array (cffi:foreign-alloc :unsigned-char :initial-contents pixels :count (* width height 4))))
-    (unwind-protect
-	 (iup-cffi::%iup-image-rgba width height array)
-      (cffi:foreign-free array))))
 
 (defalias message       #'iup-cffi::%iup-message)
 (defalias message-error #'iup-cffi::%iup-message-error)

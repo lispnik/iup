@@ -1,5 +1,6 @@
 (defpackage #:iup-glcontrols-cffi
-  (:use #:common-lisp))
+  (:use #:common-lisp)
+  (:import-from #:tecgraf-base #:ihandle))
 
 (in-package #:iup-glcontrols-cffi)
 
@@ -13,21 +14,21 @@
 (cffi:defcfun (%iup-glcontrols-open "IupGLControlsOpen") :int)
 
 (cffi:defcfun (%iup-glcontrols-draw-image "IupGLDrawImage") :void
-  (handle iup-cffi::ihandle)
+  (handle ihandle)
   (name :string)
   (x :int)
   (y :int)
   (active-p :boolean))
 
 (cffi:defcfun (%iup-glcontrols-draw-text "IupGLDrawText") :void
-  (handle iup-cffi::ihandle)
+  (handle ihandle)
   (string :string)
   (length :int)
   (x :int)
   (y :int))
 
 (cffi:defcfun (%iup-glcontrols-draw-get-text-size "IupGLDrawGetTextSize") :void
-  (handle iup-cffi::ihandle)
+  (handle ihandle)
   (string :string)
   (length :int)
   (x (:pointer :int))

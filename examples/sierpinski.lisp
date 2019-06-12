@@ -50,7 +50,7 @@
   iup:+default+)
 
 (defun canvas-spin (handle pos)
-  (setf *levels* (iup:attribute handle :value 'integer))
+  (setf *levels* (iup:attribute handle :value 'number))
   (canvas-redraw nil nil nil)
   iup:+default+)
 

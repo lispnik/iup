@@ -1,7 +1,5 @@
 (defpackage #:iup
-  (:use #:common-lisp
-	#:cffi
-	#:alexandria)
+  (:use #:common-lisp #:alexandria)
   (:export #:open
 	   #:close
 	   #:image-lib-open
