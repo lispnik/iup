@@ -80,6 +80,7 @@
      :vanity-alist (("gridbox" . "grid-box")
 		    ("flatframe" . "flat-frame")
 		    ("flattabs" . "flat-tabs")
+		    ("flatlist" . "flat-list")
 		    ("backgroundbox" . "background-box")
 		    ("scrollbox" . "scroll-box")
 		    ("flatscrollbox" . "flat-scroll-box")
