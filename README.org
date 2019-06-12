@@ -32,11 +32,18 @@ directory.
 
 It is a one-off step is is not needed subsequently.
 
-,*NOTE:* On Linux, the ~tecgraf-libs~ system needs the ~patchelf~
+*NOTE:* On Linux, the ~tecgraf-libs~ system needs the ~patchelf~
 command available (usually available via ~sudo apt install
 patchelf~). ~patchelf~ is used to set the shared library .so files
 origin to the library's location so that the multiple shared libraries
 loaded via CFFI uses are found relative to each other.
+
+*NOTE:* On Windows, the environment variable `PATH` should be modified so it points to the directory where the libs are downloaded. This has to be done before starting your Lisp implementation. Example of doing it and starting CCL:
+
+#+begin_src
+SET PATH=C:\mylisp\projects\tecgraf-libs\libs;
+wx86cl64.exe
+#+end_src
 
 To tell CFFI to find these libraries, use:
 
@@ -52,7 +59,21 @@ To tell CFFI to find these libraries, use:
 
 * Loading IUP
 
-,*NOTE:* For SBCL, you need to set a larger heap size to compile the
+(First, read the previous part on getting the Tecgraf libraries and installing).
+
+Requirements:
+
+Download/clone the following systems:
+
+- lispnik/`tecgraf-base`
+
+- lispnik/`pffft`
+
+Those are required by Iup. 
+
+Then load iup.asd in the usual way (e.g. `(ql:quickload "iup")`
+
+*NOTE:* For SBCL, you need to set a larger heap size to compile the
 bindings, e.g. ~--dynamic-space-size 2048~
 
 * Hello, World!
