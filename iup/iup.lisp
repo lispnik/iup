@@ -15,8 +15,8 @@
   (unwind-protect
        (progn
 	 (funcall func))
-    (iup::unregister-all-callbacks)
-    (iup:close)))
+    (iup:close)
+    (iup::unregister-all-callbacks)))
 
 (defmacro with-iup (() &body body)
   `(call-with-iup #'(lambda () ,@body)))

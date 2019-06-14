@@ -1,5 +1,5 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "iup-cd")))
+  (ql:quickload '("iup" "iup-cd" "cd")))
 
 (defpackage #:iup-example.ltk-demo
   (:use #:common-lisp))
