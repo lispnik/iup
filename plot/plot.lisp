@@ -1,5 +1,5 @@
 (defpackage #:iup-plot
-  (:use #:common-lisp)
+  (:use #:common-lisp #:serapeum)
   (:export #:open
 	   #:plot
 	   #:begin
@@ -8,31 +8,30 @@
 	   #:add
 	   #:add-segment
 	   #:add-string
+           #:add-samples
+           #:add-string-samples
 	   #:load-data
 	   #:insert
-	   #:insert-string
 	   #:insert-segment
+	   #:insert-string
 	   #:insert-samples
+           #:insert-string-samples
 	   #:sample
 	   #:sample-string
 	   #:sample-selection
 	   #:sample-extra
-
 	   #:transform
 	   #:transform-to
 	   #:paint-to)
-  (:import-from #:iup-utils
-		#:alias)
   (:shadow #:open))
 
 (in-package #:iup-plot)
 
-(alias 'open #'iup-plot-cffi::%iup-plot-open)
-
 (iup::defiupclasses "IUP-PLOT")
 
-(alias 'begin #'iup-plot-cffi::%iup-plot-begin)
-(alias 'end #'iup-plot-cffi::%iup-plot-end)
+(defalias open  #'iup-plot-cffi::%iup-plot-open)
+(defalias begin #'iup-plot-cffi::%iup-plot-begin)
+(defalias end   #'iup-plot-cffi::%iup-plot-end)
 
 (defmacro with-plot ((handle &key x-labels) &body body)
   (let ((handle-gensym (gensym))
@@ -49,65 +48,85 @@
 (defun add (handle x y)
   (iup-plot-cffi::%iup-plot-add handle (coerce x 'double-float) (coerce y 'double-float)))
 
-(alias 'add-segment	#'iup-plot-cffi::%iup-plot-add-segment)
+(defun add-segment (handle x y)
+  (iup-plot-cffi::%iup-plot-add-segment handle (coerce x 'double-float) (coerce y 'double-float)))
 
 (defun add-string (handle x-label y)
   (iup-plot-cffi::%iup-plot-add-str handle x-label (coerce y 'double-float)))
 
-(alias 'load-data	#'iup-plot-cffi::%iup-plot-load-data)
+(defalias load-data #'iup-plot-cffi::%iup-plot-load-data)
 
-(alias 'insert #'iup-plot-cffi::%iup-plot-insert)
-(alias 'insert-string #'iup-plot-cffi::%iup-plot-insert-str)
-(alias 'insert-segment #'iup-plot-cffi::%iup-plot-insert-segment)
+(defun insert (handle ds-index sample-index x y)
+  (iup-plot-cffi::%iup-plot-insert
+   handle ds-index sample-index (coerce x 'double-float) (coerce y 'double-float)))
 
-;;; FIXME
-;; (alias 'insert-string-samples #'iup-plot-cffi::%iup-plot-insert-str-samples)
+(defun insert-segment (handle ds-index sample-index x y)
+  (iup-plot-cffi::%iup-plot-insert-segment
+   handle ds-index sample-index (coerce x 'double-float) (coerce y 'double-float)))
+
+(defun insert-string ( handle ds-index sample-index x y)
+  (iup-plot-cffi::%iup-plot-insert-str
+   handle ds-index sample-index (coerce x 'double-float) (coerce y 'double-float)))
 
 (defun sequence-to-double-float-vector (sequence)
   (map '(vector double-float *)
        #'(lambda (x) (coerce x 'double-float))
        sequence))
 
+(defun sequence-to-string-vector (sequence)
+  (map '(vector string *)
+       #'(lambda (x) (coerce x 'string))
+       sequence))
+
+(defun insert-string-samples (handle ds-index sample-index x-strings-sequence y-sequence)
+  (let ((x-length (length x-strings-sequence))
+	(y-length (length y-sequence)))
+    (assert (= x-length y-length))
+    (cffi:with-foreign-array
+        (x-strings-ptr (sequence-to-string-vector x-strings-sequence) `(:array :string ,x-length))
+      (cffi:with-foreign-array
+          (y-ptr (sequence-to-double-float-vector y-sequence) `(:array :double ,x-length))
+        (iup-plot-cffi::%iup-plot-insert-str-samples handle ds-index sample-index x-strings-ptr y-ptr x-length)))))
+
 (defun insert-samples (handle ds-index sample-index x-sequence y-sequence)
   (let ((x-length (length x-sequence))
 	(y-length (length y-sequence)))
     (assert (= x-length y-length))
-    (cffi:with-foreign-array (x-ptr (sequence-to-double-float-vector x-sequence) `(:array :double ,x-length))
-      (cffi:with-foreign-array (y-ptr (sequence-to-double-float-vector y-sequence) `(:array :double ,x-length))
+    (cffi:with-foreign-array
+        (x-ptr (sequence-to-double-float-vector x-sequence) `(:array :double ,x-length))
+      (cffi:with-foreign-array
+          (y-ptr (sequence-to-double-float-vector y-sequence) `(:array :double ,x-length))
 	(iup-plot-cffi::%iup-plot-insert-samples handle ds-index sample-index x-ptr y-ptr x-length)))))
 
-;; (alias 'add-samples #'iup-plot-cffi::%iup-plot-add-samples)
-;; (alias 'add-string-samples #'iup-plot-cffi::%iup-plot-add-str-samples)
+(defalias sample           #'iup-plot-cffi::%iup-plot-get-sample)
+(defalias sample-string    #'iup-plot-cffi::%iup-plot-get-sample-str)
+(defalias sample-selection #'iup-plot-cffi::%iup-plot-get-sample-selection)
+;;; FIXME ^^
+;;; FIXME setf (value x y) for set samples
 
-(alias 'sample #'iup-plot-cffi::%iup-plot-get-sample)
-(alias 'sample-string #'iup-plot-cffi::%iup-plot-get-sample-str)
-(alias 'sample-selection #'iup-plot-cffi::%iup-plot-get-sample-selection)
+(defun add-string-samples (handle ds-index sample-index x-strings-sequence y-sequence)
+  (let ((x-length (length x-strings-sequence))
+	(y-length (length y-sequence)))
+    (assert (= x-length y-length))
+    (cffi:with-foreign-array
+        (x-strings-ptr (sequence-to-string-vector x-strings-sequence) `(:array :string ,x-length))
+      (cffi:with-foreign-array
+          (y-ptr (sequence-to-double-float-vector y-sequence) `(:array :double ,x-length))
+        (iup-plot-cffi::%iup-plot-add-str-samples handle ds-index sample-index x-strings-ptr y-ptr x-length)))))
 
-;; (defstruct sample
-;;   (x 0 :type double)
-;;   (y 0 :type double))
-
-;; (defstruct sample-string
-;;   (x 0 :type string)
-;;   (y :type double))
-
-;; (defun (setf sample) (new-value handle ds-index sample-index)
-;;   (multiple-value-bind (x y) new-value
-;;     (print new-value)
-;;     (list x y)
-;;     ))
-
-;; (defun (setf foo) (new-value) (multiple-value-bind (x y) new-value (list x y)))
-
-;; (setf (foo) (values 1 2))
-
-;; (setf (sample nil nil nil) (cons 1 2))
-
-;; (defun (setf sample-string) ())
-;; (defun (setf sample-selection ()))
+(defun add-samples (handle ds-index sample-index x-sequence y-sequence)
+  (let ((x-length (length x-sequence))
+	(y-length (length y-sequence)))
+    (assert (= x-length y-length))
+    (cffi:with-foreign-array
+        (x-ptr (sequence-to-double-float-vector x-sequence) `(:array :double ,x-length))
+      (cffi:with-foreign-array
+          (y-ptr (sequence-to-double-float-vector y-sequence) `(:array :double ,x-length))
+	(iup-plot-cffi::%iup-plot-add-samples handle ds-index sample-index x-ptr y-ptr x-length)))))
 
 (defun (setf sample-extra) (new-value handle ds-index sample-index)
-  (iup-plot-cffi::%iup-plot-set-sample-extra handle ds-index sample-index (coerce new-value 'double-float)))
+  (iup-plot-cffi::%iup-plot-set-sample-extra handle ds-index sample-index (coerce new-value 'double-float))
+  new-value)
 
 (defun transform (handle x y)
   (cffi:with-foreign-objects
@@ -117,14 +136,36 @@
     (values (cffi:mem-ref ix :double)
 	    (cffi:mem-ref iy :double))))
 
-;;; TODO
-;; (alias 'transform #'iup-plot-cffi::%iup-plot-transform
-;; (alias 'transform-to #'iup-plot-cffi::%iup-plot-transform-to
-;; (alias 'find-sample #'iup-plot-cffi::%iup-plot-find-sample
-;; (alias 'find-segment #'iup-plot-cffi::%iup-plot-find-segment
+(defun transform-to (handle cnv-x cnv-y)
+  (cffi:with-foreign-objects
+      ((ix :double)
+       (iy :double))
+    (iup-plot-cffi::%iup-plot-transform-to handle (coerce cnv-x 'double-float) (coerce cnv-y 'double-float) ix iy)
+    (values (cffi:mem-ref ix :double)
+	    (cffi:mem-ref iy :double))))
 
-(alias 'paint-to #'iup-plot-cffi::%iup-plot-paint-to)
+(defun find-sample (handle cnv-x cnv-y)
+  (cffi:with-foreign-objects
+      ((ds-index-ptr :double)
+       (sample-index-ptr :double))
+    (iup-plot-cffi::%iup-plot-find-sample
+     handle (coerce cnv-x 'double-float) (coerce cnv-y 'double-float) ds-index-ptr sample-index-ptr)
+    (values (cffi:mem-ref ds-index-ptr :double)
+	    (cffi:mem-ref sample-index-ptr :double))))
 
+(defun find-segment (handle cnv-x cnv-y)
+  (cffi:with-foreign-objects
+      ((ds-index-ptr :double)
+       (sample1-index-ptr :double)
+       (sample2-index-ptr :double))
+    (iup-plot-cffi::%iup-plot-find-segment handle
+                                           (coerce cnv-x 'double-float)
+                                           (coerce cnv-y 'double-float)
+                                           ds-index-ptr
+                                           sample1-index-ptr
+                                           sample2-index-ptr)
+    (values (cffi:mem-ref ds-index-ptr :double)
+	    (cffi:mem-ref sample1-index-ptr :double)
+            (cffi:mem-ref sample2-index-ptr :double))))
 
-
-
+(defalias paint-to #'iup-plot-cffi::%iup-plot-paint-to)

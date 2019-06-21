@@ -4,5 +4,6 @@
   :components ((:file "glcontrols"))
   :depends-on (#:iup-glcontrols-cffi
 	       #:iup-utils
+               #:iup
 	       #:alexandria
 	       #:cffi))

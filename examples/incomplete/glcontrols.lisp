@@ -1,3 +1,5 @@
+(ql:quickload '("iup" "iup-glcontrols" "alexandria"))
+
 (defpackage #:iup-examples.glcontrols
   (:use #:common-lisp
 	#:alexandria)
