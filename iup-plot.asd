@@ -4,7 +4,7 @@
   :components ((:file "plot"))
   :depends-on (#:iup-plot-cffi
 	       #:iup
-	       #:iup-utils
 	       #:iup-controls
 	       #:cd
-	       #:cffi))
+	       #:cffi
+               #:serapeum))
