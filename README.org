@@ -573,6 +573,12 @@ not available via control's constructor function.
 
 [[./docs/screenshots/tabs-01.png]] [[./docs/screenshots/tabs-02.png]]
 
+* Plotting
+
+Example
+
+[[./docs/screenshots/plot-01.png]]
+
 * OpenGL
 
 For this example, we'll take advantage for [[https://github.com/3b/cl-opengl][cl-opengland and
