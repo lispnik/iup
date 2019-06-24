@@ -578,8 +578,8 @@ not available via control's constructor function.
 Example [[./examples/plot.lisp][./examples/plot.lisp]]
 
 [[./docs/screenshots/plot-01.png]]
-[[
-./docs/screenshots/plot-02.png]]
+
+[[./docs/screenshots/plot-02.png]]
 
 * OpenGL
 
