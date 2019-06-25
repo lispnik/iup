@@ -18,7 +18,7 @@ install:
   - cmd: C:\Cache\sbcl\sbcl --non-interactive --eval "(ql:quickload :tecgraf-libs)"
   - cmd: setx PATH "C:\Users\Appveyor\quicklisp\local-projects\tecgraf-libs\libs\;%PATH%"
   - cmd: dir C:\Users\Appveyor\quicklisp\local-projects\tecgraf-libs\libs\
-  - cmd: C:\Cache\sbcl\sbcl --non-interactive --eval "(ql:quickload '(:pffft :tecgraf-base :im :cd :iup :iup-controls :iup-im))"
+  - cmd: C:\Cache\sbcl\sbcl --non-interactive --eval "(ql:quickload '(:iup))"
 build: off
 test: off
 
