@@ -11,7 +11,7 @@ install:
   - cmd: start /wait msiexec /i C:\cache\sbcl.msi /quiet /qn /norestart /log sbcl-install.log INSTALLDIR=C:\cache\sbcl
   - cmd: C:\Cache\sbcl\sbcl --non-interactive --load C:\cache\quicklisp.lisp --eval "(quicklisp-quickstart:install)" --eval "(ql-util:without-prompting (ql:add-to-init-file))"
   - cmd: git clone --depth=1 "https://github.com/lispnik/tecgraf-libs.git" "C:\Users\appveyor\quicklisp\local-projects\tecgraf-libs"
-  - cmd: git clone --depth=1 "https://github.com/lispnik/pfftf.git" "C:\Users\Appveyor\quicklisp\local-projects\pffft"
+  - cmd: git clone --depth=1 "https://github.com/lispnik/pffft.git" "C:\Users\Appveyor\quicklisp\local-projects\pffft"
   - cmd: git clone --depth=1 "https://github.com/lispnik/tecgraf-base.git" "C:\Users\appveyor\quicklisp\local-projects\tecgraf-base"
   - cmd: git clone --depth=1 "https://github.com/lispnik/im.git" "C:\Users\Appveyor\quicklisp\local-projects\im"
   - cmd: git clone --depth=1 "https://github.com/lispnik/cd.git" "C:\Users\Appveyor\quicklisp\local-projects\cd"
