@@ -171,7 +171,7 @@ bindings, e.g. ~--dynamic-space-size 2048~
 
 ** Close Over Handle Variables
 
-Consider capturing state by creating a clozure over the controls that
+Consider capturing state by creating a closure over the controls that
 make up state:
 
 #+begin_src lisp :results silent :export none :tangle examples/mixer.lisp
