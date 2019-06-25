@@ -15,7 +15,9 @@ install:
   - cmd: git clone --depth=1 "https://github.com/lispnik/tecgraf-base.git" "C:\Users\appveyor\quicklisp\local-projects\tecgraf-base"
   - cmd: git clone --depth=1 "https://github.com/lispnik/im.git" "C:\Users\Appveyor\quicklisp\local-projects\im"
   - cmd: git clone --depth=1 "https://github.com/lispnik/cd.git" "C:\Users\Appveyor\quicklisp\local-projects\cd"
-  - cmd: setx PATH "%PATH%;C:\Users\Appveyor\quicklisp\local-projects\tecgraf-libs\libs"
+  - cmd: C:\Cache\sbcl\sbcl --non-interactive --eval "(ql:quickload :tecgraf-libs)"
+  - cmd: setx PATH "%PATH%;C:\Users\Appveyor\quicklisp\local-projects\tecgraf-libs\libs\"
+  - cmd: dir C:\Users\Appveyor\quicklisp\local-projects\tecgraf-libs\libs\
   - cmd: C:\Cache\sbcl\sbcl --non-interactive --eval "(ql:quickload '(:tecgraf-libs :pffft :tecgraf-base :im :cd :iup :iup-controls))"
 build: off
 test: off
