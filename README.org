@@ -58,6 +58,8 @@ bindings, e.g. ~--dynamic-space-size 2048~
 * Hello, World!
 
 #+begin_src lisp :results silent :export none :tangle examples/hello.lisp
+  ;;; Generated from org-mode, do not edit
+
   (eval-when (:compile-toplevel :load-toplevel :execute)
     (ql:quickload "iup"))
 
@@ -96,6 +98,8 @@ bindings, e.g. ~--dynamic-space-size 2048~
 ** Simple Example
 
 #+begin_src lisp :results silent :export none :tangle examples/callback.lisp
+  ;;; Generated from org-mode, do not edit
+
   (eval-when (:compile-toplevel :load-toplevel :execute)
     (ql:quickload "iup"))
 
@@ -169,12 +173,14 @@ bindings, e.g. ~--dynamic-space-size 2048~
 
 [[./docs/screenshots/callback-3.png]] [[./docs/screenshots/callback-4.png]]
 
-** Close Over Handle Variables
+** Color Mixer
 
 Consider capturing state by creating a closure over the controls that
 make up state:
 
 #+begin_src lisp :results silent :export none :tangle examples/mixer.lisp
+  ;;; Generated from org-mode, do not edit
+
   (eval-when (:compile-toplevel :load-toplevel :execute)
     (ql:quickload "iup"))
 
@@ -235,6 +241,77 @@ make up state:
 
 [[./docs/screenshots/mixer-02.png]]
 
+* Idle Action
+
+#+begin_src lisp :results silent :export none :tangle examples/idle.lisp
+  ;;; Generated from org-mode, do not edit
+
+  (eval-when (:compile-toplevel :load-toplevel :execute)
+    (ql:quickload "iup"))
+
+  (defpackage #:iup-examples.idle
+    (:use #:common-lisp)
+    (:export #:idle))
+
+  (in-package #:iup-examples.idle)
+#+end_src
+
+There is a global callback for running functions when IUP event loop
+is idle. See also [[https://webserver2.tecgraf.puc-rio.br/iup/en/call/iup_idle_action.html][IUP: Idle Action]]. In Lisp, it can be set using
+~(SETF IUP:IDLE-ACTION)~. Note: Idle actions run a lot more often than
+you'd expect. Try the following example application to get an idea for
+just how often.
+
+An idle action function should return ~IUP:+DEFAULT+~, ~IUP:+CLOSE+~
+or ~IUP:+IGNORE+~. ~IUP:+DEFAULT~ will cause the idle action function
+to be called repeatedly. ~IUP:+IGNORE+~ will run idle action
+once. ~IUP:+CLOSE+~ will exit the event loop.
+
+#+begin_src lisp :results silent :tangle examples/idle.lisp
+  (defun idle ()
+    (iup:with-iup ()
+      (let* ((counter (iup:label :fontsize 24
+                                 :title 0
+                                 :expand :yes
+                                 :alignment :acenter))
+             (start-button (iup:button :title "&Start" :expand :horizontal))
+             (stop-button (iup:button :title "S&top" :expand :horizontal))
+             (vbox (iup:vbox (list counter
+                                   (iup:hbox (list start-button stop-button)
+                                             :cgap 5))
+                             :margin "5x5"))
+             (dialog (iup:dialog vbox
+                                 :title (format nil "Idle Example on ~A" (lisp-implementation-type))
+                                 :size "QUARTERxQUARTER")))
+        (setf (iup:callback start-button :action)
+              (lambda (handle)
+                (setf (iup:idle-action)
+                      (lambda ()
+                        (setf (iup:attribute counter :title)
+                              (1+ (iup:attribute counter :title 'number)))
+                        iup:+default+))
+                iup:+default+))
+        (setf (iup:callback stop-button :action)
+              (lambda (handle)
+                (setf (iup:idle-action) nil)
+                iup:+default+))
+        (iup:show dialog)
+        (iup:main-loop))))
+#+end_src
+
+#+begin_src lisp :results silent :export none :tangle examples/idle.lisp
+  #-sbcl (idle)
+
+  ,#+sbcl
+  (sb-int:with-float-traps-masked
+      (:divide-by-zero :invalid)
+    (idle))
+#+end_src
+
+[[./docs/screenshots/idle-01.png]]
+
+[[./docs/screenshots/idle-02.png]]
+
 * Canvas
 
 In this example, we'll port the Sierpinski Carpet fractal that
@@ -249,6 +326,8 @@ IUP:CALLBACK)~. ~*LEVELS*~ will keep track how deep to draw the
 fractal.
 
 #+begin_src lisp :results silent :export none :tangle examples/sierpinski.lisp
+  ;;; Generated from org-mode, do not edit
+
   (eval-when (:compile-toplevel :load-toplevel :execute)
     (ql:quickload '("iup" "iup-cd" "cd")))
 
@@ -419,6 +498,8 @@ automatically loaded. The Lisp bindings do the same thing, so to use
 it, we need to depend on ~IUP-CONTROLS~.
 
 #+begin_src lisp :results silent :export none :tangle examples/cells.lisp
+  ;;; Generated from org-mode, do not edit
+
   (eval-when (:compile-toplevel :load-toplevel :execute)
     (ql:quickload '("iup" "iup-controls" "cd")))
 
@@ -506,6 +587,8 @@ When out click callback is called:
 * Detachable Box
 
 #+begin_src lisp :results silent :export none :tangle examples/detached.lisp
+  ;;; Generated from org-mode, do not edit
+
   (eval-when (:compile-toplevel :load-toplevel :execute)
     (ql:quickload "iup"))
 
@@ -593,6 +676,8 @@ Demonstrates the use of ~(SETF IUP:ATTRIBUTE)~ for setting attributes
 not available via control's constructor function.
 
 #+begin_src lisp :results silent :export none :tangle examples/tabs.lisp
+  ;;; Generated from org-mode, do not edit
+
   (eval-when (:compile-toplevel :load-toplevel :execute)
     (ql:quickload "iup"))
 
@@ -660,6 +745,8 @@ the IUP/OpenGL integration points here. It suffices to say, we've got
 a function ~CUBE~ which draws OpenGL things to the current buffer.
 
 #+begin_src lisp :export none :results silent :tangle examples/cube.lisp
+  ;;; Generated from org-mode, do not edit
+
   (eval-when (:compile-toplevel :load-toplevel :execute)
     (ql:quickload '("iup" "iup-gl" "cl-opengl" "cl-glu")))
 
@@ -785,6 +872,8 @@ goes one step further by allowing the tree to be expanded recursively
 as branches open.
 
 #+begin_src lisp :results silent :export none :tangle examples/tree.lisp
+  ;;; Generated from org-mode, do not edit
+
   (eval-when (:compile-toplevel :load-toplevel :execute)
     (ql:quickload '("iup" "iup-controls" "uiop")))
 
@@ -853,6 +942,8 @@ IUP includes a number of dialogs, including one that embeds the
 [[https://www.scintilla.org/][Scintilla]] editor control.
 
 #+begin_src lisp :results silent :tangle examples/dialogs.lisp
+  ;;; Generated from org-mode, do not edit
+
   (eval-when (:compile-toplevel :load-toplevel :execute)
     (ql:quickload '("iup" "iup-scintilla")))
 
@@ -1061,6 +1152,8 @@ system provides support in our IUP bindings for interoperability with
 [[http://webserver2.tecgraf.puc-rio.br/im/][IM]], an imaging toolkit, also by Tecgraf.
 
 #+begin_src lisp :results silent :export none :tangle examples/icon.lisp
+  ;;; Generated from org-mode, do not edit
+
   (eval-when (:compile-toplevel :load-toplevel :execute)
     (ql:quickload '("iup" "iup-im")))
 
@@ -1109,6 +1202,8 @@ IM supports a large number of formats. Here we use a .ICO file.
 ** File Drag and Drop from Applications
 
 #+begin_src lisp :results silent :export none :tangle examples/drophash.lisp
+  ;;; Generated from org-mode, do not edit
+
   (eval-when (:compile-toplevel :load-toplevel :execute)
     (ql:quickload '("iup" "ironclad")))
 

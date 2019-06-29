@@ -1,3 +1,5 @@
+;;; Generated from org-mode, do not edit
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (ql:quickload "iup"))
 
@@ -34,7 +36,6 @@
             (lambda (handle)
               (setf (iup:idle-action) nil)
               iup:+default+))
-
       (iup:show dialog)
       (iup:main-loop))))
 
