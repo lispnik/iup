@@ -1,24 +1,23 @@
 (defpackage #:iup-glcontrols
-  (:use #:common-lisp)
+  (:use #:common-lisp
+        #:serapeum)
   (:export #:open
 	   #:draw-image
 	   #:draw-text
 	   #:draw-get-text-size
 	   #:draw-get-image-info)
-  (:import-from #:iup-utils
-		#:alias)
   (:shadow #:open))
 
 (in-package #:iup-glcontrols)
 
-(alias 'open #'iup-glcontrols-cffi::%iup-glcontrols-open)
+(defalias open #'iup-glcontrols-cffi::%iup-glcontrols-open)
 
 (iup::defiupclasses "IUP-GLCONTROLS")
 
 (defun draw-text (handle text x y)
   (iup-glcontrols-cffi::%iup-glcontrols-draw-text handle text -1 x y))
 
-(alias 'draw-image #'iup-glcontrols-cffi::%iup-glcontrols-draw-image)
+(defalias draw-image #'iup-glcontrols-cffi::%iup-glcontrols-draw-image)
 
 (defun get-text-size (handle text)
   (cffi:with-foreign-objects
