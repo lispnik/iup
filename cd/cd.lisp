@@ -1,10 +1,10 @@
 (defpackage #:iup-cd
-  (:use #:common-lisp)
+  (:use #:common-lisp
+        #:serapeum)
   (:export #:context-iup
 	   #:context-iup-dbuffer
 	   #:context-iup-dbuffer-rgb
-	   #:context-iup-draw)
-  (:import-from #:serapeum #:defalias))
+	   #:context-iup-draw))
 
 (in-package #:iup-cd)
 

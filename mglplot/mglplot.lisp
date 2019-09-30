@@ -1,12 +1,11 @@
 (defpackage #:iup-mglplot
-  (:use #:common-lisp)
+  (:use #:common-lisp
+        #:serapeum)
   (:export #:open)
-  (:import-from #:iup-utils
-		#:alias)
   (:shadow #:open))
 
 (in-package #:iup-mglplot)
 
-(alias 'open #'iup-mglplot-cffi::%iup-mglplot-open)
+(defalias open #'iup-mglplot-cffi::%iup-mglplot-open)
 
 (iup::defiupclasses "IUP-MGLPLOT")

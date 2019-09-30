@@ -1,9 +1,9 @@
 (defpackage #:iup-imglib
   (:use #:common-lisp
-	#:iup-utils)
+        #:serapeum)
   (:export #:open)
   (:shadow #:open))
 
 (in-package #:iup-imglib)
 
-(alias 'open #'iup-imglib-cffi::%iup-imglib-open)
+(defalias open #'iup-imglib-cffi::%iup-imglib-open)
