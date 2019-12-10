@@ -14,7 +14,7 @@
                  (:file "callback")
                  (:file "global-callback")
                  (:file "classes")
-;;                 (:file "config")
+                 (:file "config")
                  (:file "attributes")
                  (:file "status")
                  (:file "masks")
