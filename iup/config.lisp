@@ -3,8 +3,8 @@
 (defalias config #'iup-cffi::%iup-config)
 (defalias config-load #'iup-cffi::%iup-config-load)
 (defalias config-save #'iup-cffi::%iup-config-save)
-;; (defalias config-dialog-show   #'iup-cffi::%iup-config-dialog-show)
-;; (defalias config-dialog-closed #'iup-cffi::%iup-config-dialog-closed)
+(defalias config-dialog-show #'iup-cffi::%iup-config-dialog-show)
+(defalias config-dialog-closed #'iup-cffi::%iup-config-dialog-closed)
 
 ;;; FIXME other config functions
 
