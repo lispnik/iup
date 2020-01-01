@@ -1,30 +1,25 @@
 (defpackage #:iup-classesdb-cffi (:use #:common-lisp))
 (in-package #:iup-classesdb-cffi)
 
-;; typedef enum _InativeType {
-;; IUP_TYPEVOID,     /**< No native representation - HBOX, VBOX, ZBOX, FILL, RADIO (handle==(void*)-1 always) */
-;; IUP_TYPECONTROL,  /**< Native controls - BUTTON, LABEL, TOGGLE, LIST, TEXT, MULTILINE, FRAME, others */
-;; IUP_TYPECANVAS,   /**< Drawing canvas, also used as a base control for custom controls. */ 
-;; IUP_TYPEDIALOG,   /**< DIALOG */
-;; IUP_TYPEIMAGE,    /**< IMAGE */
-;; IUP_TYPEMENU      /**< MENU, SUBMENU, ITEM, SEPARATOR */
-;; } InativeType;
-
-(cffi:defcenum native-format
+(cffi:defcenum native-type
   :iup-type-void
   :iup-type-control
   :iup-type-canvas
   :iup-type-dialog
   :iup-type-image
-  :iup-type-menu)
+  :iup-type-menu
+  :iup-type-other)
 
 (cffi:defcstruct iclass
   (name :string)
+  (cons :string)
   (format :string)
-  (native-format native-format)
+  (format-attr :string)
+  (native-type native-type)
   (child-type :int) 			;0 = none, 1 = many, 1+n = n children
   (interactive-p :boolean)
   (has-attrib-id-p :int)
+  (internal-p :boolean)
   (parent :pointer)
   (attrib-func :pointer))
 
