@@ -19,6 +19,7 @@
 	   #:version
 	   #:version-date
 	   #:version-number
+           #:version-show
 	   #:destroy
 	   #:detach
 	   #:append
@@ -93,6 +94,7 @@
 	   #:handle
 	   #:platform
 
+           #:image-get-handle
 	   #:layout-dialog)
   (:shadow #:open
 	   #:close

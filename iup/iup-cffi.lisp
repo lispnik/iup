@@ -49,6 +49,13 @@
 (cffi:defcfun (%iup-flush "IupFlush") :void)
 (cffi:defcfun (%iup-exit-loop "IupExitLoop") :void)
 
+(cffi:defcfun (%iup-post-message "IupPostMessage") :void
+  (handle ihandle)
+  (s :string)
+  (i :int)
+  (d :double)
+  (p :pointer))
+
 (cffi:defcfun (%iup-record-input "IupRecordInput") :int
   (filename :string)
   (mode :int))
@@ -75,6 +82,7 @@
 (cffi:defcfun (%iup-version "IupVersion") :string)
 (cffi:defcfun (%iup-version-date "IupVersionDate") :string)
 (cffi:defcfun (%iup-version-number "IupVersionNumber") :int)
+(cffi:defcfun (%iup-version-show "IupVersionShow") :void)
 
 (cffi:defcfun (%iup-destroy "IupDestroy") :void
   (handle ihandle))
@@ -294,6 +302,9 @@
 
 ;; /* IupImage utility */
 ;; int IupSaveImageAsText(Ihandle* ih, const char* file_name, const char* format, const char* name);
+
+(cffi:defcfun (%iup-image-get-handle "IupImageGetHandle") ihandle
+  (name :string))
 
 ;; /* IupText and IupScintilla utilities */
 ;; void  IupTextConvertLinColToPos(Ihandle* ih, int lin, int col, int *pos);
