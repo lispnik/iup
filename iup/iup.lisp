@@ -27,6 +27,7 @@
 (defalias main-loop-level         #'iup-cffi::%iup-main-loop-level)
 (defalias flush                   #'iup-cffi::%iup-flush)
 (defalias exit-loop               #'iup-cffi::%iup-exit-loop)
+(defalias version-show            #'iup-cffi::%iup-version-show)
 (defalias record-input            #'iup-cffi::%iup-record-input)
 (defalias play-input              #'iup-cffi::%iup-play-input)
 (defalias update                  #'iup-cffi::%iup-update)
@@ -68,3 +69,5 @@
 (defalias alarm         #'iup-cffi::%iup-alarm)
 
 (defalias layout-dialog #'iup-cffi::%iup-layout-dialog)
+
+(defalias image-get-handle #'iup-cffi::%iup-image-get-handle)

@@ -5,6 +5,10 @@
 
 [[./docs/screenshots/sample-02.png]]
 
+* Compatibility
+
+IUP 3.28
+
 * Introduction
 
 * Shared Libraries
