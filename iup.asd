@@ -19,14 +19,15 @@
                  (:file "status")
                  (:file "masks")
                  (:file "globals")
-                 (:file "misc")
-                 (:file "iup"))))
+                 (:file "iup")
+                 (:file "misc"))))
   :depends-on (#:iup-cffi
                #:iup-utils
                #:cffi
                #:alexandria
-               #:serapeum
                #:genhash
                #:trivial-arguments
                #:split-sequence
-               #:parse-number))
+               #:parse-number
+               #:pffft
+               #:tecgraf-base))

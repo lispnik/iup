@@ -1,11 +1,10 @@
 (defpackage #:iup-tuio
-  (:use #:common-lisp
-        #:serapeum)
+  (:use #:common-lisp)
   (:export #:open)
   (:shadow #:open))
 
 (in-package #:iup-tuio)
 
-(defalias open #'iup-tuio-cffi::%iup-tuio-open)
+(setf (fdefinition 'open) #'iup-tuio-cffi::%iup-tuio-open)
 
 (iup::defiupclasses "IUP-TUIO")

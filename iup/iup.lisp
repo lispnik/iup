@@ -7,20 +7,7 @@
     (when (= ret +error+)
       (error "Can't initialize IUP"))))
 
-(defalias close #'iup-cffi::%iup-close)
-
-(defun call-with-iup (func)
-  #+windows (iup-cffi::%set-process-dpi-aware)
-  (iup:open)
-  (unwind-protect
-       (progn
-	 (funcall func))
-    (iup:close)
-    (iup::unregister-all-callbacks)))
-
-(defmacro with-iup (() &body body)
-  `(call-with-iup #'(lambda () ,@body)))
-
+(defalias close                   #'iup-cffi::%iup-close)
 (defalias main-loop               #'iup-cffi::%iup-main-loop)
 (defalias loop-step               #'iup-cffi::%iup-loop-step)
 (defalias loop-step-wait          #'iup-cffi::%iup-loop-step-wait)

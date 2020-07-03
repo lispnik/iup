@@ -1,5 +1,5 @@
 (defpackage #:iup-plot
-  (:use #:common-lisp #:serapeum)
+  (:use #:common-lisp)
   (:export #:open
 	   #:plot
 	   #:begin
@@ -23,6 +23,8 @@
 	   #:transform
 	   #:transform-to
 	   #:paint-to)
+  (:import-from #:tecgraf-base
+                #:defalias)
   (:shadow #:open))
 
 (in-package #:iup-plot)

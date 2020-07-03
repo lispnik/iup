@@ -1,6 +1,5 @@
 (defpackage #:iup-gl
-  (:use #:common-lisp
-        #:serapeum)
+  (:use #:common-lisp)
   (:export #:open
 	   #:canvas
 	   #:background-box
@@ -10,6 +9,8 @@
 	   #:palette
 	   #:use-font
 	   #:wait)
+  (:import-from #:tecgraf-base
+                #:defalias)
   (:shadow #:open))
 
 (in-package #:iup-gl)

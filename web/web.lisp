@@ -1,7 +1,7 @@
 (defpackage #:iup-web
   (:use #:common-lisp)
   (:export #:open)
-  (:import-from #:serapeum #:defalias)
+  (:import-from #:tecgraf-base #:defalias)
   (:shadow #:open))
 
 (in-package #:iup-web)

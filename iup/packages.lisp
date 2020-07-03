@@ -104,6 +104,6 @@
 	   #:fill
 	   #:space
 	   #:class-name)
-  (:import-from #:serapeum
+  (:import-from #:tecgraf-base
 		#:defalias))
 

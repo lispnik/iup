@@ -5,5 +5,4 @@
   :depends-on (#:cd
 	       #:iup
 	       #:iup-cd-cffi
-	       #:cffi
-	       #:serapeum))
+	       #:cffi))

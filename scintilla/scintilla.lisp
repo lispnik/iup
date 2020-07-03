@@ -1,10 +1,11 @@
 (defpackage #:iup-scintilla
-  (:use #:common-lisp
-        #:serapeum)
+  (:use #:common-lisp)
   (:export #:scintilla
 	   #:scintilla-dialog
 	   #:scintilla-send-message
 	   #:open)
+  (:import-from #:tecgraf-base
+                #:defalias)
   (:shadow #:open))
 
 (in-package #:iup-scintilla)

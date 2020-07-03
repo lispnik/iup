@@ -3,5 +3,4 @@
   :components ((:file "web-cffi"))
   :depends-on (#:iup-cffi
 	       #:cffi
-               #:tecgraf-base
-	       #:serapeum))
+               #:tecgraf-base))

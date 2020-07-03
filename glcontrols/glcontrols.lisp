@@ -1,11 +1,12 @@
 (defpackage #:iup-glcontrols
-  (:use #:common-lisp
-        #:serapeum)
+  (:use #:common-lisp)
   (:export #:open
 	   #:draw-image
 	   #:draw-text
 	   #:draw-get-text-size
 	   #:draw-get-image-info)
+  (:import-from #:tecgraf-base
+                #:defalias)
   (:shadow #:open))
 
 (in-package #:iup-glcontrols)

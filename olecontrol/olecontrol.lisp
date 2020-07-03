@@ -1,8 +1,9 @@
 (defpackage #:iup-olecontrol
-  (:use #:common-lisp
-        #:serapeum)
+  (:use #:common-lisp)
   (:export #:open
 	   #:olecontrol)
+  (:import-from #:tecgraf-base
+                #:defalias)
   (:shadow #:open))
 
 (in-package #:iup-olecontrol)

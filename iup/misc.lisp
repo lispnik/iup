@@ -1,6 +1,18 @@
 (in-package #:iup)
 
-(export '(platform platform-string))
+(export '(platform platform-string call-with-iup with-iup))
+
+(defun call-with-iup (func)
+  #+windows (iup-cffi::%set-process-dpi-aware)
+  (iup:open)
+  (unwind-protect
+       (progn
+	 (funcall func))
+    (iup:close)
+    (iup::unregister-all-callbacks)))
+
+(defmacro with-iup (() &body body)
+  `(call-with-iup #'(lambda () ,@body)))
 
 (defun platform ()
   (cl:list :iup-version (iup:version)

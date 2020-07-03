@@ -20,7 +20,7 @@
      (string
       (cffi:foreign-string-to-lisp (iup-cffi::%iup-get-global name)))
      (number
-      (serapeum:parse-number
+      (parse-number:parse-number
        (cffi:foreign-string-to-lisp (iup-cffi::%iup-get-global name))))
      (cffi:foreign-pointer
       (iup-cffi::%iup-get-global name))
