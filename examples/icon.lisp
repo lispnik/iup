@@ -14,9 +14,9 @@
     (let ((icon (iup-im:load-image (asdf:system-relative-pathname "iup" "examples/lispalien.ico"))))
       (setf (iup:handle "lispalien") icon))
     (let* ((label (iup:flat-label :image "lispalien" :expand :yes))
-	   (dialog (iup:dialog label :title "Icon from File"
-				     :icon "lispalien"
-				     :size "THIRDxTHIRD")))
+           (dialog (iup:dialog label :title "Icon from File"
+                                     :icon "lispalien"
+                                     :size "THIRDxTHIRD")))
       (iup:show dialog)
       (iup:main-loop))))
 

@@ -48,7 +48,7 @@
            (ironclad:digest-file digest
             filename))))
     (setf (iup:attribute (iup:handle "results") :append)
-          (format nil "~A	~A" filename digest-hex)))
+          (format nil "~A     ~A" filename digest-hex)))
   (iup:flush)
   iup:+default+)
 

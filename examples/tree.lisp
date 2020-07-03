@@ -12,15 +12,15 @@
 (defun get-dir (pathname)
   (assert (uiop:directory-pathname-p pathname))
   (loop for pathname in (uiop:directory* (make-pathname :name :wild :defaults pathname))
-	if (uiop:directory-pathname-p pathname)
-	  collect pathname into dirs
-	else
-	  collect pathname into files
-	finally (return (values dirs files))))
+        if (uiop:directory-pathname-p pathname)
+          collect pathname into dirs
+        else
+          collect pathname into files
+        finally (return (values dirs files))))
 
 (defun fill-tree (tree id pathname)
   (multiple-value-bind
-	(dirs files)
+        (dirs files)
       (get-dir pathname)
     (dolist (file files)
       (setf (iup:attribute tree :addleaf) (namestring file)))
@@ -40,9 +40,9 @@
 (defun tree ()
   (iup:with-iup ()
     (let* ((tree (iup:tree :minsize "200x300"
-			   :map_cb 'map-callback
-			   :branchopen_cb 'branchopen-callback))
-	   (dialog (iup:dialog tree :title "Tree Example")))
+                           :map_cb 'map-callback
+                           :branchopen_cb 'branchopen-callback))
+           (dialog (iup:dialog tree :title "Tree Example")))
       (iup:show dialog)
       (iup:main-loop))))
 
