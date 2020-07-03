@@ -154,14 +154,18 @@
 (cffi:defcfun (%iup-unmap "IupUnmap") :void
   (handle ihandle))
 
+(cffi:defcfun (%iup-reset-attribute "IupResetAttribute") :void
+  (handle ihandle)
+  (name attr-name))
+
 (cffi:defcfun (%iup-get-all-attributes "IupGetAllAttributes") :int
   (handle ihandle)
   (names :pointer)
   (n :int))
 
-(cffi:defcfun (%iup-reset-attribute "IupResetAttribute") :void
-  (handle ihandle)
-  (name attr-name))
+(cffi:defcfun (%iup-copy-attributes "IupCopyAttributes") :void
+  (src-handle ihandle)
+  (dst-handle ihandle))
 
 ;;; attribute
 
@@ -548,7 +552,14 @@
 (cffi:defcfun (%iup-layout-dialog "IupLayoutDialog") ihandle
   (dialog ihandle))
 
-;; Ihandle* IupElementPropertiesDialog(Ihandle* elem);
+(cffi:defcfun (%iup-class-info-dialog "IupClassInfoDialog") ihandle
+  (dialog ihandle))
+
+(cffi:defcfun (%iup-globals-dialog "IupGlobalsDialog") ihandle
+  (dialog ihandle))
+
+(cffi:defcfun (%iup-element-properties-dialog "IupElementPropertiesDialog") ihandle
+  (element ihandle))
 
 (cffi:defcfun (%iup-image "IupImage") ihandle
   (width :int)
@@ -574,3 +585,4 @@
 
 #+windows
 (cffi:defcfun (%set-process-dpi-aware "SetProcessDPIAware") :boolean)
+

@@ -11,7 +11,8 @@
 	  attribute-handle
 	  callback
 	  handle
-	  attribute))
+	  attribute
+          copy-attributes))
 
 ;; (defun (setf attributes) (attributes handle)
 ;;   (loop for (attribute value) on attributes by #'cddr
@@ -24,6 +25,8 @@
 ;;   ;; FIXME implement
 ;;   (error "not implemented")
 ;;   )
+
+(defalias copy-attributes #'iup-cffi::%iup-copy-attributes)
 
 (defun attribute (handle attribute &optional (type 'string))
   (let ((value (iup-cffi::%iup-get-attribute handle attribute)))

@@ -14,7 +14,6 @@
 (defalias main-loop-level         #'iup-cffi::%iup-main-loop-level)
 (defalias flush                   #'iup-cffi::%iup-flush)
 (defalias exit-loop               #'iup-cffi::%iup-exit-loop)
-(defalias version-show            #'iup-cffi::%iup-version-show)
 (defalias record-input            #'iup-cffi::%iup-record-input)
 (defalias play-input              #'iup-cffi::%iup-play-input)
 (defalias update                  #'iup-cffi::%iup-update)
@@ -25,6 +24,7 @@
 (defalias version                 #'iup-cffi::%iup-version)
 (defalias version-date            #'iup-cffi::%iup-version-date)
 (defalias version-number          #'iup-cffi::%iup-version-number)
+(defalias version-show            #'iup-cffi::%iup-version-show)
 (defalias destroy                 #'iup-cffi::%iup-destroy)
 (defalias detach                  #'iup-cffi::%iup-detach)
 (defalias append                  #'iup-cffi::%iup-append)
@@ -56,5 +56,8 @@
 (defalias alarm         #'iup-cffi::%iup-alarm)
 
 (defalias layout-dialog #'iup-cffi::%iup-layout-dialog)
+(defalias class-info-dialog #'iup-cffi::%iup-class-info-dialog)
+(defalias globals-dialog #'iup-cffi::%iup-globals-dialog)
+(defalias element-properties-dialog #'iup-cffi::%iup-element-properties-dialog)
 
 (defalias image-get-handle #'iup-cffi::%iup-image-get-handle)
