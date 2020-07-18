@@ -20,7 +20,7 @@
     (setf (iup:global :lockloop) :yes)
     (iup:main-loop)))
 
-;; #-sbcl (iup-loop)
+;; #-sbcl (iup-loop)<
 
 ;; #+sbcl
 ;; (sb-int:with-float-traps-masked
