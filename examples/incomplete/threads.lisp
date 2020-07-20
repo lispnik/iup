@@ -8,9 +8,9 @@
 (defvar *post-message-queue* nil)
 
 (defun post-message-callback (&rest args)
-  (log:info "post-message-callback received args ~a" args)
-  (loop for message = (lparallel.queue:try-pop-queue *post-message-queue*)
-        while message
+  (declare (ignore args))
+  (loop until (lparallel.queue:queue-empty-p *post-message-queue*)
+        for message = (lparallel.queue:try-pop-queue *post-message-queue*)
         do (funcall message))
     iup:+default+)
 
@@ -20,9 +20,12 @@
     (setf (iup:global :lockloop) :yes)
     (main-loop)))
 
+(defvar *post-message-lock* (bt:make-lock))
+
 (defun post-message ()
-  (iup-cffi::%iup-post-message
-   *post-message-handler* (cffi:null-pointer) 42 pi (cffi:null-pointer)))
+  (bt:with-lock-held (*post-message-lock*)
+    (iup-cffi::%iup-post-message
+     *post-message-handler* (cffi:null-pointer) 42 pi (cffi:null-pointer))))
 
 (defun call-with-main-loop (func)
   (lparallel.queue:push-queue func *post-message-queue*)
@@ -41,7 +44,8 @@
    :name "iup-main-loop"))
 
 (defun stop ()
-  (call-with-main-loop #'iup:exit-loop)
+  (when *post-message-queue*
+    (call-with-main-loop #'iup:exit-loop))
   (setf *post-message-queue* nil))
 
 #+nil
@@ -51,3 +55,21 @@
           (vbox (iup:vbox (list text)))
           (dialog (iup:dialog vbox :size "QUARTERxQUARTER")))
      (iup:show dialog))))
+
+#+nil
+(progn
+  (trace post-message-callback)
+  (stop)
+  (sleep 0.2)
+  (start)
+  (sleep 0.2)
+  (let* ((text (iup:text :multiline :yes :expand :yes))
+         (vbox (iup:vbox (cl:list text)))
+         (dialog (iup:dialog vbox :size "600x200")))
+    (call-with-main-loop (lambda () (show dialog)))
+    (sleep 2)
+    (call-with-main-loop
+     (lambda ()
+       (loop for i from 0 below 10
+             do (setf (iup:attribute text :append) (format nil "Some text ~a" i)))))))
+
