@@ -62,14 +62,22 @@
   (stop)
   (sleep 0.2)
   (start)
-  (sleep 0.2)
-  (let* ((text (iup:text :multiline :yes :expand :yes))
-         (vbox (iup:vbox (cl:list text)))
+  (sleep 0.2))
+
+#+nil
+(progn
+  (defparameter text nil)
+  (setf text (iup:text :multiline :yes :expand :yes))
+  (let* ((vbox (iup:vbox (cl:list text)))
          (dialog (iup:dialog vbox :size "600x200")))
-    (call-with-main-loop (lambda () (show dialog)))
+    (call-with-main-loop
+     (lambda () (show dialog)))
     (sleep 2)
     (call-with-main-loop
      (lambda ()
        (loop for i from 0 below 10
-             do (setf (iup:attribute text :append) (format nil "Some text ~a" i)))))))
+             do (setf (iup:attribute text :append)
+                      (format nil "Some text ~a" i)))))))
+
+#+nil (start)
 
