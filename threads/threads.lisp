@@ -21,7 +21,7 @@
   (iup:with-iup ()
     (setf *post-message-handler* (iup:user :postmessage_cb 'post-message-callback))
     (setf (iup:global :lockloop) :yes)
-    (main-loop)))
+    (iup:main-loop)))
 
 (defvar *post-message-lock* (bt:make-lock "iup-post-message-lock"))
 
@@ -35,7 +35,7 @@
   (post-message))
 
 (defun start ()
-  (when *post-message-handler* (exit-loop))
+  (when *post-message-handler* (iup:exit-loop))
   (setf *post-message-handler* nil
         *post-message-queue* (lparallel.queue:make-queue))
   (bt:make-thread
