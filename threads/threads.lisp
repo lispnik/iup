@@ -1,7 +1,8 @@
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "bordeaux-threads" "lparallel" "log4cl")))
-
 (in-package #:iup)
+
+(export '(start
+          stop
+          call-with-main-loop))
 
 (defvar *post-message-handler* nil)
 
@@ -47,29 +48,3 @@
   (when *post-message-queue*
     (call-with-main-loop #'iup:exit-loop))
   (setf *post-message-queue* nil))
-
-#+nil
-(call-with-main-loop
- (lambda ()
-   (let* ((text (iup:text :expand :yes :multiline :yes))
-          (vbox (iup:vbox (list text)))
-          (dialog (iup:dialog vbox :size "QUARTERxQUARTER")))
-     (iup:show dialog))))
-
-#+nil
-(progn
-  (trace post-message-callback)
-  (stop)
-  (sleep 0.2)
-  (start)
-  (sleep 0.2)
-  (let* ((text (iup:text :multiline :yes :expand :yes))
-         (vbox (iup:vbox (cl:list text)))
-         (dialog (iup:dialog vbox :size "600x200")))
-    (call-with-main-loop (lambda () (show dialog)))
-    (sleep 2)
-    (call-with-main-loop
-     (lambda ()
-       (loop for i from 0 below 10
-             do (setf (iup:attribute text :append) (format nil "Some text ~a" i)))))))
-
