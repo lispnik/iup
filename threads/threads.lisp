@@ -1,8 +1,10 @@
-(in-package #:iup)
+(defpackage #:iup-threads
+  (:use #:common-lisp)
+  (:export #:start
+           #:stop
+           #:call-with-main-loop))
 
-(export '(start
-          stop
-          call-with-main-loop))
+(in-package #:iup-threads)
 
 (defvar *post-message-handler* nil)
 
@@ -21,7 +23,7 @@
     (setf (iup:global :lockloop) :yes)
     (main-loop)))
 
-(defvar *post-message-lock* (bt:make-lock))
+(defvar *post-message-lock* (bt:make-lock "iup-post-message-lock"))
 
 (defun post-message ()
   (bt:with-lock-held (*post-message-lock*)
