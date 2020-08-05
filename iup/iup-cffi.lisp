@@ -174,7 +174,7 @@
   (name attr-name)
   (value :string))
 
-(cffi:defcfun (%iup-get-attribute "IupGetAttribute") :string
+(cffi:defcfun (%iup-get-attribute "IupGetAttribute") :pointer
   (handle ihandle)
   (name attr-name))
 
@@ -186,7 +186,7 @@
   (id :int)
   (value :string))
 
-(cffi:defcfun (%iup-get-attribute-id "IupGetAttributeId") :void
+(cffi:defcfun (%iup-get-attribute-id "IupGetAttributeId") :string
   (handle ihandle)
   (name attr-name)
   (id :int))
@@ -251,6 +251,9 @@
 ;; int       IupGetAllNames  (char** names, int n);
 ;; int       IupGetAllDialogs(char** names, int n);
 ;; char*     IupGetName      (Ihandle* ih);
+
+(cffi:defcfun (%iup-get-name "IupGetName") :string
+  (handle ihandle))
 
 (cffi:defcfun (%iup-set-attribute-handle "IupSetAttributeHandle") :void
   (handle ihandle)

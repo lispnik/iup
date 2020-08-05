@@ -11,6 +11,8 @@
 	  attribute-handle
 	  callback
 	  handle
+          name
+          ;; attribute-names
 	  attribute
           copy-attributes))
 
@@ -20,23 +22,44 @@
 ;;              (setf (attribute handle attribute) value))
 ;;         finally (return attributes)))
 
-;; (defun attributes (handle)
-;; ;;   (iup-cffi::%iup-get-all-attributes)
-;;   ;; FIXME implement
-;;   (error "not implemented")
-;;   )
+;; (defun attribute-names (handle)
+;;   (let ((max-n (iup-cffi::%iup-get-all-attributes handle (cffi:null-pointer) 0)))
+;;     (format t "Found ~A attributes for ~A~%" max-n handle)
+;;     (unless (= max-n -1)
+;;       (let ((array (cffi:foreign-alloc :pointer :initial-element (cffi:null-pointer) :count max-n)))
+;;         (format t "array at ~A~%" array)
+;; 	(unwind-protect
+;; 	     (progn
+;; 	       (iup-cffi::%iup-get-all-attributes handle array max-n)
+;; 	       (loop for i below max-n
+;; 		     for ref = (cffi:mem-aref array :pointer i)
+;;                      do (format t "~A~%" ref)
+;; 		     ;; until (cffi:null-pointer-p ref)
+;;                         ;; collect (make-keyword (cffi:foreign-string-to-lisp ref))
+                        
+;;                      ))
+;; 	  (cffi:foreign-free array))))))
 
 (defalias copy-attributes #'iup-cffi::%iup-copy-attributes)
 
 (defun attribute (handle attribute &optional (type 'string))
-  (let ((value (iup-cffi::%iup-get-attribute handle attribute)))
-    (ecase type
-      (number (parse-number:parse-number value))
-      (string value))))
+  (let ((pointer (iup-cffi::%iup-get-attribute handle attribute)))
+    (cond ((eq attribute :wid)
+           pointer)
+          ((cffi:null-pointer-p pointer)
+           nil)
+          ((eq type 'number)
+           (parse-number:parse-number (cffi:foreign-string-to-lisp pointer)))
+          (t
+           (cffi:foreign-string-to-lisp pointer)))))
 
 (defun (setf attribute) (new-value handle attribute)
   (iup-cffi::%iup-set-str-attribute
-   handle attribute (if new-value (princ-to-string new-value) (cffi:null-pointer)))
+   handle
+   attribute
+   (if new-value
+       (princ-to-string new-value)
+       (cffi:null-pointer)))
   new-value)
 
 (defun attribute-id (handle attribute id &optional (type 'string))
@@ -131,3 +154,5 @@
 (defun handle (name)
   (iup-cffi::%iup-get-handle name))
 
+(defun name (handle)
+  (iup-cffi::%iup-get-name handle))
