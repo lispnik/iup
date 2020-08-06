@@ -5,7 +5,8 @@
 (defun open ()
   (let ((ret (iup-cffi::%iup-open (cffi:null-pointer) (cffi:null-pointer))))
     (when (= ret +error+)
-      (error "Can't initialize IUP"))))
+      (error "Can't initialize IUP")))
+  (values))
 
 (defalias close                   #'iup-cffi::%iup-close)
 (defalias main-loop               #'iup-cffi::%iup-main-loop)
