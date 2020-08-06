@@ -17,8 +17,7 @@
 (defconstant +frames-per-buffer+ 1024)
 
 (defun input-device-p (device-info)
-  (and (zerop (pa:device-info-max-output-channels device-info))
-       (> (pa:device-info-max-input-channels device-info) 0)))
+  (> (pa:device-info-max-input-channels device-info) 0))
 
 (defclass model ()
   ((device-model
@@ -37,7 +36,9 @@
               when (input-device-p device-info)
                 collect (cons device-id
                               (concatenate 'string
-                                           (pa:host-api-info-name (pa:get-host-api-info (pa:device-info-host-api device-info)))
+                                           (pa:host-api-info-name
+                                            (pa:get-host-api-info
+                                             (pa:device-info-host-api device-info)))
                                            " "
                                            (pa:device-info-name device-info))))
         (device-selected-model *model*)
@@ -84,8 +85,9 @@
                  (setf *capture-thread-stop* nil))
                (iup-threads:call-with-main-loop
                 (lambda ()
-                  (iup-plot:begin plot t)))
-               (loop with buffer = (make-array (* +frames-per-buffer+ +num-channels+) :element-type 'single-float)
+                  (iup-plot:begin plot nil)))
+               (loop with buffer = (make-array (* +frames-per-buffer+ +num-channels+)
+                                               :element-type 'single-float)
                      with stop-p = nil
                      for samples from 0 by +frames-per-buffer+
                      ;; TODO update status bar with current sample count
@@ -97,7 +99,7 @@
                           (iup-threads:call-with-main-loop
                            (lambda ()
                              (dotimes (i (length buffer))
-                               (iup-plot:add plot i (aref buffer i)))))))
+                               (iup-plot:add plot (+ samples i) (aref buffer i)))))))
                (iup-threads:call-with-main-loop
                 (lambda ()
                   (iup-plot:end plot))))
@@ -115,12 +117,12 @@
   iup:+default+)
 
 (defun audio-capture ()
-;;  (pa:initialize)
+  (pa:initialize)
   (iup:open)
-  ;; (iup-plot:open)
-  ;; (iup-imglib:open)
+  (iup-plot:open)
+  (iup-imglib:open)
   (iup-threads:start)
-  (sleep 0.25)
+  (sleep 1)
   (let* ((device-list
            (iup:list :dropdown :yes
                      :expand :horizontal
@@ -160,10 +162,12 @@
             :size "HALFxHALF")))
     (iup-threads:call-with-main-loop
      (lambda ()
-       (iup:message "test" "herelooasdf")
        (iup:show dialog)))))
 
 #-sbcl (audio-capture)
+
+(trace iup-plot:begin)
+(trace iup-plot:end)
 
 #+sbcl
 (sb-int:with-float-traps-masked
