@@ -25,7 +25,6 @@
                #:iup-utils
                #:cffi
                #:alexandria
-               #:genhash
                #:trivial-arguments
                #:split-sequence
                #:parse-number
