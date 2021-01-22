@@ -556,12 +556,12 @@
   (dialog ihandle))
 
 (cffi:defcfun (%iup-class-info-dialog "IupClassInfoDialog") ihandle
-  (dialog ihandle))
+  (parent ihandle))
 
-(cffi:defcfun (%iup-globals-dialog "IupGlobalsDialog") ihandle
-  (dialog ihandle))
+(cffi:defcfun (%iup-globals-dialog "IupGlobalsDialog") ihandle)
 
 (cffi:defcfun (%iup-element-properties-dialog "IupElementPropertiesDialog") ihandle
+  (parent ihandle)
   (element ihandle))
 
 (cffi:defcfun (%iup-image "IupImage") ihandle

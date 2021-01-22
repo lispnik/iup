@@ -1,6 +1,10 @@
 (in-package #:iup)
 
-(export '(platform platform-string call-with-iup with-iup))
+(export '(platform platform-string call-with-iup with-iup
+          globals-dialog
+          class-info-dialog
+          layout-dialog
+          element-properties-dialog))
 
 (defun call-with-iup (func)
   #+windows (iup-cffi::%set-process-dpi-aware)
@@ -36,3 +40,8 @@
             system-version
             lisp-implementation-type
             lisp-implementation-version)))
+
+(defalias globals-dialog #'iup-cffi::%iup-globals-dialog)
+(defalias class-info-dialog #'iup-cffi::%iup-class-info-dialog)
+(defalias layout-dialog #'iup-cffi::%iup-layout-dialog)
+(defalias element-properties-dialog #'iup-cffi::%iup-element-properties-dialog)
