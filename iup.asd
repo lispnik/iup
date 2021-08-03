@@ -11,6 +11,7 @@
     :serial t
     :components ((:file "packages")
                  (:file "constants")
+                 (:file "key")
                  (:file "callback")
                  (:file "global-callback")
                  (:file "classes")
