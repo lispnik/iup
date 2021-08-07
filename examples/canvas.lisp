@@ -11,11 +11,11 @@
 (defparameter *canvas* nil)
 
 (defun canvas-redraw (handle x y)
+  (declare (ignore handle x y))
   (cd:activate *canvas*)
   (multiple-value-bind (w h)
       (cd:size *canvas*)
     (cd:clear *canvas*)
-    (print (cd:stipple *canvas*))
     (let ((stipple (make-array '(100 100) :element-type 'bit)))
       (loop for i below 100
 	    do (loop for j below 100
@@ -26,7 +26,6 @@
 	  (cd:foreground *canvas*) cd:+red+)
     (cd:sector *canvas* (* 1/2 w) (* 1/2 h) (* 1/4 w) (* 1/4 h) 0 360)
     (cd:flush *canvas*))
-
   iup:+default+)
 
 (defun canvas-map (handle)
