@@ -2,9 +2,12 @@
   (:use #:common-lisp)
   (:export #:start
            #:stop
-           #:call-with-main-loop))
+           #:call-with-main-loop
+           #:*iup-main-loop-thread*))
 
 (in-package #:iup-threads)
+
+(defvar *iup-main-loop-thread* nil)
 
 (defvar *post-message-handler* nil)
 
@@ -38,13 +41,14 @@
   (when *post-message-handler* (iup:exit-loop))
   (setf *post-message-handler* nil
         *post-message-queue* (lparallel.queue:make-queue))
-  (bt:make-thread
-   (lambda ()
-     #+sbcl (sb-int:with-float-traps-masked
-                (:divide-by-zero :invalid)
-              (iup-loop))
-     #-sbcl (iup-loop))
-   :name "iup-main-loop"))
+  (setf *iup-main-loop-thread*
+        (bt:make-thread
+         (lambda ()
+           #+sbcl (sb-int:with-float-traps-masked
+                      (:divide-by-zero :invalid)
+                    (iup-loop))
+           #-sbcl (iup-loop))
+         :name "iup-main-loop")))
 
 (defun stop ()
   (when *post-message-queue*
