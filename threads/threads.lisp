@@ -45,7 +45,7 @@
         (bt:make-thread
          (lambda ()
            #+sbcl (sb-int:with-float-traps-masked
-                      (:divide-by-zero :invalid)
+                      (:divide-by-zero :invalid :inexact :overflow :underflow)
                     (iup-loop))
            #-sbcl (iup-loop))
          :name "iup-main-loop")))
