@@ -1,13 +1,13 @@
+(ql:quickload '("iup-web"))
+
 (defpackage #:iup-examples.web-browser
-  (:use #:common-lisp
-	#:alexandria)
+  (:use #:common-lisp)
   (:export #:web-browser))
 
 (in-package #:iup-examples.web-browser)
 
-;;; webbrowser.c
-
 (defvar *web* nil)
+
 (defvar *url* "http://www.lispworks.com/documentation/HyperSpec/Front/index.htm")
 
 (defun back (handle)
@@ -35,26 +35,19 @@
   (setf (iup:attribute *web* :value) *url*)
   iup:+default+)
 
-#+nil
-(cffi::defcallback history-cb :int ((handle iup-cffi::ihandle))
-  (let ((back (parse-integer (iup:attribute handle :backcount)))
-	(fwrd (parse-integer (iup:attribute handle :forwardcount))))
-    (loop for i from (- back) below 0 
-	  do (format t "Backaward ~A ~A" i (iup:attribute handle (format nil "ITEMHISTORY~A" i))))
-    (format t "Current: ~A" (iup:attribute handle :itemhistory0))
-    (loop for i from 0 to fwrd
-	  do (format t "Forward ~A ~A" i (iup:attribute handle (format nil "ITEMHISTORY~A" i))))))
-
 (defun web-browser ()
   (iup:with-iup ()
     (iup-web:open)
     (let* ((btn-back (iup:button :title "Back" :action 'back))
 	   (btn-forward (iup:button :title "Forward" :action 'forward))
-	   (text (iup:text :expand "HORIZONTAL" :value *url*))
+	   (text (iup:text :expand :horizontal
+                           :value *url*
+                           :valuechanged_cb #'(lambda (handle)
+                                                (setf *url* (iup:attribute handle :value))
+                                                iup:+default+)))
 	   (btn-load (iup:button :title "Load" :action 'goto))
 	   (btn-reload (iup:button :title "Reload" :action 'reload))
 	   (btn-stop (iup:button :title "Stop" :action 'stop))
-	   #+nil (btn-history (iup:button :title "History" :action 'history-cb))
 	   (web (iup-web:web-browser :expand "YES"))
 	   (dialog (iup:dialog 
 		    (iup:vbox
@@ -64,9 +57,7 @@
 				  text
 				  btn-load
 				  btn-reload
-				  btn-stop
-				  #+nil btn-history
-				  )
+				  btn-stop)
 			    :margin "5x5"
 			    :gap "5")
 			   web))
@@ -80,8 +71,9 @@
       (iup:show dialog)
       (iup:main-loop))))
 
-#+nil
+#+sbcl
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)
   (web-browser))
 
+#-sbcl (web-browser)
