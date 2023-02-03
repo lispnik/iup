@@ -80,6 +80,22 @@ Then load iup.asd in the usual way (e.g. `(ql:quickload "iup")`
 *NOTE:* For SBCL, you need to set a larger heap size to compile the
 bindings, e.g. ~--dynamic-space-size 2048~
 
+* Running GUI Applications on Windows using SLIME or SLY
+
+On Windows, it is necessary to start your Lisp indrectly via ~CMD.EXE~, e.g. 
+for SLY, in your Emacs configuration, include something like:
+
+#+begin_src lisp :results silent :export none
+  (setq sly-lisp-implementations
+           '((ccl ("cmd" "/c" "wx86cl64"))
+             (sbcl ("cmd" "/c" "sbcl.exe" "--dynamic-space-size" "2048"))))
+#+end_src
+
+Similarly use ~slime-lisp-implementations~ if your are using SLIME.
+
+This is not specific to IUP or the bindings. It also works for running other 
+graphical application libraries like CL-SDL2.
+
 * Hello, World!
 
 #+begin_src lisp :results silent :export none :tangle examples/hello.lisp
