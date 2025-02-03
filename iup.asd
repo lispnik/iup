@@ -29,5 +29,4 @@
                #:trivial-arguments
                #:split-sequence
                #:parse-number
-               #:pffft
                #:tecgraf-base))

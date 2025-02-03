@@ -71,8 +71,6 @@ Download/clone the following systems:
 
 - lispnik/`tecgraf-base`
 
-- lispnik/`pffft`
-
 Those are required by Iup. 
 
 Then load iup.asd in the usual way (e.g. `(ql:quickload "iup")`

@@ -1,6 +1,6 @@
 (defpackage #:iup-glcontrols-cffi
-  (:use #:common-lisp)
-  (:import-from #:tecgraf-base #:ihandle))
+  (:use #:common-lisp
+	#:iup-cffi))
 
 (in-package #:iup-glcontrols-cffi)
 

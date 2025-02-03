@@ -1,6 +1,6 @@
 (defpackage #:iup-im-cffi
   (:use #:common-lisp)
-  (:import-from #:tecgraf-base #:ihandle))
+  (:import-from #:iup-cffi #:ihandle))
 
 (in-package #:iup-im-cffi)
 

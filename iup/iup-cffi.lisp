@@ -1,7 +1,7 @@
 (defpackage #:iup-cffi
   (:use #:common-lisp
         #:alexandria)
-  (:import-from #:tecgraf-base #:ihandle))
+  (:export #:ihandle))
 
 (in-package #:iup-cffi)
 
@@ -12,14 +12,7 @@
 
 (cffi:use-foreign-library iup)
 
-(defmethod print-object ((object ihandle) stream)
-  (print-unreadable-object (object stream :type t)
-    (let ((pointer (pffft:pointer object)))
-      (if (cffi:null-pointer-p pointer)
-          (write-string "NULL" stream)
-          (format stream "~S ~X"
-                  (iup-cffi::%iup-get-class-name object)
-                  (cffi:pointer-address pointer))))))
+(cffi:defctype ihandle :pointer)
 
 (defun attr-name-from-c (value)
   (if (cffi:null-pointer-p value) nil value))
