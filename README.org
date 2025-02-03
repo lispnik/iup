@@ -1167,8 +1167,35 @@ export format is a [[https://www.tecgraf.puc-rio.br/iup/en/led.html][IUP LED fil
 
 ** List Dialog
 
+Use [[http://webserver2.tecgraf.puc-rio.br/iup/en/elem/iuplist.html][iup:list]]. The list can be visible or can be dropped down. It also
+can have an edit box for text input.
+
 #+begin_src lisp :results silent :tangle examples/dialogs.lisp
+  (defun iuplist ()
+      (iup:with-iup ()
+        (let* ((frame (iup:frame
+                       (iup:vbox (loop for list in (list (iup:list :value 1 :tip "List 1" :multiple :yes)
+                                                         (iup:list :value 2 :tip "list 2" :dropdown :yes)
+                                                         (iup:list :value 3 :tip "List 3" :editbox :yes))
+                                    do (loop for i from 1 upto 3
+                                          do (setf (iup:attribute list i)
+                                                   (format nil "Item ~A" i)))
+                                    collect list))
+                       :title "IUP List"))
+               (dialog (iup:dialog frame :menu "menu" :title "a title")))
+          (iup:map dialog)
+          (iup:show dialog)
+          (iup:main-loop))))
+
+  #-sbcl (iuplist)
+
+  ,#+sbcl
+  (sb-int:with-float-traps-masked
+      (:divide-by-zero :invalid)
+    (iuplist))
 #+end_src
+
+Note that [[http://webserver2.tecgraf.puc-rio.br/iup/en/dlg/iuplistdialog.html%20][ListDialog]] is currently not supported.
 
 ** Get Param Dialog
 
