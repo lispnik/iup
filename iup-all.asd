@@ -11,6 +11,7 @@
 	       #:iup-im
 	       #:iup-imglib
 	       #:iup-mglplot
+	       #:iup-plot
 	       #+windows #:iup-olecontrol
 	       #:iup-scintilla
 	       #:iup-tuio
