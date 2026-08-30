@@ -7,21 +7,22 @@ name: CI
 # Testing upstream's unreleased tip is ci-upstream.yml's job, driven by the
 # repository_dispatch tecgraf-iup now sends.
 #
-# SCOPE: :iup, :iup-cd and :iup-im. The last two were broken from the day the
+# SCOPE: :iup, :iup-cd, :iup-im and :iup-controls. The last two were broken from the day the
 # im and cd bindings were rewritten around the packages im.ffi and cd.ffi --
 # they still named the systems cd-cffi and im-cffi and the type
 # cd-cffi::cd-context -- and are ported here. Loading them is what proves the
 # port, so they are in this list rather than assumed.
 #
-# Still out, for reasons that are not CI's to fix:
+# iup-controls is in the list after being wrongly excluded as "hangs
+# indefinitely on load". It never hung: loading tecgraf-iup v2.0.0's macOS
+# frameworks was SIGKILLed by the OS -- cmake --install had invalidated their
+# ad-hoc signature -- about ten milliseconds in and with no dlerror, which
+# reads exactly like a hang from Lisp. v2.0.1 re-signs the frameworks and
+# gives them the LC_RPATH they were missing.
 #
-#   iup-controls hangs indefinitely on load rather than failing, which is
-#   worse than red: it cannot be reported at all.
-#
-#   iup-plot, iup-mglplot, iup-scintilla and iup-tuio bind libraries that
-#   lispnik/tecgraf-iup has no CMake target for, so there is nothing to load.
-#
-# Widening this list further is the measure of that work being done.
+# Still out: iup-plot, iup-mglplot, iup-scintilla and iup-tuio bind libraries
+# that lispnik/tecgraf-iup has no CMake target for, so there is nothing to
+# load. Widening this list further is the measure of that work being done.
 
 on:
   push:
@@ -31,7 +32,7 @@ on:
   workflow_dispatch:
 
 env:
-  IUP_VERSION: v2.0.0
+  IUP_VERSION: v2.0.1
   # iup-cd and iup-im link through to CD and IM, so their libraries and their
   # Lisp bindings both have to be present.
   CD_VERSION: v2.0.1
@@ -219,12 +220,13 @@ jobs:
           sbcl --non-interactive \
             --eval '(require :asdf)' \
             --eval "(asdf:initialize-source-registry '(:source-registry (:tree \"$LISP_TREE\") (:tree \"$LISP_BASE\") (:tree \"$LISP_IM\") (:tree \"$LISP_CD\") :ignore-inherited-configuration))" \
-            --eval '(dolist (s (list :iup :iup-cd :iup-im))
+            --eval '(dolist (s (list :iup :iup-cd :iup-im :iup-controls))
                       (asdf:load-system s)
                       (format t "~%loaded ~A~%" s))' \
             --eval '(progn
                       (dolist (sym (list "IupVersion" "IupOpen" "IupClose" "IupCreate"
-                                         "cdContextIup" "IupLoadImage" "IupImageFromImImage"))
+                                         "cdContextIup" "IupLoadImage" "IupImageFromImImage"
+                                         "IupMatrix" "IupCells"))
                         (let ((found (and (cffi:foreign-symbol-pointer sym) t)))
                           (format t "  ~A: ~A~%" sym found)
                           (unless found
