@@ -12,9 +12,45 @@
     (#\v . :pointer)    ;FIXME Asked about this on mailing list, confirmed it should be "C"
     (#\n . iup-cffi:ihandle)))
 
+(defvar *class-callback-trampolines* (make-hash-table :test #'equal)
+  "(classname-string . callback-name-string) -> trampoline keyword.
+
+One CFFI callback per distinct (event name, signature), not per class. Every
+DEFCALLBACK costs a vector in SBCL's fixed static code space on arm64, and a
+trampoline per class multiplied that by every class sharing the event: the
+IUP 3.32 classes database generates ~5900 (class, callback) pairs but only
+229 distinct (name, signature) pairs, and the per-class scheme ran macOS out
+of static code space outright:
+
+  Not enough room left in static code space to allocate vector.
+
+The class tells the trampoline nothing anyway -- dispatch needs the event's
+identity and the Ihandle*, and the handle arrives as the first argument.
+Names with more than one signature across classes (ACTION alone has seven)
+are why the signature is part of the key and this table exists: the caller
+knows its class and event, and this maps them to the right trampoline.")
+
+(defun register-class-callback-trampoline (classname callback-name trampoline)
+  (setf (gethash (cons (string classname) (string callback-name))
+                 *class-callback-trampolines*)
+        trampoline))
+
 (defun class-callback-name (classname callback-name package)
   (declare (ignore package))
-  (make-keyword (format nil "~:@(~A-~A~)" classname callback-name)))
+  (or (gethash (cons (string classname) (string callback-name))
+               *class-callback-trampolines*)
+      (error "No callback trampoline is registered for ~A on class ~A"
+             callback-name classname)))
+
+(defun callback-trampoline-name (callback-name spec)
+  "The trampoline keyword for one (event name, signature) pair."
+  (make-keyword (format nil "~:@(CALLBACK-~A/~A~)" callback-name (or spec ""))))
+
+(defvar *emitted-trampolines* (make-hash-table :test #'eq)
+  "Trampolines already emitted in this image, so a macroexpansion can skip
+re-emitting one. Redefining a CFFI callback does not reclaim its old static
+code vector, so duplicate DEFCALLBACKs would leak the very space this scheme
+exists to conserve.")
 
 (defun check-callback-args (action args-list)
   (declare (ignore action args-list))
@@ -58,12 +94,20 @@
                          collect (cl:list arg s) into arg-list
                          finally (return (list* '(arg0 iup-cffi:ihandle) arg-list))))
          (return-and-arg-list (cl:list return-type arg-list))
-         (callback-name (class-callback-name classname name package)))
-    `(cffi:defcallback ,callback-name ,@return-and-arg-list
-	 (let* ((action (find-callback ',callback-name arg0))
-		(args-list-names (cl:list ,@(mapcar #'car arg-list)))
-		(action-args-list (cl:list ,@(mapcar #'car arg-list))))
-	   (invoke-callback action action-args-list args-list-names)))))
+         (callback-name (callback-trampoline-name name spec)))
+    (declare (ignore package))
+    `(progn
+       ;; Always recorded: the mapping is per (class, name) even though the
+       ;; trampoline is shared.
+       (register-class-callback-trampoline ,(string classname) ,(string name)
+                                           ,callback-name)
+       ,@(unless (gethash callback-name *emitted-trampolines*)
+           (setf (gethash callback-name *emitted-trampolines*) spec)
+           `((cffi:defcallback ,callback-name ,@return-and-arg-list
+               (let* ((action (find-callback ',callback-name arg0))
+                      (args-list-names (cl:list ,@(mapcar #'car arg-list)))
+                      (action-args-list (cl:list ,@(mapcar #'car arg-list))))
+                 (invoke-callback action action-args-list args-list-names))))))))
 
 (defun %iup-image (width height pixels)
   (assert (= (length pixels) (* width height)))
