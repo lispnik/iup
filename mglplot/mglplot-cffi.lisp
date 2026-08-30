@@ -4,6 +4,7 @@
 (in-package #:iup-mglplot-cffi)
 
 (cffi:define-foreign-library iup-mglplot
+  (:darwin (:framework "iup_mglplot"))
   (:unix "libiup_mglplot.so")
   (:windows "iup_mglplot.dll")
   (t (:default "iup_mglplot")))

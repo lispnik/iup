@@ -2,6 +2,6 @@
   :pathname "plot"
   :components ((:file "plot-cffi"))
   :depends-on (#:iup-cffi
-	       #:cd-cffi
+	       #:cd
                #:tecgraf-base
 	       #:cffi))

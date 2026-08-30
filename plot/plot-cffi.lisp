@@ -5,6 +5,7 @@
 (in-package #:iup-plot-cffi)
 
 (cffi:define-foreign-library iup-plot
+  (:darwin (:framework "iup_plot"))
   (:unix "libiup_plot.so")
   (:windows "iup_plot.dll")
   (t (:default "iup_plot")))
@@ -179,4 +180,4 @@
 
 (cffi:defcfun (%iup-plot-paint-to "IupPlotPaintTo") :void
   (handle ihandle)
-  (cd-canvas cd-cffi::cd-canvas))
+  (cd-canvas cd.ffi::cd-canvas))

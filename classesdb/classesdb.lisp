@@ -1,77 +1,9 @@
 (defpackage #:iup-classesdb
   (:use #:common-lisp
         #:alexandria)
-  (:export #:regenerate))
+  (:export #:regenerate-from-dumps))
 
 (in-package #:iup-classesdb)
-
-(defun attribute-metadata (class attrib table)
-  (cffi:with-foreign-objects
-      ((get-func :pointer)
-       (set-func :pointer)
-       (default-value :pointer)
-       (system-default :pointer)
-       (flags :int))
-    (iup-classesdb-cffi::%iup-class-register-get-attribute
-     class
-     attrib
-     get-func
-     set-func
-     default-value
-     system-default
-     flags)
-    (list
-     :type (iup-classesdb-cffi::%iup-table-get-curr-type table)
-     :default-value (cffi:foreign-string-to-lisp (cffi:mem-aref default-value :pointer))
-     :system-default (cffi:foreign-string-to-lisp (cffi:mem-aref system-default :pointer))
-     :flags (cffi:foreign-bitfield-symbols 'iup-classesdb-cffi::attrib-flags (cffi:mem-ref flags :int)))))
-
-(defun attribute-table (class)
-  (cffi:with-foreign-slots ((iup-classesdb-cffi::attrib-func) class (:struct iup-classesdb-cffi::iclass))
-    iup-classesdb-cffi::attrib-func))
-
-(defun class-metadata (classname)
-  (let* ((class (iup-classesdb-cffi::%iup-register-find-class classname))
-         (table (attribute-table class)))
-    (loop for attrib = (iup-classesdb-cffi::%iup-table-first table)
-            then (iup-classesdb-cffi::%iup-table-next table)
-          while attrib
-          collect (list* :name attrib (attribute-metadata class attrib table)))))
-
-(defun all-classes ()
-  (flet ((iup-get-all-classes (names n)
-           (iup-cffi::%iup-get-all-classes names n)))
-    (let* ((max-n (iup-get-all-classes (cffi:null-pointer) 0))
-           (array (cffi:foreign-alloc :pointer
-                                      :initial-element (cffi:null-pointer)
-                                      :count max-n
-                                      :null-terminated-p t)))
-      (unwind-protect
-           (progn
-             (iup-get-all-classes array max-n)
-             (loop for i below max-n
-                   for ref = (cffi:mem-aref array :pointer i)
-                   until (cffi:null-pointer-p ref)
-                   collect (cffi:foreign-string-to-lisp ref) into result
-                   finally (return (sort result #'string<))))
-        (cffi:foreign-free array)))))
-
-(defmacro with-iup (&body body)
-  (with-gensyms (result)
-    `(unwind-protect
-          (let ((,result (iup-cffi::%iup-open (cffi:null-pointer) (cffi:null-pointer))))
-            (unless (zerop ,result)
-              (error "Can't load IUP"))
-            ,@body)
-       (iup-cffi::%iup-close))))
-
-(defun classes-metadata ()
-  (loop for classname in (all-classes)
-        collect
-        (list :classname
-              classname
-              :attributes             
-              (class-metadata classname))))
 
 (defparameter *static-metadata*
   ;; :library names the shared object per platform and :init-function the C
@@ -149,9 +81,17 @@
      :package "IUP-MGLPLOT"
      :vanity-alist (("mglplot" . "plot")
                     ("mgllabel" . "label")))
-    #+windows
+    ;; Not #+windows: this is policy consumed by a transformer that may run
+    ;; anywhere. Whether OLE classes exist is decided by which dump mentions
+    ;; IupOleControlOpen, not by the machine doing the transforming.
     (:library ((:windows "iupole.dll"))
      :init-function "IupOleControlOpen"
+     ;; Claimed, not discovered: on Windows the web browser is OLE-based, so
+     ;; IupWebBrowserOpen registers olecontrol first and sequential
+     ;; attribution hands it to IUP-WEB -- whose excludes then drop it
+     ;; entirely. A claim pulls the class here from wherever the dump
+     ;; recorded it, provided this module ran at all.
+     :classname-claims ("olecontrol")
      :package "IUP-OLECONTROL")
     (:library ((:darwin (:framework "iup_scintilla")) (:unix "libiup_scintilla.so") (:windows "iup_scintilla.dll"))
      :init-function "IupScintillaOpen"
@@ -179,153 +119,156 @@ creation)
 
 :VANITY-ALIST a mapping between IUP names and Lisp names")
 
-(defparameter *platform* 
-  #+windows :windows
-  #+linux :linux
-  #+(and unix (not linux)) :unix)
-
-(defun class-format (class)
-  (cffi:with-foreign-slots ((iup-classesdb-cffi::format) class (:struct iup-classesdb-cffi::iclass))
-    iup-classesdb-cffi::format))
-
-(defun class-child-type (class)
-  (cffi:with-foreign-slots ((iup-classesdb-cffi::child-type) class (:struct iup-classesdb-cffi::iclass))
-    iup-classesdb-cffi::child-type))
+;;; ---------------------------------------------------------------------------
+;;; From here down this file consumes the classes.sexp files that
+;;; lispnik/tecgraf-iup now produces and ships in its release archives
+;;; (share/iup/classes.sexp), written by tools/iup_classdump.c there.
+;;;
+;;; It used to introspect a running IUP over FFI against internal SDK
+;;; symbols, which needed a GUI session on three platforms, a chained CI
+;;; workflow to merge them, and internal symbols that were only exported by
+;;; accident -- and its output still went six years stale, because nothing
+;;; tied the snapshot to a build. Metadata produced by and shipped with the
+;;; exact build it describes cannot drift from it, and turning it into the
+;;; database is now pure list manipulation: no FFI, no display, one process.
+;;;
+;;; The dump is facts; this file is policy. Which classes belong to which
+;;; package, their Lisp vanity names and which constructors are hand-written
+;;; all come from *static-metadata* above, joined to the dump's modules by
+;;; the C initializer name.
 
 (defun child-spec-from-format (format)
   "Returns :CHILD-NONE, :CHILD-MANY or an integer count of children."
-  (cond ((find #\g format)
-         :child-many)
-        ((find #\h format)
-         (count #\h format))
+  (cond ((find #\g format) :child-many)
+        ((find #\h format) (count #\h format))
         (t :child-none)))
 
-(defun %entry-available-p (metadata)
-  "Load the entry's library and return its initializer as a callable, or NIL.
+(defun read-dump (pathname)
+  "Read one classes.sexp as (VALUES plist iup-version-string)."
+  (with-open-file (stream pathname)
+    (let* ((header (read-line stream))
+           (version (let ((mark (search "IUP " header)))
+                      (if mark
+                          (remove-if-not #'(lambda (c) (or (digit-char-p c) (char= c #\.)))
+                                     (subseq header (+ mark 4)))
+                          "unknown"))))
+      (let ((*read-eval* nil))
+        (values (read stream) version)))))
 
-NIL means the running IUP simply does not provide this addon -- most of them
-have no CMake target in lispnik/tecgraf-iup yet -- and the entry's existing
-metadata is carried over unchanged rather than dropped."
-  (let ((library (getf metadata :library))
-        (init-name (getf metadata :init-function)))
-    (when library
-      ;; The clauses are keyed like DEFINE-FOREIGN-LIBRARY's: pick the first
-      ;; whose feature is present. :darwin is listed before :unix for the
-      ;; same reason it is in every -cffi file -- darwin satisfies both.
-      (let ((clause (find-if #'(lambda (clause)
-                                 (member (first clause) *features*))
-                             library)))
-        (unless (and clause
-                     (ignore-errors (cffi:load-foreign-library (second clause))))
-          (return-from %entry-available-p nil))))
-    (if (string= init-name "IupOpen")
-        ;; The core: WITH-IUP has already opened it.
-        (constantly nil)
-        (let ((pointer (cffi:foreign-symbol-pointer init-name)))
-          (when pointer
-            (lambda ()
-              ;; :void regardless of the true return type: some initializers
-              ;; return int, and discarding a register is safe where reading
-              ;; one from a void function is not.
-              (cffi:foreign-funcall-pointer pointer () :void)))))))
+(defun %transform-attribute (attribute)
+  (destructuring-bind (&key name type default-value system-default flags
+                       &allow-other-keys)
+      attribute
+    (list :name name
+          :type type
+          ;; The C side preserves IUPAF_SAMEASSYSTEM as a marker; the
+          ;; database has always stored the resolved value.
+          :default-value (if (eq default-value :same-as-system)
+                             system-default
+                             default-value)
+          :system-default system-default
+          :flags flags)))
 
-(defun create-classesdb ()
-  "Create a printable representaion of IUP metadata containing enough
-information to create the Lisp API at compilation time.
+(defun %transform-class (class metadata)
+  (destructuring-bind (&key classname format attributes &allow-other-keys) class
+    (let ((vanity (assoc-value (getf metadata :vanity-alist) classname
+                               :test #'string=)))
+      (list :classname classname
+            :format format
+            :children (child-spec-from-format format)
+            :override-p (and (find classname (getf metadata :override-p)
+                                   :test #'string=)
+                             t)
+            :vanity-classname (and vanity (string-upcase vanity))
+            :attributes (sort (mapcar #'%transform-attribute attributes)
+                              #'string< :key #'(lambda (a) (getf a :name)))))))
 
-Returns (VALUES platform-section regenerated-package-names): only packages
-whose addon library loaded are in the section, and the caller merges the
-rest forward from the previous database."
-  (flet ((vanity-name (vanity-alist classname)
-           (if-let (vanity-name (assoc-value vanity-alist classname :test #'string=))
-             (string-upcase vanity-name))))
-    (loop with base-classnames = (with-iup (all-classes))
-          for metadata in *static-metadata*
-          for package = (getf metadata :package)
-          for core-p = (string= (getf metadata :init-function) "IupOpen")
-          for initializer = (%entry-available-p metadata)
-          unless initializer
-            do (format t "~&Skipping ~A: its library did not load here" package)
-          when initializer
-            collect package into regenerated
-          when initializer
+(defun transform-dump (dump)
+  "One dump -> (VALUES platform-section regenerated-package-names)."
+  (let* ((modules (getf dump :modules))
+         ;; Every class in the dump by name, wherever attribution put it,
+         ;; for the :classname-claims entries.
+         (all-classes (make-hash-table :test #'equal)))
+    (dolist (module modules)
+      (dolist (class (getf module :classes))
+        (setf (gethash (getf class :classname) all-classes) class)))
+    (loop for metadata in *static-metadata*
+          for module = (find (getf metadata :init-function) modules
+                             :key #'(lambda (m) (getf m :initializer))
+                             :test #'string=)
+          when module
+            collect (getf metadata :package) into regenerated
+          when module
             collect
-            (let* ((classes (with-iup (funcall initializer) (all-classes)))
-                   (classname-excludes (getf metadata :classname-excludes))
-                   (difference (remove-if #'(lambda (classname)
-                                              (find classname classname-excludes :test #'string=))
-                                          (if core-p
-                                              base-classnames
-                                              (set-difference classes base-classnames :test #'string=))))
-                   (override-p (getf metadata :override-p))
-                   (vanity-alist (getf metadata :vanity-alist)))
-              (format t "~&Processing for package ~A" package)
-              (with-iup
-                (funcall initializer)
-                (list :package package
-                      :classnames
-                      (loop for classname in difference
-                            for class = (iup-classesdb-cffi::%iup-register-find-class classname)
-                            for class-format = (class-format class)
-                            collect
-                            (list :classname classname
-                                  :format class-format
-                                  :children (child-spec-from-format class-format)
-                                  :override-p (and (find classname override-p :test #'string=) t)
-                                  :vanity-classname (vanity-name vanity-alist classname)
-                                  :attributes (class-metadata classname))))))
-            into result
-          finally (return (values (append (list :platform *platform*)
-                                          (list :metadata result))
+            (let ((excludes (getf metadata :classname-excludes))
+                  (claims (getf metadata :classname-claims)))
+              (list :package (getf metadata :package)
+                    :classnames
+                    (append
+                     (loop for class in (getf module :classes)
+                           unless (find (getf class :classname) excludes
+                                        :test #'string=)
+                             collect (%transform-class class metadata))
+                     (loop for claim in claims
+                           for class = (gethash claim all-classes)
+                           when class
+                             collect (%transform-class class metadata)))))
+              into packages
+          finally (return (values (list :platform (getf dump :platform)
+                                        :metadata packages)
                                   regenerated)))))
 
 (defun classesdb-pathname ()
   (asdf:system-relative-pathname "iup" "classesdb" :type "lisp-sexp"))
 
 (defun read-classesdbs ()
-  (let ((classesdb-pathname (classesdb-pathname)))
-    (if (probe-file classesdb-pathname)
-        (with-open-file (stream classesdb-pathname :direction :input)
+  (let ((pathname (classesdb-pathname)))
+    (if (probe-file pathname)
+        (with-open-file (stream pathname)
           (let ((*read-eval* nil))
-            (read stream stream)))
-        '((:platform :linux)
-          (:platform :windows)
-          (:platform :unix)))))
+            (read stream)))
+        '((:platform :linux) (:platform :windows) (:platform :unix)))))
 
 (defun update-classesdbs (current-classesdbs classesdb regenerated)
-  "Merge at the PACKAGE level, not the platform level.
-
-Replacing a platform's whole section would silently drop the metadata for
-every package whose addon library is not built yet -- IUP-PLOT, IUP-SCINTILLA
-and friends -- when the point of keeping a database at all is that the API
-survives what the current machine cannot introspect. Packages actually
-regenerated are replaced; the rest ride along from the previous file."
-  (let ((our-platform *platform*))
-    (mapcar #'(lambda (existing-classesdb)
-                (if (eq (getf existing-classesdb :platform) our-platform)
-                    (let ((old-metadata (getf existing-classesdb :metadata))
-                          (new-metadata (getf classesdb :metadata)))
-                      (list :platform our-platform
-                            :metadata
-                            (append new-metadata
-                                    (remove-if #'(lambda (package)
-                                                   (find (getf package :package) regenerated
-                                                         :test #'string=))
-                                               old-metadata))))
-                    existing-classesdb))
+  "Merge at the PACKAGE level: regenerated packages replace their
+predecessors, everything else -- an addon whose library this dump's build
+did not include -- rides along from the previous file."
+  (let ((platform (getf classesdb :platform)))
+    (mapcar #'(lambda (existing)
+                (if (eq (getf existing :platform) platform)
+                    (list :platform platform
+                          :metadata
+                          (append (getf classesdb :metadata)
+                                  (remove-if #'(lambda (package)
+                                                 (find (getf package :package)
+                                                       regenerated
+                                                       :test #'string=))
+                                             (getf existing :metadata))))
+                    existing))
             current-classesdbs)))
 
-(defun write-classesdbs (classesdbs)
-  (with-open-file (stream (classesdb-pathname) :direction :output :if-exists :supersede)
-    (format stream ";;; generated at ~A for IUP ~A -*-lisp-*-~%~%"
-            (local-time:format-timestring nil (local-time:universal-to-timestamp (get-universal-time))
-                                          :timezone local-time:+utc-zone+)
-            (with-iup (iup-cffi::%iup-version)))
+(defun write-classesdbs (classesdbs iup-version)
+  (with-open-file (stream (classesdb-pathname)
+                          :direction :output :if-exists :supersede)
+    (format stream ";;; generated at ~A for IUP ~A, from iup_classdump output -*-lisp-*-~%~%"
+            (local-time:format-timestring
+             nil (local-time:universal-to-timestamp (get-universal-time))
+             :timezone local-time:+utc-zone+)
+            iup-version)
     (write classesdbs :stream stream :pretty t :right-margin 100)))
 
-(defun regenerate ()
-  (multiple-value-bind (new-classesdb regenerated) (create-classesdb)
-    (write-classesdbs
-     (update-classesdbs (read-classesdbs) new-classesdb regenerated))
-    (format t "~&Regenerated on ~A: ~{~A~^, ~}~%" *platform* regenerated)
+(defun regenerate-from-dumps (&rest dump-pathnames)
+  "Rebuild classesdb.lisp-sexp from the classes.sexp files the tecgraf-iup
+release archives ship at share/iup/classes.sexp -- one per platform, any
+subset, in any order."
+  (let ((db (read-classesdbs))
+        (version "unknown"))
+    (dolist (pathname dump-pathnames)
+      (multiple-value-bind (dump dump-version) (read-dump pathname)
+        (setf version dump-version)
+        (multiple-value-bind (section regenerated) (transform-dump dump)
+          (format t "~&~A: ~{~A~^, ~}~%"
+                  (getf section :platform) regenerated)
+          (setf db (update-classesdbs db section regenerated)))))
+    (write-classesdbs db version)
     nil))
