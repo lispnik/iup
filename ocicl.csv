@@ -14,4 +14,5 @@ split-sequence, ghcr.io/ocicl/split-sequence@sha256:3a37662eedd99c42995587b9d443
 trivial-arguments, ghcr.io/ocicl/trivial-arguments@sha256:f143e340645594e6659347bbcfab442de74f6db65df24b20ef0e259e4e060a80, trivial-arguments-20260218-f77147f/trivial-arguments.asd
 trivial-features, ghcr.io/ocicl/trivial-features@sha256:e278e24d39060fc7d3715531b16ddd9ab7f93f22ade53e436c0b86dbae3aa065, trivial-features-1.0/trivial-features.asd
 trivial-features-tests, ghcr.io/ocicl/trivial-features@sha256:e278e24d39060fc7d3715531b16ddd9ab7f93f22ade53e436c0b86dbae3aa065, trivial-features-1.0/trivial-features-tests.asd
+trivial-garbage, ghcr.io/ocicl/trivial-garbage@sha256:e76c38568f7ff0a2564ab47e27e0b2293f00f258e6510f2abec4d46920f2c4db, trivial-garbage-20260829-f0663f7/trivial-garbage.asd
 uffi, ghcr.io/ocicl/cffi@sha256:ff62b9cedea80fe2c6ea0701757e2b301b6ee9aafa1ae720966ff2611e94f76b, cffi-20260821-787d3cd/uffi-compat/uffi.asd

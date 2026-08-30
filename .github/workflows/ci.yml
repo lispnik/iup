@@ -7,23 +7,21 @@ name: CI
 # Testing upstream's unreleased tip is ci-upstream.yml's job, driven by the
 # repository_dispatch tecgraf-iup now sends.
 #
-# SCOPE, and it is narrower than the sibling im and cd bindings: this loads
-# the core :iup system only. The rest of the repository does not currently
-# load anywhere, for reasons that predate this workflow and are not CI's to
-# fix:
+# SCOPE: :iup, :iup-cd and :iup-im. The last two were broken from the day the
+# im and cd bindings were rewritten around the packages im.ffi and cd.ffi --
+# they still named the systems cd-cffi and im-cffi and the type
+# cd-cffi::cd-context -- and are ported here. Loading them is what proves the
+# port, so they are in this list rather than assumed.
 #
-#   iup-cd and iup-im depend on the systems cd-cffi and im-cffi, and on
-#   internals like cd-cffi::cd-context. Those systems no longer exist -- the
-#   im and cd bindings were rewritten around packages im.ffi and cd.ffi -- so
-#   these two have been broken since that rewrite.
+# Still out, for reasons that are not CI's to fix:
 #
-#   iup-controls hangs indefinitely on load rather than failing, so it cannot
-#   even be reported as red honestly.
+#   iup-controls hangs indefinitely on load rather than failing, which is
+#   worse than red: it cannot be reported at all.
 #
 #   iup-plot, iup-mglplot, iup-scintilla and iup-tuio bind libraries that
 #   lispnik/tecgraf-iup has no CMake target for, so there is nothing to load.
 #
-# Widening this list is the measure of that repair work being done.
+# Widening this list further is the measure of that work being done.
 
 on:
   push:
@@ -34,6 +32,10 @@ on:
 
 env:
   IUP_VERSION: v2.0.0
+  # iup-cd and iup-im link through to CD and IM, so their libraries and their
+  # Lisp bindings both have to be present.
+  CD_VERSION: v2.0.1
+  IM_VERSION: v2.0.1
 
 jobs:
   test:
@@ -81,8 +83,8 @@ jobs:
           choco install sbcl --no-progress -y
           cygpath -w "/c/Program Files/Steel Bank Common Lisp" >> "$GITHUB_PATH"
 
-      # libiup links GTK on Linux; the core library needs nothing from CD or
-      # IM, which is why only the IUP archive is fetched below.
+      # libiup links GTK on Linux. libiupcd and libiupim link through to libcd
+      # and libim, which the next step fetches from their own releases.
       - name: Install runtime dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
@@ -92,23 +94,29 @@ jobs:
             libcairo2 libglib2.0-0 libx11-6 libxrender1 libxft2 \
             libfreetype6 libfontconfig1
 
-      - name: Download IUP ${{ env.IUP_VERSION }}
+      - name: Download the IUP, CD and IM releases
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          case "$RUNNER_OS" in
-            Windows) asset="tecgraf-iup-${IUP_VERSION}-${{ matrix.asset }}.zip" ;;
-            *)       asset="tecgraf-iup-${IUP_VERSION}-${{ matrix.asset }}.tar.gz" ;;
-          esac
-          mkdir -p iup-libs
-          gh release download "$IUP_VERSION" --repo lispnik/tecgraf-iup \
-            --pattern "$asset" --dir . --clobber
-          case "$asset" in
-            *.zip)    unzip -q -o "$asset" -d iup-libs ;;
-            *.tar.gz) tar -xzf "$asset" -C iup-libs ;;
-          esac
-          ls -R iup-libs | head -20
+          fetch() {                       # project, version, destination
+            local proj="$1" ver="$2" dest="$3" asset
+            case "$RUNNER_OS" in
+              Windows) asset="tecgraf-${proj}-${ver}-${{ matrix.asset }}.zip" ;;
+              *)       asset="tecgraf-${proj}-${ver}-${{ matrix.asset }}.tar.gz" ;;
+            esac
+            mkdir -p "$dest"
+            gh release download "$ver" --repo "lispnik/tecgraf-${proj}" \
+              --pattern "$asset" --dir . --clobber
+            case "$asset" in
+              *.zip)    unzip -q -o "$asset" -d "$dest" ;;
+              *.tar.gz) tar -xzf "$asset" -C "$dest" ;;
+            esac
+          }
+          fetch iup "$IUP_VERSION" iup-libs
+          fetch cd  "$CD_VERSION"  cd-libs
+          fetch im  "$IM_VERSION"  im-libs
+          ls iup-libs cd-libs im-libs
 
       # macOS gets frameworks, not a dylib, so the loader path is a different
       # mechanism: CFFI resolves (:framework "iup") through
@@ -122,6 +130,8 @@ jobs:
           mkdir -p "$HOME/Library/Frameworks"
           cp -R iup-libs/Frameworks/*.framework "$HOME/Library/Frameworks/"
           ls "$HOME/Library/Frameworks" | head
+          # CD and IM ship dylibs, not frameworks, so they go on the dyld path.
+          echo "DYLD_LIBRARY_PATH=$PWD/cd-libs/lib:$PWD/im-libs/lib:${DYLD_LIBRARY_PATH:-}" >> "$GITHUB_ENV"
 
       - name: Put the libraries where the binding looks (Linux/Windows)
         if: runner.os != 'macOS'
@@ -131,11 +141,13 @@ jobs:
             Linux)
               d="$PWD/iup-libs/lib"
               test -f "$d/libiup.so" || { echo "::error::no libiup.so in the archive"; exit 1; }
-              echo "LD_LIBRARY_PATH=$d:${LD_LIBRARY_PATH:-}" >> "$GITHUB_ENV" ;;
+              echo "LD_LIBRARY_PATH=$d:$PWD/cd-libs/lib:$PWD/im-libs/lib:${LD_LIBRARY_PATH:-}" >> "$GITHUB_ENV" ;;
             Windows)
               d="$PWD/iup-libs/bin"
               test -f "$d/iup.dll" || { echo "::error::no iup.dll in the archive"; exit 1; }
-              cygpath -w "$d" >> "$GITHUB_PATH" ;;
+              cygpath -w "$d" >> "$GITHUB_PATH"
+              cygpath -w "$PWD/cd-libs/bin" >> "$GITHUB_PATH"
+              cygpath -w "$PWD/im-libs/bin" >> "$GITHUB_PATH" ;;
           esac
 
       - name: Install and configure ocicl
@@ -155,27 +167,38 @@ jobs:
       # tecgraf-base is a sibling repository, not an ocicl system. iup-cffi
       # imports exactly one thing from it -- a five-line defalias macro -- so
       # cloning it is cheaper than vendoring or removing the dependency.
-      - name: Check out tecgraf-base
-        run: git clone --depth 1 https://github.com/lispnik/tecgraf-base.git "$HOME/tecgraf-base"
+      - name: Check out tecgraf-base and the sibling bindings
+        run: |
+          git clone --depth 1 https://github.com/lispnik/tecgraf-base.git "$HOME/tecgraf-base"
+          # iup-cd and iup-im depend on the cd and im *bindings*, which are
+          # sibling repositories rather than ocicl systems.
+          git clone --depth 1 https://github.com/lispnik/im.git "$HOME/im-binding"
+          git clone --depth 1 https://github.com/lispnik/cd.git "$HOME/cd-binding"
 
       - name: Set up the source registry
         run: |
           tree="$PWD"; base="$HOME/tecgraf-base"
+          imb="$HOME/im-binding"; cdb="$HOME/cd-binding"
           if [ "$RUNNER_OS" = Windows ]; then
             tree="$(cygpath -m "$tree")"; base="$(cygpath -m "$base")"
+            imb="$(cygpath -m "$imb")";  cdb="$(cygpath -m "$cdb")"
           fi
           echo "LISP_TREE=$tree" >> "$GITHUB_ENV"
           echo "LISP_BASE=$base" >> "$GITHUB_ENV"
+          echo "LISP_IM=$imb" >> "$GITHUB_ENV"
+          echo "LISP_CD=$cdb" >> "$GITHUB_ENV"
 
       - name: Load the binding and report what it found
         run: |
           sbcl --non-interactive \
             --eval '(require :asdf)' \
-            --eval "(asdf:initialize-source-registry '(:source-registry (:tree \"$LISP_TREE\") (:tree \"$LISP_BASE\") :ignore-inherited-configuration))" \
-            --eval '(asdf:load-system :iup)' \
+            --eval "(asdf:initialize-source-registry '(:source-registry (:tree \"$LISP_TREE\") (:tree \"$LISP_BASE\") (:tree \"$LISP_IM\") (:tree \"$LISP_CD\") :ignore-inherited-configuration))" \
+            --eval '(dolist (s (list :iup :iup-cd :iup-im))
+                      (asdf:load-system s)
+                      (format t "~%loaded ~A~%" s))' \
             --eval '(progn
-                      (format t "~%loaded :iup~%")
-                      (dolist (sym (list "IupVersion" "IupOpen" "IupClose" "IupCreate"))
+                      (dolist (sym (list "IupVersion" "IupOpen" "IupClose" "IupCreate"
+                                         "cdContextIup" "IupLoadImage" "IupImageFromImImage"))
                         (let ((found (and (cffi:foreign-symbol-pointer sym) t)))
                           (format t "  ~A: ~A~%" sym found)
                           (unless found

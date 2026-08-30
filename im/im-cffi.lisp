@@ -28,17 +28,17 @@
   (filename-count :int))
 
 (cffi:defcfun (%iup-im-get-native-handle-image "IupGetNativeHandleImage")
-    im-cffi::im-image
+    im.ffi::im-image
   (handle :pointer))
 
 (cffi:defcfun (%iup-im-get-image-native-handle "IupGetImageNativeHandle")
     :pointer
-  (handle im-cffi::im-image))
+  (handle im.ffi::im-image))
 
 (cffi:defcfun (%iup-im-iup-image-from-im-image "IupImageFromImImage")
     ihandle
-  (handle im-cffi::im-image))
+  (handle im.ffi::im-image))
 
 (cffi:defcfun (%iup-im-iup-image-to-im-image "IupImageToImImage")
-    im-cffi::im-image
+    im.ffi::im-image
   (handle ihandle))
