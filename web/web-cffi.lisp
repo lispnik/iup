@@ -2,6 +2,7 @@
 (in-package #:iup-web-cffi)
 
 (cffi:define-foreign-library iup-web
+  (:darwin (:framework "iupweb"))
   (:unix "libiupweb.so")
   (:windows "iupweb.dll")
   (t (:default "iupweb")))

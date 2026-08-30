@@ -6,6 +6,7 @@
 (in-package #:iup-cffi)
 
 (cffi:define-foreign-library iup
+  (:darwin (:framework "iup"))
   (:unix "libiup.so")
   (:windows "iup.dll")
   (t (:default "iup")))

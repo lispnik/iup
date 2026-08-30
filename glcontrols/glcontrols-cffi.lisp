@@ -5,6 +5,7 @@
 (in-package #:iup-glcontrols-cffi)
 
 (cffi:define-foreign-library iup-glcontrols
+  (:darwin (:framework "iupglcontrols"))
   (:unix "libiupglcontrols.so")
   (:windows "iupglcontrols.dll")
   (t (:default "iupglcontrols")))

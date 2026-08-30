@@ -5,6 +5,7 @@
 (in-package #:iup-im-cffi)
 
 (cffi:define-foreign-library iup-im
+  (:darwin (:framework "iupim"))
   (:unix "libiupim.so")
   (:windows "iupim.dll")
   (t (:default "iupim")))

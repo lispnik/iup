@@ -4,6 +4,7 @@
 (in-package #:iup-imglib-cffi)
 
 (cffi:define-foreign-library iup-imglib
+  (:darwin (:framework "iupimglib"))
   (:unix "libiupimglib.so")
   (:windows "iupimglib.dll")
   (t (:default "iupimglib")))

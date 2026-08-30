@@ -4,6 +4,7 @@
 (in-package #:iup-cd-cffi)
 
 (cffi:define-foreign-library iup-cd
+  (:darwin (:framework "iupcd"))
   (:unix "libiupcd.so")
   (:windows "iupcd.dll")
   (t (:default "iupcd")))

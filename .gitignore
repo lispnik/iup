@@ -2,3 +2,6 @@
 *.fasl
 *.wx64fsl
 *.lx64fsl
+
+# ocicl vendors dependencies here; ocicl.csv pins them and is committed.
+ocicl/

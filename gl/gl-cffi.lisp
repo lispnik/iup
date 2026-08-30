@@ -5,6 +5,7 @@
 (in-package #:iup-gl-cffi)
 
 (cffi:define-foreign-library iup-gl
+  (:darwin (:framework "iupgl"))
   (:unix "libiupgl.so")
   (:windows "iupgl.dll")
   (t (:default "iupgl")))

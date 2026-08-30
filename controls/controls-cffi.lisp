@@ -2,6 +2,7 @@
 (in-package #:iup-controls-cffi)
 
 (cffi:define-foreign-library iup-controls
+  (:darwin (:framework "iupcontrols"))
   (:unix "libiupcontrols.so")
   (:windows "iupcontrols.dll")
   (t (:default "iupcontrols")))
