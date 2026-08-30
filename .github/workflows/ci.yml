@@ -227,14 +227,22 @@ jobs:
           sbcl --control-stack-size 8 --non-interactive \
             --eval '(require :asdf)' \
             --eval "(asdf:initialize-source-registry '(:source-registry (:tree \"$LISP_TREE\") (:tree \"$LISP_BASE\") (:tree \"$LISP_IM\") (:tree \"$LISP_CD\") :ignore-inherited-configuration))" \
-            --eval '(dolist (s (list :iup :iup-cd :iup-im :iup-controls :iup-plot :iup-mglplot))
+            --eval '(dolist (s (list :iup :iup-cd :iup-im :iup-controls
+                                     ;; iup_plot is deliberately not built on
+                                     ;; Windows -- it renders through CD GL,
+                                     ;; which the tecgraf-cd Windows build
+                                     ;; omits -- so the system is not loadable
+                                     ;; there. SBCL pushes :WIN32 natively.
+                                     #-win32 :iup-plot
+                                     :iup-mglplot))
                       (asdf:load-system s)
                       (format t "~%loaded ~A~%" s))' \
             --eval '(progn
                       (dolist (sym (list "IupVersion" "IupOpen" "IupClose" "IupCreate"
                                          "cdContextIup" "IupLoadImage" "IupImageFromImImage"
                                          "IupMatrix" "IupCells"
-                                         "IupPlot" "IupMglPlot"))
+                                         #-win32 "IupPlot"
+                                         "IupMglPlot"))
                         (let ((found (and (cffi:foreign-symbol-pointer sym) t)))
                           (format t "  ~A: ~A~%" sym found)
                           (unless found
