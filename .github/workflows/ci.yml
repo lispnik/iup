@@ -1,0 +1,183 @@
+name: CI
+
+# Build against the pinned tecgraf-iup release: what a user who installs IUP
+# actually gets. Release assets do not expire and do not move, so a red run
+# here means this binding changed, not that upstream did.
+#
+# Testing upstream's unreleased tip is ci-upstream.yml's job, driven by the
+# repository_dispatch tecgraf-iup now sends.
+#
+# SCOPE, and it is narrower than the sibling im and cd bindings: this loads
+# the core :iup system only. The rest of the repository does not currently
+# load anywhere, for reasons that predate this workflow and are not CI's to
+# fix:
+#
+#   iup-cd and iup-im depend on the systems cd-cffi and im-cffi, and on
+#   internals like cd-cffi::cd-context. Those systems no longer exist -- the
+#   im and cd bindings were rewritten around packages im.ffi and cd.ffi -- so
+#   these two have been broken since that rewrite.
+#
+#   iup-controls hangs indefinitely on load rather than failing, so it cannot
+#   even be reported as red honestly.
+#
+#   iup-plot, iup-mglplot, iup-scintilla and iup-tuio bind libraries that
+#   lispnik/tecgraf-iup has no CMake target for, so there is nothing to load.
+#
+# Widening this list is the measure of that repair work being done.
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+env:
+  IUP_VERSION: v2.0.0
+
+jobs:
+  test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # One platform failing must not hide the others.
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux amd64
+            os: ubuntu-24.04
+            asset: linux-amd64
+          - name: Linux arm64
+            os: ubuntu-24.04-arm
+            asset: linux-arm64
+          - name: macOS arm64
+            os: macos-15
+            asset: macos-arm64
+          - name: Windows x64
+            os: windows-2022
+            asset: windows-x64
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SBCL (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends sbcl
+
+      - name: Install SBCL (macOS)
+        if: runner.os == 'macOS'
+        run: brew install sbcl
+
+      - name: Install SBCL (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install sbcl --no-progress -y
+          cygpath -w "/c/Program Files/Steel Bank Common Lisp" >> "$GITHUB_PATH"
+
+      # libiup links GTK on Linux; the core library needs nothing from CD or
+      # IM, which is why only the IUP archive is fetched below.
+      - name: Install runtime dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libgtk-3-0 libgdk-pixbuf-2.0-0 libpango-1.0-0 libpangocairo-1.0-0 \
+            libcairo2 libglib2.0-0 libx11-6 libxrender1 libxft2 \
+            libfreetype6 libfontconfig1
+
+      - name: Download IUP ${{ env.IUP_VERSION }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          case "$RUNNER_OS" in
+            Windows) asset="tecgraf-iup-${IUP_VERSION}-${{ matrix.asset }}.zip" ;;
+            *)       asset="tecgraf-iup-${IUP_VERSION}-${{ matrix.asset }}.tar.gz" ;;
+          esac
+          mkdir -p iup-libs
+          gh release download "$IUP_VERSION" --repo lispnik/tecgraf-iup \
+            --pattern "$asset" --dir . --clobber
+          case "$asset" in
+            *.zip)    unzip -q -o "$asset" -d iup-libs ;;
+            *.tar.gz) tar -xzf "$asset" -C iup-libs ;;
+          esac
+          ls -R iup-libs | head -20
+
+      # macOS gets frameworks, not a dylib, so the loader path is a different
+      # mechanism: CFFI resolves (:framework "iup") through
+      # *darwin-framework-directories*, whose defaults include
+      # ~/Library/Frameworks. Installing there is what a user would do, and it
+      # means the binding needs no CI-specific configuration to be found.
+      - name: Put the libraries where the binding looks (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/Library/Frameworks"
+          cp -R iup-libs/Frameworks/*.framework "$HOME/Library/Frameworks/"
+          ls "$HOME/Library/Frameworks" | head
+
+      - name: Put the libraries where the binding looks (Linux/Windows)
+        if: runner.os != 'macOS'
+        run: |
+          set -euo pipefail
+          case "$RUNNER_OS" in
+            Linux)
+              d="$PWD/iup-libs/lib"
+              test -f "$d/libiup.so" || { echo "::error::no libiup.so in the archive"; exit 1; }
+              echo "LD_LIBRARY_PATH=$d:${LD_LIBRARY_PATH:-}" >> "$GITHUB_ENV" ;;
+            Windows)
+              d="$PWD/iup-libs/bin"
+              test -f "$d/iup.dll" || { echo "::error::no iup.dll in the archive"; exit 1; }
+              cygpath -w "$d" >> "$GITHUB_PATH" ;;
+          esac
+
+      - name: Install and configure ocicl
+        run: |
+          git clone --depth 1 https://github.com/ocicl/ocicl.git "$HOME/ocicl-src"
+          ( cd "$HOME/ocicl-src" && sbcl --non-interactive --load setup.lisp )
+          bin="$(find "$HOME" -type f \( -name ocicl -o -name ocicl.exe \) 2>/dev/null \
+                   | grep -v '/ocicl-src/' | head -1)"
+          test -n "$bin" || { echo "ocicl binary not found after setup"; exit 1; }
+          dirname "$bin" >> "$GITHUB_PATH"
+
+      - name: Restore dependencies
+        run: |
+          ocicl setup
+          ocicl install
+
+      # tecgraf-base is a sibling repository, not an ocicl system. iup-cffi
+      # imports exactly one thing from it -- a five-line defalias macro -- so
+      # cloning it is cheaper than vendoring or removing the dependency.
+      - name: Check out tecgraf-base
+        run: git clone --depth 1 https://github.com/lispnik/tecgraf-base.git "$HOME/tecgraf-base"
+
+      - name: Set up the source registry
+        run: |
+          tree="$PWD"; base="$HOME/tecgraf-base"
+          if [ "$RUNNER_OS" = Windows ]; then
+            tree="$(cygpath -m "$tree")"; base="$(cygpath -m "$base")"
+          fi
+          echo "LISP_TREE=$tree" >> "$GITHUB_ENV"
+          echo "LISP_BASE=$base" >> "$GITHUB_ENV"
+
+      - name: Load the binding and report what it found
+        run: |
+          sbcl --non-interactive \
+            --eval '(require :asdf)' \
+            --eval "(asdf:initialize-source-registry '(:source-registry (:tree \"$LISP_TREE\") (:tree \"$LISP_BASE\") :ignore-inherited-configuration))" \
+            --eval '(asdf:load-system :iup)' \
+            --eval '(progn
+                      (format t "~%loaded :iup~%")
+                      (dolist (sym (list "IupVersion" "IupOpen" "IupClose" "IupCreate"))
+                        (let ((found (and (cffi:foreign-symbol-pointer sym) t)))
+                          (format t "  ~A: ~A~%" sym found)
+                          (unless found
+                            (format *error-output* "~A did not resolve~%" sym)
+                            (uiop:quit 1)))))'
