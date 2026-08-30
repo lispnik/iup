@@ -217,7 +217,14 @@ jobs:
 
       - name: Load the binding and report what it found
         run: |
-          sbcl --non-interactive \
+          # --control-stack-size 8: defiupclasses expands a 2.7 MB classes
+          # database into one form per widget class, and compiling
+          # iup-controls' share of it sits at the edge of SBCL's default 2 MB
+          # control stack -- over it on Linux amd64, under it on arm64, macOS
+          # and Windows with the very same SBCL 2.2.9 and the very same form.
+          # A margin that thin is not worth surfing; 8 MB puts it far from the
+          # cliff on every platform.
+          sbcl --control-stack-size 8 --non-interactive \
             --eval '(require :asdf)' \
             --eval "(asdf:initialize-source-registry '(:source-registry (:tree \"$LISP_TREE\") (:tree \"$LISP_BASE\") (:tree \"$LISP_IM\") (:tree \"$LISP_CD\") :ignore-inherited-configuration))" \
             --eval '(dolist (s (list :iup :iup-cd :iup-im :iup-controls))
