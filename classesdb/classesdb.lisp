@@ -74,7 +74,15 @@
               (class-metadata classname))))
 
 (defparameter *static-metadata*
-  '((:initializer iup-cffi::%iup-open
+  ;; :library names the shared object per platform and :init-function the C
+  ;; entry point, as data rather than as symbols in the addon -cffi packages.
+  ;; Symbols would make merely READING this list require every addon system,
+  ;; and their libraries, to be present -- and most of the addons have no
+  ;; library at all in lispnik/tecgraf-iup yet. As data, an entry whose
+  ;; library will not load is SKIPPED, its existing metadata carried over,
+  ;; and regeneration refreshes whatever the running platform can actually
+  ;; introspect.
+  '((:init-function "IupOpen"
      :package "IUP"
      :override-p ("image" "imagergb" "imagergba")
      :vanity-alist (("gridbox" . "grid-box")
@@ -105,15 +113,18 @@
                     ("imagergb" . "image-rgb")
                     ("imagergba" . "image-rgba")
                     ("multibox" . "multi-box")))
-    (:initializer iup-controls-cffi::%iup-controls-open
+    (:library ((:darwin (:framework "iupcontrols")) (:unix "libiupcontrols.so") (:windows "iupcontrols.dll"))
+     :init-function "IupControlsOpen"
      :package "IUP-CONTROLS"
      :vanity-alist (("matrixex" . "matrix-ex")
                     ("matrixlist" . "matrix-list")))
-    (:initializer iup-gl-cffi::%iup-gl-canvas-open
+    (:library ((:darwin (:framework "iupgl")) (:unix "libiupgl.so") (:windows "iupgl.dll"))
+     :init-function "IupGLCanvasOpen"
      :package "IUP-GL"
      :vanity-alist (("glcanvas" . "canvas")
                     ("glsubcanvas" . "sub-canvas")))
-    (:initializer iup-glcontrols-cffi::%iup-glcontrols-open
+    (:library ((:darwin (:framework "iupglcontrols")) (:unix "libiupglcontrols.so") (:windows "iupglcontrols.dll"))
+     :init-function "IupGLControlsOpen"
      :package "IUP-GLCONTROLS"
      :vanity-alist (("glcanvasbox" . "canvas-box")
                     ("glsubcanvas" . "sub-canvas")
@@ -130,23 +141,29 @@
                     ("gllabel" . "label")
                     ("glseparator" . "separator")
                     ("glbackgroundbox" . "background-box")))
-    (:initializer iup-plot-cffi::%iup-plot-open
+    (:library ((:darwin (:framework "iup_plot")) (:unix "libiup_plot.so") (:windows "iup_plot.dll"))
+     :init-function "IupPlotOpen"
      :package "IUP-PLOT")
-    (:initializer iup-mglplot-cffi::%iup-mglplot-open
+    (:library ((:darwin (:framework "iup_mglplot")) (:unix "libiup_mglplot.so") (:windows "iup_mglplot.dll"))
+     :init-function "IupMglPlotOpen"
      :package "IUP-MGLPLOT"
      :vanity-alist (("mglplot" . "plot")
                     ("mgllabel" . "label")))
     #+windows
-    (:initializer iup-olecontrol-cffi::%iup-olecontrol-open
+    (:library ((:windows "iupole.dll"))
+     :init-function "IupOleControlOpen"
      :package "IUP-OLECONTROL")
-    (:initializer iup-scintilla-cffi::%iup-scintilla-open
+    (:library ((:darwin (:framework "iup_scintilla")) (:unix "libiup_scintilla.so") (:windows "iup_scintilla.dll"))
+     :init-function "IupScintillaOpen"
      :package "IUP-SCINTILLA"
      :vanity-alist (("scintilladlg" . "scintilla-dialog")))
-    (:initializer iup-web-cffi::%iup-web-browser-open
+    (:library ((:darwin (:framework "iupweb")) (:unix "libiupweb.so") (:windows "iupweb.dll"))
+     :init-function "IupWebBrowserOpen"
      :package "IUP-WEB"
      :classname-excludes ("olecontrol")
      :vanity-alist (("webbrowser" . "web-browser")))
-    (:initializer iup-tuio-cffi::%iup-tuio-open
+    (:library ((:darwin (:framework "iuptuio")) (:unix "libiuptuio.so") (:windows "iuptuio.dll"))
+     :init-function "IupTuioOpen"
      :package "IUP-TUIO"
      :override-p ("tuioclient")
      :vanity-alist (("tuioclient" . "client"))))
@@ -183,50 +200,84 @@ creation)
          (count #\h format))
         (t :child-none)))
 
+(defun %entry-available-p (metadata)
+  "Load the entry's library and return its initializer as a callable, or NIL.
+
+NIL means the running IUP simply does not provide this addon -- most of them
+have no CMake target in lispnik/tecgraf-iup yet -- and the entry's existing
+metadata is carried over unchanged rather than dropped."
+  (let ((library (getf metadata :library))
+        (init-name (getf metadata :init-function)))
+    (when library
+      ;; The clauses are keyed like DEFINE-FOREIGN-LIBRARY's: pick the first
+      ;; whose feature is present. :darwin is listed before :unix for the
+      ;; same reason it is in every -cffi file -- darwin satisfies both.
+      (let ((clause (find-if #'(lambda (clause)
+                                 (member (first clause) *features*))
+                             library)))
+        (unless (and clause
+                     (ignore-errors (cffi:load-foreign-library (second clause))))
+          (return-from %entry-available-p nil))))
+    (if (string= init-name "IupOpen")
+        ;; The core: WITH-IUP has already opened it.
+        (constantly nil)
+        (let ((pointer (cffi:foreign-symbol-pointer init-name)))
+          (when pointer
+            (lambda ()
+              ;; :void regardless of the true return type: some initializers
+              ;; return int, and discarding a register is safe where reading
+              ;; one from a void function is not.
+              (cffi:foreign-funcall-pointer pointer () :void)))))))
+
 (defun create-classesdb ()
   "Create a printable representaion of IUP metadata containing enough
-information to create the Lisp API at compilation time."
+information to create the Lisp API at compilation time.
+
+Returns (VALUES platform-section regenerated-package-names): only packages
+whose addon library loaded are in the section, and the caller merges the
+rest forward from the previous database."
   (flet ((vanity-name (vanity-alist classname)
            (if-let (vanity-name (assoc-value vanity-alist classname :test #'string=))
              (string-upcase vanity-name))))
     (loop with base-classnames = (with-iup (all-classes))
           for metadata in *static-metadata*
-          for initializer = (getf metadata :initializer)
-          for classes = (with-iup (if (eq initializer 'iup-cffi::%iup-open)
-                                      (funcall initializer (cffi:null-pointer) (cffi:null-pointer))
-                                      (funcall initializer))
-                          (all-classes))
-          for classname-excludes = (getf metadata :classname-excludes)
-          for difference = (remove-if #'(lambda (classname)
-                                          (find classname classname-excludes :test #'string=))
-                                      (if (eq initializer 'iup-cffi::%iup-open)
-                                          base-classnames
-                                          (set-difference classes base-classnames :test #'string=)))
-          for override-p = (getf metadata :override-p)
-          for vanity-alist = (getf metadata :vanity-alist)
           for package = (getf metadata :package)
-          do (format t "~&Processing for package ~A" package)
-          collect
-          (with-iup 
-            (if (eq initializer 'iup-cffi::%iup-open)
-                (funcall initializer (cffi:null-pointer) (cffi:null-pointer))
-                (funcall initializer))
-            (list :package package
-                  :classnames
-                  (loop for classname in difference
-                        for class = (iup-classesdb-cffi::%iup-register-find-class classname)
-                        for class-format = (class-format class)
-                        for class-child-type = (class-child-type class)
-                        collect
-                        (list :classname classname
-                              :format class-format
-                              :children (child-spec-from-format class-format)
-                              :override-p (and (find classname override-p :test #'string=) t)
-                              :vanity-classname (vanity-name vanity-alist classname)
-                              :attributes (class-metadata classname)))))
+          for core-p = (string= (getf metadata :init-function) "IupOpen")
+          for initializer = (%entry-available-p metadata)
+          unless initializer
+            do (format t "~&Skipping ~A: its library did not load here" package)
+          when initializer
+            collect package into regenerated
+          when initializer
+            collect
+            (let* ((classes (with-iup (funcall initializer) (all-classes)))
+                   (classname-excludes (getf metadata :classname-excludes))
+                   (difference (remove-if #'(lambda (classname)
+                                              (find classname classname-excludes :test #'string=))
+                                          (if core-p
+                                              base-classnames
+                                              (set-difference classes base-classnames :test #'string=))))
+                   (override-p (getf metadata :override-p))
+                   (vanity-alist (getf metadata :vanity-alist)))
+              (format t "~&Processing for package ~A" package)
+              (with-iup
+                (funcall initializer)
+                (list :package package
+                      :classnames
+                      (loop for classname in difference
+                            for class = (iup-classesdb-cffi::%iup-register-find-class classname)
+                            for class-format = (class-format class)
+                            collect
+                            (list :classname classname
+                                  :format class-format
+                                  :children (child-spec-from-format class-format)
+                                  :override-p (and (find classname override-p :test #'string=) t)
+                                  :vanity-classname (vanity-name vanity-alist classname)
+                                  :attributes (class-metadata classname))))))
             into result
-          finally (return (append (list :platform *platform*)
-                                  (list :metadata result))))))
+          finally (return (values (append (list :platform *platform*)
+                                          (list :metadata result))
+                                  regenerated)))))
 
 (defun classesdb-pathname ()
   (asdf:system-relative-pathname "iup" "classesdb" :type "lisp-sexp"))
@@ -241,11 +292,26 @@ information to create the Lisp API at compilation time."
           (:platform :windows)
           (:platform :unix)))))
 
-(defun update-classesdbs (current-classesdbs classesdb)
+(defun update-classesdbs (current-classesdbs classesdb regenerated)
+  "Merge at the PACKAGE level, not the platform level.
+
+Replacing a platform's whole section would silently drop the metadata for
+every package whose addon library is not built yet -- IUP-PLOT, IUP-SCINTILLA
+and friends -- when the point of keeping a database at all is that the API
+survives what the current machine cannot introspect. Packages actually
+regenerated are replaced; the rest ride along from the previous file."
   (let ((our-platform *platform*))
     (mapcar #'(lambda (existing-classesdb)
                 (if (eq (getf existing-classesdb :platform) our-platform)
-                    classesdb
+                    (let ((old-metadata (getf existing-classesdb :metadata))
+                          (new-metadata (getf classesdb :metadata)))
+                      (list :platform our-platform
+                            :metadata
+                            (append new-metadata
+                                    (remove-if #'(lambda (package)
+                                                   (find (getf package :package) regenerated
+                                                         :test #'string=))
+                                               old-metadata))))
                     existing-classesdb))
             current-classesdbs)))
 
@@ -258,8 +324,8 @@ information to create the Lisp API at compilation time."
     (write classesdbs :stream stream :pretty t :right-margin 100)))
 
 (defun regenerate ()
-  (let* ((current-classesdbs (read-classesdbs))
-         (new-classesdb (create-classesdb))
-         (updated-classesdbs (update-classesdbs current-classesdbs new-classesdb)))
-    (write-classesdbs updated-classesdbs)
+  (multiple-value-bind (new-classesdb regenerated) (create-classesdb)
+    (write-classesdbs
+     (update-classesdbs (read-classesdbs) new-classesdb regenerated))
+    (format t "~&Regenerated on ~A: ~{~A~^, ~}~%" *platform* regenerated)
     nil))

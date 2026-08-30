@@ -1,0 +1,209 @@
+name: Regenerate classesdb
+
+# Refresh classesdb.lisp-sexp by introspecting a live IUP on each platform.
+#
+# The database is the source the whole Lisp API is generated from, and it was
+# last generated in 2020 against IUP 3.29; the fork is 3.32. Regeneration
+# must run on every platform because each contributes its own section, and
+# the sections are chained here -- linux, then macOS, then windows -- each
+# job merging its platform into the file the previous job produced. The
+# generator itself merges at the package level, so addons with no library in
+# lispnik/tecgraf-iup (plot, scintilla, tuio, ...) keep their existing
+# metadata rather than vanishing.
+#
+# Manual trigger only. The output is a checked-in file, so the workflow ends
+# by uploading it as an artifact for a human to review and commit -- CI
+# writing directly to master would put a 2.7 MB generated diff beyond review.
+
+on:
+  workflow_dispatch:
+
+env:
+  IUP_VERSION: v2.0.1
+  CD_VERSION: v2.0.1
+  IM_VERSION: v2.0.1
+
+jobs:
+  linux:
+    name: Regenerate on Linux
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SBCL and runtime dependencies
+        run: |
+          sudo apt-get update -qq
+          # xvfb because IupOpen initializes GTK, and GTK wants a display
+          # even when no window is ever mapped.
+          sudo apt-get install -y --no-install-recommends sbcl xvfb \
+            libgtk-3-0 libgdk-pixbuf-2.0-0 libpango-1.0-0 libpangocairo-1.0-0 \
+            libcairo2 libglib2.0-0 libgobject-2.0-0 \
+            libx11-6 libxext6 libxrender1 libxft2 \
+            libfreetype6 libfontconfig1 libftgl2 libopengl0 \
+            libtiff6 libjpeg8 libpng16-16 zlib1g libexif12 liblzf1 liblz4-1 \
+            libfftw3-double3 libfftw3-single3 libgomp1
+
+      - name: Download the IUP, CD and IM releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          for spec in "iup $IUP_VERSION" "cd $CD_VERSION" "im $IM_VERSION"; do
+            set -- $spec
+            asset="tecgraf-$1-$2-linux-amd64.tar.gz"
+            mkdir -p "$1-libs"
+            gh release download "$2" --repo "lispnik/tecgraf-$1" --pattern "$asset" --dir . --clobber
+            tar -xzf "$asset" -C "$1-libs"
+          done
+          echo "LD_LIBRARY_PATH=$PWD/iup-libs/lib:$PWD/cd-libs/lib:$PWD/im-libs/lib:${LD_LIBRARY_PATH:-}" >> "$GITHUB_ENV"
+
+      - name: Install and configure ocicl
+        run: |
+          git clone --depth 1 https://github.com/ocicl/ocicl.git "$HOME/ocicl-src"
+          ( cd "$HOME/ocicl-src" && sbcl --non-interactive --load setup.lisp )
+          bin="$(find "$HOME" -type f -name ocicl 2>/dev/null | grep -v '/ocicl-src/' | head -1)"
+          test -n "$bin" || { echo "ocicl binary not found"; exit 1; }
+          dirname "$bin" >> "$GITHUB_PATH"
+
+      - name: Restore dependencies and tecgraf-base
+        run: |
+          ocicl setup && ocicl install
+          git clone --depth 1 https://github.com/lispnik/tecgraf-base.git "$HOME/tecgraf-base"
+
+      - name: Regenerate
+        run: |
+          xvfb-run -a sbcl --control-stack-size 8 --non-interactive \
+            --eval '(require :asdf)' \
+            --eval "(asdf:initialize-source-registry '(:source-registry (:tree \"$PWD\") (:tree \"$HOME/tecgraf-base\") :ignore-inherited-configuration))" \
+            --eval '(asdf:load-system :iup-classesdb)'
+          head -1 classesdb.lisp-sexp
+          git --no-pager diff --stat classesdb.lisp-sexp
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: classesdb-after-linux
+          path: classesdb.lisp-sexp
+          if-no-files-found: error
+
+  macos:
+    name: Regenerate on macOS
+    needs: linux
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start from the Linux job's file
+        uses: actions/download-artifact@v4
+        with:
+          name: classesdb-after-linux
+          path: .
+
+      - name: Install SBCL and runtime dependencies
+        run: brew install --quiet sbcl libtiff jpeg-turbo libpng libexif liblzf lz4 fftw libomp cairo pango freetype fontconfig ftgl
+
+      - name: Download the IUP, CD and IM releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          for spec in "iup $IUP_VERSION" "cd $CD_VERSION" "im $IM_VERSION"; do
+            set -- $spec
+            asset="tecgraf-$1-$2-macos-arm64.tar.gz"
+            mkdir -p "$1-libs"
+            gh release download "$2" --repo "lispnik/tecgraf-$1" --pattern "$asset" --dir . --clobber
+            tar -xzf "$asset" -C "$1-libs"
+          done
+          mkdir -p "$HOME/Library/Frameworks"
+          cp -R iup-libs/Frameworks/*.framework "$HOME/Library/Frameworks/"
+          echo "DYLD_LIBRARY_PATH=$PWD/cd-libs/lib:$PWD/im-libs/lib:${DYLD_LIBRARY_PATH:-}" >> "$GITHUB_ENV"
+
+      - name: Install and configure ocicl
+        run: |
+          git clone --depth 1 https://github.com/ocicl/ocicl.git "$HOME/ocicl-src"
+          ( cd "$HOME/ocicl-src" && sbcl --non-interactive --load setup.lisp )
+          bin="$(find "$HOME" -type f -name ocicl 2>/dev/null | grep -v '/ocicl-src/' | head -1)"
+          test -n "$bin" || { echo "ocicl binary not found"; exit 1; }
+          dirname "$bin" >> "$GITHUB_PATH"
+
+      - name: Restore dependencies and tecgraf-base
+        run: |
+          ocicl setup && ocicl install
+          git clone --depth 1 https://github.com/lispnik/tecgraf-base.git "$HOME/tecgraf-base"
+
+      - name: Regenerate
+        run: |
+          sbcl --control-stack-size 8 --non-interactive \
+            --eval '(require :asdf)' \
+            --eval "(asdf:initialize-source-registry '(:source-registry (:tree \"$PWD\") (:tree \"$HOME/tecgraf-base\") :ignore-inherited-configuration))" \
+            --eval '(asdf:load-system :iup-classesdb)'
+          head -1 classesdb.lisp-sexp
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: classesdb-after-macos
+          path: classesdb.lisp-sexp
+          if-no-files-found: error
+
+  windows:
+    name: Regenerate on Windows
+    needs: macos
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start from the macOS job's file
+        uses: actions/download-artifact@v4
+        with:
+          name: classesdb-after-macos
+          path: .
+
+      - name: Install SBCL
+        run: |
+          choco install sbcl --no-progress -y
+          cygpath -w "/c/Program Files/Steel Bank Common Lisp" >> "$GITHUB_PATH"
+
+      - name: Download the IUP, CD and IM releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          for spec in "iup $IUP_VERSION" "cd $CD_VERSION" "im $IM_VERSION"; do
+            set -- $spec
+            asset="tecgraf-$1-$2-windows-x64.zip"
+            mkdir -p "$1-libs"
+            gh release download "$2" --repo "lispnik/tecgraf-$1" --pattern "$asset" --dir . --clobber
+            unzip -q -o "$asset" -d "$1-libs"
+          done
+          for p in iup cd im; do cygpath -w "$PWD/$p-libs/bin" >> "$GITHUB_PATH"; done
+
+      - name: Install and configure ocicl
+        run: |
+          git clone --depth 1 https://github.com/ocicl/ocicl.git "$HOME/ocicl-src"
+          ( cd "$HOME/ocicl-src" && sbcl --non-interactive --load setup.lisp )
+          bin="$(find "$HOME" -type f -name ocicl.exe 2>/dev/null | grep -v '/ocicl-src/' | head -1)"
+          test -n "$bin" || { echo "ocicl binary not found"; exit 1; }
+          dirname "$bin" >> "$GITHUB_PATH"
+
+      - name: Restore dependencies and tecgraf-base
+        run: |
+          ocicl setup && ocicl install
+          git clone --depth 1 https://github.com/lispnik/tecgraf-base.git "$HOME/tecgraf-base"
+
+      - name: Regenerate
+        run: |
+          tree="$(cygpath -m "$PWD")"; base="$(cygpath -m "$HOME/tecgraf-base")"
+          sbcl --control-stack-size 8 --non-interactive \
+            --eval '(require :asdf)' \
+            --eval "(asdf:initialize-source-registry '(:source-registry (:tree \"$tree\") (:tree \"$base\") :ignore-inherited-configuration))" \
+            --eval '(asdf:load-system :iup-classesdb)'
+          head -1 classesdb.lisp-sexp
+
+      # The final file carries all three platforms' fresh sections.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: classesdb-regenerated
+          path: classesdb.lisp-sexp
+          if-no-files-found: error
