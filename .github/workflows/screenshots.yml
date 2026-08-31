@@ -1,0 +1,168 @@
+name: Example screenshots
+
+# Run the example applications under Xvfb and photograph them. Partly a
+# gallery, partly the strongest smoke test this binding has: every app here
+# builds its widget tree, maps a real window under GTK, and survives long
+# enough to be photographed -- which is more of the toolkit exercised than
+# loading systems and resolving symbols ever proves.
+#
+# The examples block in IUP:MAIN-LOOP by design, so each runs in its own
+# SBCL, is given a few seconds to map, is photographed off the X root window
+# (ImageMagick's import), trimmed to the window against fluxbox's solid
+# background, and then killed.
+
+on:
+  workflow_dispatch:
+
+env:
+  IUP_VERSION: v2.1.0
+  CD_VERSION: v2.0.1
+  IM_VERSION: v2.0.1
+
+jobs:
+  shoot:
+    name: Photograph the examples
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SBCL, Xvfb and friends
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            sbcl xvfb fluxbox imagemagick x11-utils \
+            libgtk-3-0 libgdk-pixbuf-2.0-0 libpango-1.0-0 libpangocairo-1.0-0 \
+            libcairo2 libglib2.0-0 libgobject-2.0-0 \
+            libx11-6 libxext6 libxrender1 libxft2 \
+            libfreetype6 libfontconfig1 libftgl2 libopengl0 libgl1 \
+            libtiff6 libjpeg8 libpng16-16 zlib1g libexif12 liblzf1 liblz4-1 \
+            libfftw3-double3 libfftw3-single3 libgomp1
+
+      - name: Download the IUP, CD and IM releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          fetch() {
+            local proj="$1" ver="$2" dest="$3"
+            local asset="tecgraf-${proj}-${ver}-linux-amd64.tar.gz"
+            mkdir -p "$dest"
+            gh release download "$ver" --repo "lispnik/tecgraf-${proj}" \
+              --pattern "$asset" --dir . --clobber
+            tar -xzf "$asset" -C "$dest"
+          }
+          fetch iup "$IUP_VERSION" iup-libs
+          fetch cd  "$CD_VERSION"  cd-libs
+          fetch im  "$IM_VERSION"  im-libs
+          echo "LD_LIBRARY_PATH=$PWD/iup-libs/lib:$PWD/cd-libs/lib:$PWD/im-libs/lib:${LD_LIBRARY_PATH:-}" >> "$GITHUB_ENV"
+          echo "CD_LIBRARY_PATH=$PWD/cd-libs/lib" >> "$GITHUB_ENV"
+          echo "IM_LIBRARY_PATH=$PWD/im-libs/lib" >> "$GITHUB_ENV"
+
+      - name: Install and configure ocicl
+        run: |
+          git clone --depth 1 https://github.com/ocicl/ocicl.git "$HOME/ocicl-src"
+          ( cd "$HOME/ocicl-src" && sbcl --non-interactive --load setup.lisp )
+          bin="$(find "$HOME" -type f -name ocicl 2>/dev/null | grep -v '/ocicl-src/' | head -1)"
+          test -n "$bin" || { echo "ocicl binary not found"; exit 1; }
+          dirname "$bin" >> "$GITHUB_PATH"
+
+      - name: Restore dependencies and the sibling repositories
+        run: |
+          ocicl setup && ocicl install
+          git clone --depth 1 https://github.com/lispnik/tecgraf-base.git "$HOME/tecgraf-base"
+          git clone --depth 1 https://github.com/lispnik/im.git "$HOME/im-binding"
+          git clone --depth 1 https://github.com/lispnik/cd.git "$HOME/cd-binding"
+
+      - name: Start the display
+        run: |
+          Xvfb :99 -screen 0 1100x780x24 &
+          sleep 2
+          DISPLAY=:99 fluxbox >/dev/null 2>&1 &
+          sleep 1
+
+      - name: Run each example and photograph it
+        run: |
+          set -uo pipefail
+          export DISPLAY=:99
+          mkdir -p shots
+
+          # The examples' compile-time (ql:quickload ...) is satisfied by a
+          # tiny shim mapping it onto ASDF -- Quicklisp is not installed here
+          # and the systems are all on the source registry.
+          cat > /tmp/shim.lisp <<'EOF'
+          (require :asdf)
+          (asdf:initialize-source-registry
+           (list :source-registry
+                 (list :tree (uiop:getcwd))
+                 (list :tree (uiop:parse-native-namestring (format nil "~A/tecgraf-base/" (uiop:getenv "HOME"))))
+                 (list :tree (uiop:parse-native-namestring (format nil "~A/im-binding/" (uiop:getenv "HOME"))))
+                 (list :tree (uiop:parse-native-namestring (format nil "~A/cd-binding/" (uiop:getenv "HOME"))))
+                 :ignore-inherited-configuration))
+          (defpackage #:ql (:use #:cl) (:export #:quickload))
+          (defun ql:quickload (systems &rest args)
+            (declare (ignore args))
+            (dolist (s (if (listp systems) systems (list systems)))
+              (asdf:load-system (string-downcase (string s)))))
+          EOF
+
+          # name | file | package | function
+          examples='
+          sample       examples/sample.lisp             iup-examples.sample             hello
+          callback     examples/callback.lisp           iup-examples.callback           callback
+          tabs         examples/tabs.lisp               iup-examples.tabs               tabs
+          tree-demo    examples/tree-demo.lisp          iup-examples.tree-demo          tree-demo
+          counter      examples/7guis/counter.lisp      iup-examples.counter            counter
+          temperature  examples/7guis/temperature.lisp  iup-examples.temperature        temperature
+          cells        examples/cells.lisp              iup-examples.cells-checkerboard cells-checkerboard
+          sierpinski   examples/sierpinski.lisp         iup-examples.sierpinksi         sierpinski
+          plot         examples/plot.lisp               iup-examples.plottest           plottest
+          '
+
+          failures=0
+          echo "$examples" | while read -r name file package fn; do
+            [ -z "$name" ] && continue
+            echo "::group::$name"
+            sbcl --non-interactive \
+              --load /tmp/shim.lisp \
+              --load "$file" \
+              --eval "(funcall (intern (string-upcase \"$fn\") (find-package (string-upcase \"$package\"))))" \
+              > "shots/$name.log" 2>&1 &
+            pid=$!
+            # Give it time to compile the example and map its window.
+            for i in $(seq 1 30); do
+              sleep 1
+              kill -0 $pid 2>/dev/null || break
+              n=$(xwininfo -root -children 2>/dev/null | grep -c '^     0x' || true)
+              [ "$n" -gt 1 ] && sleep 2 && break
+            done
+            if kill -0 $pid 2>/dev/null; then
+              import -window root "shots/$name-root.png" 2>/dev/null
+              # Trim to the window against fluxbox's solid background.
+              convert "shots/$name-root.png" -trim +repage "shots/$name.png" 2>/dev/null \
+                || cp "shots/$name-root.png" "shots/$name.png"
+              rm -f "shots/$name-root.png"
+              echo "photographed $name"
+              kill $pid 2>/dev/null; sleep 1; kill -9 $pid 2>/dev/null || true
+            else
+              echo "::warning::$name exited before it could be photographed"
+              tail -5 "shots/$name.log" || true
+            fi
+            echo "::endgroup::"
+          done
+
+          ls -la shots/
+          count=$(ls shots/*.png 2>/dev/null | wc -l)
+          echo "captured $count screenshots"
+          # Most is not all: an example that will not run deserves a red run,
+          # but one flaky window must not throw away the other photographs.
+          test "$count" -ge 6 || { echo "::error::only $count screenshots"; exit 1; }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: example-screenshots
+          path: |
+            shots/*.png
+            shots/*.log
+          if-no-files-found: error
