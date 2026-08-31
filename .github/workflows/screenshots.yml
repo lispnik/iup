@@ -80,7 +80,32 @@ jobs:
           Xvfb :99 -screen 0 1100x780x24 &
           sleep 2
           DISPLAY=:99 fluxbox >/dev/null 2>&1 &
-          sleep 1
+          sleep 2
+          # fluxbox complains about its missing wallpaper with an xmessage,
+          # which then photobombs every screenshot and satisfies any
+          # a-window-appeared heuristic. Close it.
+          pkill xmessage 2>/dev/null || true
+
+      # Distro SBCL compiles the whole dependency stack the first time any
+      # system loads -- minutes, not seconds -- and the first run of this
+      # workflow photographed nine empty desktops because every app was still
+      # compiling CFFI when its window-wait expired. Compile everything once;
+      # the apps then start from fasls in seconds.
+      - name: Warm the fasl cache
+        run: |
+          sbcl --non-interactive \
+            --load /dev/stdin <<'EOF'
+          (require :asdf)
+          (asdf:initialize-source-registry
+           (list :source-registry
+                 (list :tree (uiop:getcwd))
+                 (list :tree (uiop:parse-native-namestring (format nil "~A/tecgraf-base/" (uiop:getenv "HOME"))))
+                 (list :tree (uiop:parse-native-namestring (format nil "~A/im-binding/" (uiop:getenv "HOME"))))
+                 (list :tree (uiop:parse-native-namestring (format nil "~A/cd-binding/" (uiop:getenv "HOME"))))
+                 :ignore-inherited-configuration))
+          (dolist (s '(:iup :iup-cd :iup-controls :iup-plot :cd :im))
+            (asdf:load-system s))
+          EOF
 
       - name: Run each example and photograph it
         run: |
@@ -130,12 +155,15 @@ jobs:
               --eval "(funcall (intern (string-upcase \"$fn\") (find-package (string-upcase \"$package\"))))" \
               > "shots/$name.log" 2>&1 &
             pid=$!
-            # Give it time to compile the example and map its window.
-            for i in $(seq 1 30); do
+            # Wait for a window BEYOND what was already on the display when
+            # this app started -- an absolute count latched onto fluxbox's
+            # own decorations the first time round.
+            baseline=$(xwininfo -root -children 2>/dev/null | grep -c '0x[0-9a-f]* "' || true)
+            for i in $(seq 1 45); do
               sleep 1
               kill -0 $pid 2>/dev/null || break
-              n=$(xwininfo -root -children 2>/dev/null | grep -c '^     0x' || true)
-              [ "$n" -gt 1 ] && sleep 2 && break
+              n=$(xwininfo -root -children 2>/dev/null | grep -c '0x[0-9a-f]* "' || true)
+              [ "$n" -gt "$baseline" ] && sleep 2 && break
             done
             if kill -0 $pid 2>/dev/null; then
               import -window root "shots/$name-root.png" 2>/dev/null
