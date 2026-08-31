@@ -14,22 +14,21 @@
   (declare (ignore handle x y))
   (cd:activate *canvas*)
   (multiple-value-bind (w h)
-      (cd:size *canvas*)
+      (cd:canvas-size *canvas*)
     (cd:clear *canvas*)
     (let ((stipple (make-array '(100 100) :element-type 'bit)))
       (loop for i below 100
 	    do (loop for j below 100
 		     do (setf (aref stipple i j) (random 2))))
       (setf (cd:stipple *canvas*) stipple))
-    (print (cd:stipple *canvas*))
-    (setf (cd:interior-style *canvas*) :interior-stipple
+    (setf (cd:interior-style *canvas*) :stipple
 	  (cd:foreground *canvas*) cd:+red+)
     (cd:sector *canvas* (* 1/2 w) (* 1/2 h) (* 1/4 w) (* 1/4 h) 0 360)
     (cd:flush *canvas*))
   iup:+default+)
 
 (defun canvas-map (handle)
-  (setf *canvas* (cd:create-canvas (iup-cd:context-iup-dbuffer) handle))
+  (setf *canvas* (cd:make-canvas (iup-cd:context-iup-dbuffer) handle))
   iup:+default+)
 
 (defun canvas-unmap (handle)

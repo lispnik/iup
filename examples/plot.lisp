@@ -176,13 +176,14 @@
             iup:+default+)
           (iup:callback plot :postdraw_cb)
           (lambda (handle canvas)
-            (multiple-value-bind
-                  (ix iy)
-                (iup-plot:transform handle 0.003 0.02)
-              (setf (cd:font-style canvas) :font-style-bold
-                    (cd:font-size canvas) 10
-                    (cd:text-alignment canvas) :alignment-south)
-              (cd:text canvas ix iy "My Inline Legend"))
+            ;; The callback hands over the plot's own cdCanvas* -- borrowed.
+            (let ((canvas (cd:borrow-canvas canvas :driver "CD_IUP")))
+              (multiple-value-bind
+                    (ix iy)
+                  (iup-plot:transform handle 0.003 0.02)
+                (cd:font canvas :style :bold :size 10)
+                (setf (cd:text-alignment canvas) :south)
+                (cd:text canvas ix iy "My Inline Legend")))
             iup:+default+)
           (iup:callback plot :predraw_cb)
           (lambda (handle canvas)

@@ -15,13 +15,13 @@
   (setf (cd:background *canvas*) cd:+white+)
   (cd:clear *canvas*)
   (multiple-value-bind (w h)
-      (cd:size *canvas*)
+      (cd:canvas-size *canvas*)
     (cd:pixel *canvas* (/ w 2) (/ h 2) cd:+black+))
   (cd:flush *canvas*)
   iup:+default+)
 
 (defun canvas-map (handle)
-  (setf *canvas* (cd:create-canvas (iup-cd:context-iup-dbuffer) handle))
+  (setf *canvas* (cd:make-canvas (iup-cd:context-iup-dbuffer) handle))
   iup:+default+)
 
 (defun canvas-unmap (handle)
@@ -29,7 +29,7 @@
   (setf *canvas* nil)
   iup:+default+)
 
-(defun canvas ()
+(defun pixel ()
   (iup:with-iup ()
     (let* ((canvas
              (iup:canvas :rastersize "320x200"
@@ -41,9 +41,9 @@
       (iup:show dialog)
       (iup:main-loop))))
 
-#-sbcl (canvas)
+#-sbcl (pixel)
 
 #+sbcl
 (sb-int:with-float-traps-masked
     (:divide-by-zero :invalid)
-  (canvas))
+  (pixel))

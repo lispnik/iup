@@ -105,7 +105,7 @@ jobs:
                  (list :tree (uiop:parse-native-namestring (format nil "~A/im-binding/" (uiop:getenv "HOME"))))
                  (list :tree (uiop:parse-native-namestring (format nil "~A/cd-binding/" (uiop:getenv "HOME"))))
                  :ignore-inherited-configuration))
-          (dolist (s '(:iup :iup/cd :iup/controls :iup/plot :cd :im))
+          (dolist (s '(:iup :iup/cd :iup/controls :iup/plot :cd :im :lispqr))
             (asdf:load-system s))
           EOF
           # --control-stack-size 8: compiling the defiupclasses expansion
@@ -148,8 +148,13 @@ jobs:
           counter      examples/7guis/counter.lisp      iup-examples.counter            counter
           temperature  examples/7guis/temperature.lisp  iup-examples.temperature        temperature
           cells        examples/cells.lisp              iup-examples.cells-checkerboard cells-checkerboard
-          sierpinski   examples/sierpinski.lisp         iup-examples.sierpinksi         sierpinski
+          sierpinski   examples/sierpinski.lisp         iup-examples.sierpinski         sierpinski
           plot         examples/plot.lisp               iup-examples.plottest           plottest
+          canvas       examples/canvas.lisp             iup-examples.canvas             canvas
+          pixel        examples/pixel.lisp              iup-examples.pixel              pixel
+          scrollbar    examples/scrollbar.lisp          iup-examples.scrollbar          scrollbar
+          ltk-demo     examples/ltk-demo.lisp           iup-example.ltk-demo            ltk-demo
+          qrcode       examples/qrcode.lisp             iup-examples.qrcode             qrcode
           '
 
           failures=0
@@ -192,7 +197,7 @@ jobs:
           echo "captured $count screenshots"
           # Most is not all: an example that will not run deserves a red run,
           # but one flaky window must not throw away the other photographs.
-          test "$count" -ge 6 || { echo "::error::only $count screenshots"; exit 1; }
+          test "$count" -ge 12 || { echo "::error::only $count screenshots"; exit 1; }
 
       - uses: actions/upload-artifact@v4
         with:

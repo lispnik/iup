@@ -376,11 +376,11 @@ fractal.
   (eval-when (:compile-toplevel :load-toplevel :execute)
     (ql:quickload '("iup" "iup/cd" "cd")))
 
-  (defpackage #:iup-examples.sierpinksi
+  (defpackage #:iup-examples.sierpinski
     (:use #:common-lisp)
-    (:export #:sierpinksi))
+    (:export #:sierpinski))
 
-  (in-package #:iup-examples.sierpinksi)
+  (in-package #:iup-examples.sierpinski)
 #+end_src
 
 #+begin_src lisp :results silent :tangle examples/sierpinski.lisp
@@ -423,7 +423,7 @@ canvas applications.
   (defun sierpinski-draw (canvas level)
     (multiple-value-bind
           (w h)
-        (cd:size canvas)
+        (cd:canvas-size canvas)
       (labels ((square (x y x-size y-size)
                  (cd:box canvas x (+ x x-size) y (+ y y-size)))
                (recurse (x y x-size y-size level)
@@ -441,12 +441,8 @@ For example, we can write it to [[./docs/sierpinski.pdf][PDF]] and print out to 
 wall:
 
 #+begin_src lisp :results silent
-  (ql:quickload "cd-pdf")
-
-  (let ((canvas (cd:create-canvas (cd-pdf:context-pdf) "docs/sierpinski.pdf")))
-    (unwind-protect
-         (sierpinski-draw canvas 4)
-      (cd:kill canvas)))
+  (cd:with-canvas (canvas (cd:pdf-canvas "docs/sierpinski.pdf"))
+    (sierpinski-draw canvas 4))
 #+end_src
 
 In our IUP example however, we'll use it with IUP's CD support and
@@ -513,7 +509,7 @@ elegant manner.
 
 #+begin_src lisp :results silent :tangle examples/sierpinski.lisp
   (defun canvas-map (handle)
-    (setf *canvas* (cd:create-canvas (iup-cd:context-iup-dbuffer) handle))
+    (setf *canvas* (cd:make-canvas (iup-cd:context-iup-dbuffer) handle))
     iup:+default+)
 
   (defun canvas-unmap (handle)
@@ -588,10 +584,12 @@ When ~DRAW~ is called, we get a canvas on which to draw:
 
 #+begin_src lisp :results silent :tangle examples/cells.lisp
   (defun draw (handle i j xmin xmax ymin ymax canvas)
-    (if (or (and (oddp i) (oddp j)) (and (oddp (1+ i)) (oddp (1+ j))))
-        (setf (cd:foreground canvas) cd:+black+)
-        (setf (cd:foreground canvas) cd:+white+))
-    (cd:box canvas xmin xmax ymin ymax)
+    ;; The callback hands over IupCells' own cdCanvas* -- borrowed, not owned.
+    (let ((canvas (cd:borrow-canvas canvas :driver "CD_IUP")))
+      (if (or (and (oddp i) (oddp j)) (and (oddp (1+ i)) (oddp (1+ j))))
+          (setf (cd:foreground canvas) cd:+black+)
+          (setf (cd:foreground canvas) cd:+white+))
+      (cd:box canvas xmin xmax ymin ymax))
     iup::+default+)
 #+end_src
 

@@ -37,7 +37,7 @@
 (defun qrcode-draw (canvas model)
   (multiple-value-bind
         (w h)
-      (cd:size canvas)
+      (cd:canvas-size canvas)
     (cd:clear canvas)
     (when (and model (> (length model) 0))
         (let* ((matrix (lispqr:encode->matrix model :ec-level :q))
@@ -65,7 +65,7 @@
   iup:+default+)
 
 (defun canvas-map (handle)
-  (setf *canvas* (cd:create-canvas (iup-cd:context-iup-dbuffer) handle))
+  (setf *canvas* (cd:make-canvas (iup-cd:context-iup-dbuffer) handle))
   iup:+default+)
 
 (defun canvas-unmap (handle)

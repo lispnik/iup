@@ -15,7 +15,7 @@
 (defvar *canvas* nil)
 
 (defun canvas-map (handle)
-  (setf *canvas* (cd:create-canvas (iup-cd:context-iup-dbuffer) handle))
+  (setf *canvas* (cd:make-canvas (iup-cd:context-iup-dbuffer) handle))
   iup:+default+)
 
 (defun canvas-unmap (handle)
@@ -36,7 +36,7 @@
     (incf *angle* 0.1f0)
     (incf *angle2* 0.03f0)
     (incf *angle3* 0.01f0)
-    (cd:with-vertices (canvas :path-mode-open-lines)
+    (cd:with-shape (canvas :open-lines)
       (dotimes (i 100)
         (let* ((w (+ *angle* (* i 2.8001f0)))
                (x (+ dx 250 (* 150 (sin w) wx)))

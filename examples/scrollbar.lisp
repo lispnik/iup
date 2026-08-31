@@ -45,7 +45,7 @@
                                :action 'action))
            (dialog (iup:dialog canvas :title "Scrollbar Test")))
       (iup:map dialog)
-      (setf *canvas* (cd:create-canvas (iup-cd:context-iup) canvas)
+      (setf *canvas* (cd:make-canvas (iup-cd:context-iup) canvas)
             (iup:attribute canvas :rastersize) nil)
       (iup:show dialog)
       (iup:main-loop)

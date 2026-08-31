@@ -30,10 +30,12 @@
 (defun width (handle j) 50)
 
 (defun draw (handle i j xmin xmax ymin ymax canvas)
-  (if (or (and (oddp i) (oddp j)) (and (oddp (1+ i)) (oddp (1+ j))))
-      (setf (cd:foreground canvas) cd:+black+)
-      (setf (cd:foreground canvas) cd:+white+))
-  (cd:box canvas xmin xmax ymin ymax)
+  ;; The callback hands over IupCells' own cdCanvas* -- borrowed, not owned.
+  (let ((canvas (cd:borrow-canvas canvas :driver "CD_IUP")))
+    (if (or (and (oddp i) (oddp j)) (and (oddp (1+ i)) (oddp (1+ j))))
+        (setf (cd:foreground canvas) cd:+black+)
+        (setf (cd:foreground canvas) cd:+white+))
+    (cd:box canvas xmin xmax ymin ymax))
   iup::+default+)
 
 (defun click (handle button pressed line column x y status)

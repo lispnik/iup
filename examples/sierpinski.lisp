@@ -3,11 +3,11 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (ql:quickload '("iup" "iup/cd" "cd")))
 
-(defpackage #:iup-examples.sierpinksi
+(defpackage #:iup-examples.sierpinski
   (:use #:common-lisp)
-  (:export #:sierpinksi))
+  (:export #:sierpinski))
 
-(in-package #:iup-examples.sierpinksi)
+(in-package #:iup-examples.sierpinski)
 
 (defparameter *levels* 0)
 
@@ -28,7 +28,7 @@
 (defun sierpinski-draw (canvas level)
   (multiple-value-bind
         (w h)
-      (cd:size canvas)
+      (cd:canvas-size canvas)
     (labels ((square (x y x-size y-size)
                (cd:box canvas x (+ x x-size) y (+ y y-size)))
              (recurse (x y x-size y-size level)
@@ -57,7 +57,7 @@
   iup:+default+)
 
 (defun canvas-map (handle)
-  (setf *canvas* (cd:create-canvas (iup-cd:context-iup-dbuffer) handle))
+  (setf *canvas* (cd:make-canvas (iup-cd:context-iup-dbuffer) handle))
   iup:+default+)
 
 (defun canvas-unmap (handle)
