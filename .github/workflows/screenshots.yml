@@ -105,7 +105,7 @@ jobs:
                  (list :tree (uiop:parse-native-namestring (format nil "~A/im-binding/" (uiop:getenv "HOME"))))
                  (list :tree (uiop:parse-native-namestring (format nil "~A/cd-binding/" (uiop:getenv "HOME"))))
                  :ignore-inherited-configuration))
-          (dolist (s '(:iup :iup-cd :iup-controls :iup-plot :cd :im))
+          (dolist (s '(:iup :iup/cd :iup/controls :iup/plot :cd :im))
             (asdf:load-system s))
           EOF
           # --control-stack-size 8: compiling the defiupclasses expansion

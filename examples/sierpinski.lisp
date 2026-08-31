@@ -1,7 +1,7 @@
 ;;; Generated from org-mode, do not edit
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "iup-cd" "cd")))
+  (ql:quickload '("iup" "iup/cd" "cd")))
 
 (defpackage #:iup-examples.sierpinksi
   (:use #:common-lisp)

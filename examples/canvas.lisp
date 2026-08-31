@@ -1,5 +1,5 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "iup-cd")))
+  (ql:quickload '("iup" "iup/cd")))
 
 (defpackage #:iup-examples.canvas
   (:use #:common-lisp

@@ -13,28 +13,25 @@ name: CI (upstream HEAD)
 # resolving "latest" per platform can pair a Linux build of one commit with a
 # Windows build of another.
 #
-# SCOPE, and it is narrower than the sibling im and cd bindings: this loads
-# the core :iup system only. The rest of the repository does not currently
-# load anywhere, for reasons that predate this workflow and are not CI's to
-# fix:
-#
-#   iup-cd and iup-im depend on the systems cd-cffi and im-cffi, and on
-#   internals like cd-cffi::cd-context. Those systems no longer exist -- the
-#   im and cd bindings were rewritten around packages im.ffi and cd.ffi -- so
-#   these two have been broken since that rewrite.
-#
-#   iup-controls hangs indefinitely on load rather than failing, so it cannot
-#   even be reported as red honestly.
-#
-#   iup-plot, iup-mglplot, iup-scintilla and iup-tuio bind libraries that
-#   lispnik/tecgraf-iup has no CMake target for, so there is nothing to load.
-#
-# Widening this list is the measure of that repair work being done.
+# SCOPE: the same load list as ci.yml -- :iup and every addon with a library
+# (iup/cd, iup/im, iup/controls, iup/plot off Windows, iup/mglplot). Only IUP
+# comes from the dispatching run; CD and IM stay at the pinned releases below,
+# so the one variable in this workflow is upstream IUP and a red run still
+# means what the name says. iup/scintilla and iup/tuio bind libraries
+# lispnik/tecgraf-iup has no CMake target for, so there is nothing to load
+# anywhere.
 
 on:
   repository_dispatch:
     types: [tecgraf-iup-build-complete]
   workflow_dispatch:
+
+env:
+  # Held constant: iup/cd and iup/im link through to CD and IM, whose
+  # libraries and Lisp bindings both have to be present -- but this workflow
+  # tests upstream IUP, so these two are pinned exactly as in ci.yml.
+  CD_VERSION: v2.0.1
+  IM_VERSION: v2.0.1
 
 jobs:
   test:
@@ -49,18 +46,22 @@ jobs:
           - name: Linux amd64
             os: ubuntu-24.04
             artifact: iup-linux-amd64-Release
+            asset: linux-amd64
             run-key: linux_run_id
           - name: Linux arm64
             os: ubuntu-24.04-arm
             artifact: iup-linux-arm64-Release
+            asset: linux-arm64
             run-key: linux_run_id
           - name: macOS arm64
             os: macos-15
             artifact: iup-macos-arm64-Release
+            asset: macos-arm64
             run-key: macos_run_id
           - name: Windows x64
             os: windows-2022
             artifact: iup-windows-x64-Release
+            asset: windows-x64
             run-key: windows_run_id
 
     defaults:
@@ -86,16 +87,29 @@ jobs:
           choco install sbcl --no-progress -y
           cygpath -w "/c/Program Files/Steel Bank Common Lisp" >> "$GITHUB_PATH"
 
-      # libiup links GTK on Linux; the core library needs nothing from CD or
-      # IM, which is why only the IUP archive is fetched below.
+      # Three libraries' worth of dependencies, not one. libiup needs GTK;
+      # libcd adds cairo, pango, freetype, ftgl and OpenGL; libim adds the
+      # image codecs. Same list as ci.yml, for the same reason: dlopen names
+      # the library you asked for, not the dependency that is absent.
       - name: Install runtime dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
             libgtk-3-0 libgdk-pixbuf-2.0-0 libpango-1.0-0 libpangocairo-1.0-0 \
-            libcairo2 libglib2.0-0 libx11-6 libxrender1 libxft2 \
-            libfreetype6 libfontconfig1
+            libcairo2 libglib2.0-0 libgobject-2.0-0 \
+            libx11-6 libxext6 libxrender1 libxft2 \
+            libfreetype6 libfontconfig1 libftgl2 libopengl0 \
+            libtiff6 libjpeg8 libpng16-16 zlib1g libexif12 liblzf1 liblz4-1 \
+            libfftw3-double3 libfftw3-single3 libgomp1
+
+      - name: Install runtime dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          # Same reasoning as the Linux list: these are libcd's and libim's
+          # dependencies, not IUP's.
+          brew install --quiet libtiff jpeg-turbo libpng libexif liblzf lz4 \
+                               fftw libomp cairo pango freetype fontconfig ftgl
 
       - name: Report what this run is testing
         run: |
@@ -111,6 +125,29 @@ jobs:
           name: ${{ matrix.artifact }}
           path: iup-libs/
 
+      - name: Download the pinned CD and IM releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          fetch() {                       # project, version, destination
+            local proj="$1" ver="$2" dest="$3" asset
+            case "$RUNNER_OS" in
+              Windows) asset="tecgraf-${proj}-${ver}-${{ matrix.asset }}.zip" ;;
+              *)       asset="tecgraf-${proj}-${ver}-${{ matrix.asset }}.tar.gz" ;;
+            esac
+            mkdir -p "$dest"
+            gh release download "$ver" --repo "lispnik/tecgraf-${proj}" \
+              --pattern "$asset" --dir . --clobber
+            case "$asset" in
+              *.zip)    unzip -q -o "$asset" -d "$dest" ;;
+              *.tar.gz) tar -xzf "$asset" -C "$dest" ;;
+            esac
+          }
+          fetch cd "$CD_VERSION" cd-libs
+          fetch im "$IM_VERSION" im-libs
+          ls cd-libs im-libs
+
       # macOS gets frameworks, not a dylib, so the loader path is a different
       # mechanism: CFFI resolves (:framework "iup") through
       # *darwin-framework-directories*, whose defaults include
@@ -123,6 +160,10 @@ jobs:
           mkdir -p "$HOME/Library/Frameworks"
           cp -R iup-libs/Frameworks/*.framework "$HOME/Library/Frameworks/"
           ls "$HOME/Library/Frameworks" | head
+          # CD and IM ship dylibs, not frameworks, so they go on the dyld path.
+          echo "DYLD_LIBRARY_PATH=$PWD/cd-libs/lib:$PWD/im-libs/lib:${DYLD_LIBRARY_PATH:-}" >> "$GITHUB_ENV"
+          echo "CD_LIBRARY_PATH=$PWD/cd-libs/lib" >> "$GITHUB_ENV"
+          echo "IM_LIBRARY_PATH=$PWD/im-libs/lib" >> "$GITHUB_ENV"
 
       - name: Put the libraries where the binding looks (Linux/Windows)
         if: runner.os != 'macOS'
@@ -132,11 +173,17 @@ jobs:
             Linux)
               d="$PWD/iup-libs/lib"
               test -f "$d/libiup.so" || { echo "::error::no libiup.so in the archive"; exit 1; }
-              echo "LD_LIBRARY_PATH=$d:${LD_LIBRARY_PATH:-}" >> "$GITHUB_ENV" ;;
+              echo "LD_LIBRARY_PATH=$d:$PWD/cd-libs/lib:$PWD/im-libs/lib:${LD_LIBRARY_PATH:-}" >> "$GITHUB_ENV"
+              echo "CD_LIBRARY_PATH=$PWD/cd-libs/lib" >> "$GITHUB_ENV"
+              echo "IM_LIBRARY_PATH=$PWD/im-libs/lib" >> "$GITHUB_ENV" ;;
             Windows)
               d="$PWD/iup-libs/bin"
               test -f "$d/iup.dll" || { echo "::error::no iup.dll in the archive"; exit 1; }
-              cygpath -w "$d" >> "$GITHUB_PATH" ;;
+              cygpath -w "$d" >> "$GITHUB_PATH"
+              cygpath -w "$PWD/cd-libs/bin" >> "$GITHUB_PATH"
+              cygpath -w "$PWD/im-libs/bin" >> "$GITHUB_PATH"
+              echo "CD_LIBRARY_PATH=$(cygpath -m "$PWD/cd-libs/bin")" >> "$GITHUB_ENV"
+              echo "IM_LIBRARY_PATH=$(cygpath -m "$PWD/im-libs/bin")" >> "$GITHUB_ENV" ;;
           esac
 
       - name: Install and configure ocicl
@@ -153,30 +200,55 @@ jobs:
           ocicl setup
           ocicl install
 
-      # tecgraf-base is a sibling repository, not an ocicl system. iup-cffi
-      # imports exactly one thing from it -- a five-line defalias macro -- so
-      # cloning it is cheaper than vendoring or removing the dependency.
-      - name: Check out tecgraf-base
-        run: git clone --depth 1 https://github.com/lispnik/tecgraf-base.git "$HOME/tecgraf-base"
+      # tecgraf-base is a sibling repository, not an ocicl system. This
+      # binding imports exactly one thing from it -- a five-line defalias
+      # macro -- so cloning is cheaper than vendoring or removing the
+      # dependency.
+      - name: Check out tecgraf-base and the sibling bindings
+        run: |
+          git clone --depth 1 https://github.com/lispnik/tecgraf-base.git "$HOME/tecgraf-base"
+          # iup/cd and iup/im depend on the cd and im *bindings*, which are
+          # sibling repositories rather than ocicl systems.
+          git clone --depth 1 https://github.com/lispnik/im.git "$HOME/im-binding"
+          git clone --depth 1 https://github.com/lispnik/cd.git "$HOME/cd-binding"
 
       - name: Set up the source registry
         run: |
           tree="$PWD"; base="$HOME/tecgraf-base"
+          imb="$HOME/im-binding"; cdb="$HOME/cd-binding"
           if [ "$RUNNER_OS" = Windows ]; then
             tree="$(cygpath -m "$tree")"; base="$(cygpath -m "$base")"
+            imb="$(cygpath -m "$imb")";  cdb="$(cygpath -m "$cdb")"
           fi
           echo "LISP_TREE=$tree" >> "$GITHUB_ENV"
           echo "LISP_BASE=$base" >> "$GITHUB_ENV"
+          echo "LISP_IM=$imb" >> "$GITHUB_ENV"
+          echo "LISP_CD=$cdb" >> "$GITHUB_ENV"
 
       - name: Load the binding and report what it found
         run: |
-          sbcl --non-interactive \
+          # --control-stack-size 8: compiling the defiupclasses expansion for
+          # iup/controls sits at the edge of SBCL's default 2 MB control
+          # stack; see ci.yml for the full account.
+          sbcl --control-stack-size 8 --non-interactive \
             --eval '(require :asdf)' \
-            --eval "(asdf:initialize-source-registry '(:source-registry (:tree \"$LISP_TREE\") (:tree \"$LISP_BASE\") :ignore-inherited-configuration))" \
-            --eval '(asdf:load-system :iup)' \
+            --eval "(asdf:initialize-source-registry '(:source-registry (:tree \"$LISP_TREE\") (:tree \"$LISP_BASE\") (:tree \"$LISP_IM\") (:tree \"$LISP_CD\") :ignore-inherited-configuration))" \
+            --eval '(dolist (s (list :iup :iup/cd :iup/im :iup/controls
+                                     ;; iup_plot is deliberately not built on
+                                     ;; Windows -- it renders through CD GL,
+                                     ;; which the tecgraf-cd Windows build
+                                     ;; omits -- so the system is not loadable
+                                     ;; there. SBCL pushes :WIN32 natively.
+                                     #-win32 :iup/plot
+                                     :iup/mglplot))
+                      (asdf:load-system s)
+                      (format t "~%loaded ~A~%" s))' \
             --eval '(progn
-                      (format t "~%loaded :iup~%")
-                      (dolist (sym (list "IupVersion" "IupOpen" "IupClose" "IupCreate"))
+                      (dolist (sym (list "IupVersion" "IupOpen" "IupClose" "IupCreate"
+                                         "cdContextIup" "IupLoadImage" "IupImageFromImImage"
+                                         "IupMatrix" "IupCells"
+                                         #-win32 "IupPlot"
+                                         "IupMglPlot"))
                         (let ((found (and (cffi:foreign-symbol-pointer sym) t)))
                           (format t "  ~A: ~A~%" sym found)
                           (unless found

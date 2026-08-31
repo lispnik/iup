@@ -1,4 +1,4 @@
-(ql:quickload '("iup" "iup-threads" "bordeaux-threads" "trivial-gray-streams"))
+(ql:quickload '("iup" "iup/threads" "bordeaux-threads" "trivial-gray-streams"))
 
 (defpackage #:iup-examples.listener
   (:use #:common-lisp)

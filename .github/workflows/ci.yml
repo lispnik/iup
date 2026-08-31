@@ -7,22 +7,22 @@ name: CI
 # Testing upstream's unreleased tip is ci-upstream.yml's job, driven by the
 # repository_dispatch tecgraf-iup now sends.
 #
-# SCOPE: :iup, :iup-cd, :iup-im and :iup-controls. The last two were broken from the day the
+# SCOPE: :iup, :iup/cd, :iup/im and :iup/controls. The last two were broken from the day the
 # im and cd bindings were rewritten around the packages im.ffi and cd.ffi --
 # they still named the systems cd-cffi and im-cffi and the type
 # cd-cffi::cd-context -- and are ported here. Loading them is what proves the
 # port, so they are in this list rather than assumed.
 #
-# iup-controls is in the list after being wrongly excluded as "hangs
+# iup/controls is in the list after being wrongly excluded as "hangs
 # indefinitely on load". It never hung: loading tecgraf-iup v2.0.0's macOS
 # frameworks was SIGKILLed by the OS -- cmake --install had invalidated their
 # ad-hoc signature -- about ten milliseconds in and with no dlerror, which
 # reads exactly like a hang from Lisp. v2.0.1 re-signs the frameworks and
 # gives them the LC_RPATH they were missing.
 #
-# Still out: iup-plot, iup-mglplot, iup-scintilla and iup-tuio bind libraries
-# that lispnik/tecgraf-iup has no CMake target for, so there is nothing to
-# load. Widening this list further is the measure of that work being done.
+# Still out: iup/scintilla and iup/tuio bind libraries that
+# lispnik/tecgraf-iup has no CMake target for, so there is nothing to load.
+# Widening this list further is the measure of that work being done.
 
 on:
   push:
@@ -33,7 +33,7 @@ on:
 
 env:
   IUP_VERSION: v2.1.0
-  # iup-cd and iup-im link through to CD and IM, so their libraries and their
+  # iup/cd and iup/im link through to CD and IM, so their libraries and their
   # Lisp bindings both have to be present.
   CD_VERSION: v2.0.1
   IM_VERSION: v2.0.1
@@ -191,13 +191,14 @@ jobs:
           ocicl setup
           ocicl install
 
-      # tecgraf-base is a sibling repository, not an ocicl system. iup-cffi
-      # imports exactly one thing from it -- a five-line defalias macro -- so
-      # cloning it is cheaper than vendoring or removing the dependency.
+      # tecgraf-base is a sibling repository, not an ocicl system. This
+      # binding imports exactly one thing from it -- a five-line defalias
+      # macro -- so cloning is cheaper than vendoring or removing the
+      # dependency.
       - name: Check out tecgraf-base and the sibling bindings
         run: |
           git clone --depth 1 https://github.com/lispnik/tecgraf-base.git "$HOME/tecgraf-base"
-          # iup-cd and iup-im depend on the cd and im *bindings*, which are
+          # iup/cd and iup/im depend on the cd and im *bindings*, which are
           # sibling repositories rather than ocicl systems.
           git clone --depth 1 https://github.com/lispnik/im.git "$HOME/im-binding"
           git clone --depth 1 https://github.com/lispnik/cd.git "$HOME/cd-binding"
@@ -219,7 +220,7 @@ jobs:
         run: |
           # --control-stack-size 8: defiupclasses expands a 2.7 MB classes
           # database into one form per widget class, and compiling
-          # iup-controls' share of it sits at the edge of SBCL's default 2 MB
+          # iup/controls' share of it sits at the edge of SBCL's default 2 MB
           # control stack -- over it on Linux amd64, under it on arm64, macOS
           # and Windows with the very same SBCL 2.2.9 and the very same form.
           # A margin that thin is not worth surfing; 8 MB puts it far from the
@@ -227,14 +228,14 @@ jobs:
           sbcl --control-stack-size 8 --non-interactive \
             --eval '(require :asdf)' \
             --eval "(asdf:initialize-source-registry '(:source-registry (:tree \"$LISP_TREE\") (:tree \"$LISP_BASE\") (:tree \"$LISP_IM\") (:tree \"$LISP_CD\") :ignore-inherited-configuration))" \
-            --eval '(dolist (s (list :iup :iup-cd :iup-im :iup-controls
+            --eval '(dolist (s (list :iup :iup/cd :iup/im :iup/controls
                                      ;; iup_plot is deliberately not built on
                                      ;; Windows -- it renders through CD GL,
                                      ;; which the tecgraf-cd Windows build
                                      ;; omits -- so the system is not loadable
                                      ;; there. SBCL pushes :WIN32 natively.
-                                     #-win32 :iup-plot
-                                     :iup-mglplot))
+                                     #-win32 :iup/plot
+                                     :iup/mglplot))
                       (asdf:load-system s)
                       (format t "~%loaded ~A~%" s))' \
             --eval '(progn

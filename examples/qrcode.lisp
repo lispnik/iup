@@ -1,5 +1,5 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "iup-cd" "cd" "lispqr")))
+  (ql:quickload '("iup" "iup/cd" "cd" "lispqr")))
 
 (defpackage #:iup-examples.qrcode
   (:use #:common-lisp)

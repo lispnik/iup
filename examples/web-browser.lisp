@@ -1,4 +1,4 @@
-(ql:quickload '("iup-web"))
+(ql:quickload '("iup/web"))
 
 (defpackage #:iup-examples.web-browser
   (:use #:common-lisp)

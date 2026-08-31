@@ -1,7 +1,7 @@
 ;;; Generated from org-mode, do not edit
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "iup-scintilla")))
+  (ql:quickload '("iup" "iup/scintilla")))
 
 (defpackage #:iup-examples.dialogs
   (:use #:common-lisp)

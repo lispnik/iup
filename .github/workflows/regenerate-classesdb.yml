@@ -64,7 +64,7 @@ jobs:
           sbcl --non-interactive \
             --eval '(require :asdf)' \
             --eval "(asdf:initialize-source-registry '(:source-registry (:tree \"$PWD\") :ignore-inherited-configuration))" \
-            --eval '(asdf:load-system :iup-classesdb)' \
+            --eval '(asdf:load-system :iup/classesdb)' \
             --eval '(iup-classesdb:regenerate-from-dumps
                       #p"dumps/linux-amd64.sexp"
                       #p"dumps/macos-arm64.sexp"

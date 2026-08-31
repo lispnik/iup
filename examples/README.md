@@ -16,7 +16,7 @@ Execute `(iup-examples.buttons:buttons)`
 
 ## Demos that require canvas
 
-Requires `cd` tecgraf libraries, and lispnik/`cd` system. Load `iup-cd`.
+Requires `cd` tecgraf libraries, and lispnik/`cd` system. Load `iup/cd`.
 
 https://github.com/lispnik/cd
 
@@ -26,16 +26,16 @@ https://github.com/lispnik/cd
 
 - The ltk demos
 
-- Plottest (also requires `iup-plot`)
+- Plottest (also requires `iup/plot`)
 
 - Sierpinski
 
 - Teapot (requires GL too)
 
 
-## Demos that use iup-controls
+## Demos that use iup/controls
 
-Requires `iup-controls`
+Requires `iup/controls`
 
 - Cells
 
@@ -48,12 +48,12 @@ Shows examples of file open dialog, message dialog, color picker, and a full sci
 
 `(iup-examples.dialogs:dialogs)`
 
-Requires `iup-scintilla`
+Requires `iup/scintilla`
 
 
 ## Plottest
 
-`iup-plot` demo
+`iup/plot` demo
 
 ## Pomodoro
 
@@ -76,7 +76,7 @@ Tab panel example.
 
 ## Web-browser
 
-Requires system `iup-web`
+Requires system `iup/web`
 
 ## Windows
 

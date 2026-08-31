@@ -1,8 +1,8 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (ql:quickload '("iup"
-                  "iup-plot"
-                  "iup-imglib"
-                  "iup-threads"
+                  "iup/plot"
+                  "iup/imglib"
+                  "iup/threads"
                   "bordeaux-threads"
                   "cl-portaudio")))
 

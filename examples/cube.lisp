@@ -1,7 +1,7 @@
 ;;; Generated from org-mode, do not edit
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "iup-gl" "cl-opengl" "cl-glu")))
+  (ql:quickload '("iup" "iup/gl" "cl-opengl" "cl-glu")))
 
 (defpackage #:iup-examples.cube
   (:use #:common-lisp)

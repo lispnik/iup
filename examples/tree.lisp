@@ -1,7 +1,7 @@
 ;;; Generated from org-mode, do not edit
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "iup-controls" "uiop")))
+  (ql:quickload '("iup" "iup/controls" "uiop")))
 
 (defpackage #:iup-examples.tree
   (:use #:common-lisp)

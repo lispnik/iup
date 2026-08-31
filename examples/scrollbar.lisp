@@ -1,5 +1,5 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "iup-cd" "cd")))
+  (ql:quickload '("iup" "iup/cd" "cd")))
 
 ;;; from scrollbar.c
 

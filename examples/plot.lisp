@@ -1,5 +1,5 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (ql:quickload '("iup" "iup-plot" "cd")))
+  (ql:quickload '("iup" "iup/plot" "cd")))
 
 (defpackage #:iup-examples.plottest
   (:use #:common-lisp)
