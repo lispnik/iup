@@ -108,7 +108,11 @@ jobs:
           (dolist (s '(:iup :iup-cd :iup-controls :iup-plot :cd :im))
             (asdf:load-system s))
           EOF
-          sbcl --non-interactive --load /tmp/warm.lisp
+          # --control-stack-size 8: compiling the defiupclasses expansion
+          # sits over SBCL's default 2 MB stack on Linux amd64, exactly as in
+          # ci.yml. The examples themselves start from these fasls, but the
+          # flag goes on them too -- belt and braces cost nothing here.
+          sbcl --control-stack-size 8 --non-interactive --load /tmp/warm.lisp
 
       - name: Run each example and photograph it
         run: |
@@ -152,7 +156,7 @@ jobs:
           echo "$examples" | while read -r name file package fn; do
             [ -z "$name" ] && continue
             echo "::group::$name"
-            sbcl --non-interactive \
+            sbcl --control-stack-size 8 --non-interactive \
               --load /tmp/shim.lisp \
               --load "$file" \
               --eval "(funcall (intern (string-upcase \"$fn\") (find-package (string-upcase \"$package\"))))" \
