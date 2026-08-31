@@ -93,8 +93,10 @@ jobs:
       # the apps then start from fasls in seconds.
       - name: Warm the fasl cache
         run: |
-          sbcl --non-interactive \
-            --load /dev/stdin <<'EOF'
+          # Via a file, not --load /dev/stdin: SBCL's own startup interacts
+          # with stdin and reading a heredoc through /dev/stdin failed at the
+          # first form. The photograph step's shim uses the same pattern.
+          cat > /tmp/warm.lisp <<'EOF'
           (require :asdf)
           (asdf:initialize-source-registry
            (list :source-registry
@@ -106,6 +108,7 @@ jobs:
           (dolist (s '(:iup :iup-cd :iup-controls :iup-plot :cd :im))
             (asdf:load-system s))
           EOF
+          sbcl --non-interactive --load /tmp/warm.lisp
 
       - name: Run each example and photograph it
         run: |
